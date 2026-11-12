@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { preparePhoto } from '@/lib/image'
 import { api, ApiError, type Attribute, money } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -30,7 +31,7 @@ export default function Sell() {
   const [suggested, setSuggested] = useState<string[]>([])
 
   const draft = useMutation({
-    mutationFn: api.draftListing,
+    mutationFn: async (f: File) => api.draftListing(await preparePhoto(f)),
     onSuccess: (r) => {
       setPhotoKey(r.photo_key)
       setConfidence(r.draft.confidence)

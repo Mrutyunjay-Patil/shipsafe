@@ -8,7 +8,7 @@ import { Envelope } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, MOCK, money } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { backOr, cn } from '@/lib/utils'
 
 const since = (iso: string) => {
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
@@ -42,7 +42,7 @@ export default function Account() {
   return (
     <main className="mx-auto max-w-md px-5 lg:max-w-2xl lg:pt-8 pt-[max(env(safe-area-inset-top),12px)]">
       <header className="flex items-center gap-1 py-2">
-        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
+        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => backOr(nav, "/")} aria-label="Back">
           <ArrowLeft className="size-5" />
         </Button>
         <h1 className="text-[17px] font-semibold">Your shop</h1>

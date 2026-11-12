@@ -40,6 +40,13 @@ export type OrderDetail = Order & { trackers: Tracker[] }
 
 export type Attribute = { name: string; value: string }
 
+export type ListingPatch = {
+  title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: Attribute[]; photo_key?: string
+}
+export type ListingPatchResult = {
+  ok: true; paypal: 'updated' | 'relisted' | 'closed' | 'none'; paypal_updated: boolean; status: Listing['status']; url: string | null
+}
+
 export type ListingDraft = {
   title: string; description: string; colours: string[]; category: string; suggested_price_usd: number; confidence: number
   attributes?: Attribute[]; suggested_attributes?: string[]
@@ -63,7 +70,7 @@ export class ApiError extends Error {
   status: number
   body: any
   constructor(status: number, body: any) {
-    super(body?.issue || body?.message || body?.error || `HTTP ${status}`)
+    super(body?.error === 'paypal' ? `PayPal turned it down (${body.issue ?? body.status})` : body?.message || body?.issue || body?.error || `HTTP ${status}`)
     this.status = status
     this.body = body
   }
@@ -100,8 +107,8 @@ const realApi = {
     req<{ description: string }>('/api/listings/describe', json('POST', b)),
   listings: () => req<Listing[]>('/api/listings'),
   listing: (id: string) => req<ListingDetail>(`/api/listings/${id}`),
-  updateListing: (id: string, b: { title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: Attribute[] }) =>
-    req<{ ok: true; paypal_updated: boolean }>(`/api/listings/${id}`, json('PATCH', b)),
+  uploadListingPhoto: (photo: File) => req<{ photo_key: string }>('/api/listings/photo', upload('photo', photo)),
+  updateListing: (id: string, b: ListingPatch) => req<ListingPatchResult>(`/api/listings/${id}`, json('PATCH', b)),
   archiveListing: (id: string) => req(`/api/listings/${id}`, json('DELETE')),
   orders: () => req<Order[]>('/api/orders'),
   order: (id: string) => req<OrderDetail>(`/api/orders/${id}`),

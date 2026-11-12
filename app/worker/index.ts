@@ -15,7 +15,7 @@ app.onError((err, c) => {
     console.error('paypal', err.status, err.debugId, JSON.stringify(err.body))
     return c.json({ error: 'paypal', status: err.status, issue: err.issue, debug_id: err.debugId }, 502)
   }
-  if (err instanceof z.ZodError) return c.json({ error: 'invalid', issues: err.issues }, 400)
+  if (err instanceof z.ZodError) return c.json({ error: 'invalid', message: err.issues[0]?.message, issues: err.issues }, 400)
   console.error(err)
   return c.json({ error: 'server', message: String(err) }, 500)
 })
@@ -42,6 +42,7 @@ async function photoFrom(c: any, field: string) {
   const form = await c.req.formData()
   const f = form.get(field)
   if (!(f instanceof File)) throw new z.ZodError([{ code: 'custom', path: [field], message: 'file required', input: null }])
+  if (!f.type.startsWith('image/') && !/\.(heic|heif)$/i.test(f.name)) throw new z.ZodError([{ code: 'custom', path: [field], message: 'That file is not a photo', input: null }])
   if (f.size > 8 * 1024 * 1024) throw new z.ZodError([{ code: 'custom', path: [field], message: 'max 8 MB', input: null }])
   return f
 }
@@ -56,13 +57,16 @@ api.post('/listings/draft', async (c) => {
   return c.json({ photo_key: key, draft: draft.value, ms: draft.ms })
 })
 
+const money2 = z.string().regex(/^\d{1,5}(\.\d{1,2})?$/, 'Use a price like 24 or 24.50')
+  .refine((v) => Number(v) > 0 && Number(v) <= 10000, 'Price must be more than 0 and at most 10,000')
+
 const NewListing = z.object({
   title: z.string().min(3).max(127),
   description: z.string().min(1).max(500),
   attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).default([]),
   colours: z.array(z.string().min(1).max(40)).max(10).default([]),
   category: z.string().max(60).optional(),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  price: money2,
   quantity: z.number().int().min(1).max(100).default(1),
   photo_key: z.string().optional(),
   ai_confidence: z.number().min(0).max(1).optional(),
@@ -115,39 +119,94 @@ api.get('/listings/:id', async (c) => {
   return c.json({ ...l, colours: JSON.parse(l.colours), attributes: JSON.parse(l.attributes ?? '[]'), orders: orders.results })
 })
 
-// Edit a listing's details and description. A live PayPal link is updated in place, so
-// buyers see the new details on PayPal's page; a closed link only updates ShipSafe.
+// Upload a replacement product photo. The listing keeps its old photo until the edit is saved,
+// so a cancelled edit leaves nothing changed.
+api.post('/listings/photo', async (c) => {
+  const f = await photoFrom(c, 'photo')
+  const key = `${c.get('sellerId')}/products/${newId('img')}`
+  await c.env.PHOTOS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: f.type } })
+  return c.json({ photo_key: key })
+})
+
+// Edit a listing. A live PayPal link is updated in place, so buyers see the new details on PayPal's
+// page. Stock decides the link's life: raising it on a sold-out product makes a fresh link (PayPal
+// deleted the old one), and lowering it to what's already sold closes the link.
 api.patch('/listings/:id', async (c) => {
   const b = z.object({
-    title: z.string().min(3).max(127).optional(),
-    description: z.string().min(1).max(500).optional(),
-    price: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
-    colours: z.array(z.string().min(1).max(40)).max(10).optional(),
+    title: z.string().trim().min(3).max(127).optional(),
+    description: z.string().trim().min(1).max(500).optional(),
+    price: money2.optional(),
+    colours: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
     quantity: z.number().int().min(1).max(100).optional(),
-    attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).optional(),
+    attributes: z.array(z.object({ name: z.string().trim().max(40), value: z.string().trim().max(120) })).max(24).optional(),
+    photo_key: z.string().max(200).optional(),
   }).parse(await c.req.json())
+  const sellerId = c.get('sellerId')
   const l = await c.env.DB.prepare(
     `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
      FROM listings l WHERE l.id = ? AND l.seller_id = ?`,
-  ).bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  ).bind(c.req.param('id'), sellerId).first<any>()
   if (!l) return c.json({ error: 'not_found' }, 404)
+  if (l.status === 'ARCHIVED') return c.json({ error: 'invalid', message: 'This link is closed. Make a new listing to sell it again.' }, 409)
   if (b.quantity !== undefined && b.quantity < l.sold) return c.json({ error: 'invalid', message: `Already sold ${l.sold}, so stock can't go below that.` }, 400)
+  if (b.photo_key !== undefined && !b.photo_key.startsWith(`${sellerId}/products/`)) return c.json({ error: 'invalid', message: 'Unknown photo.' }, 400)
+
+  // Normalise what the client sent: drop blank detail rows, merge repeated names, dedupe colours.
+  const seen = new Map<string, { name: string; value: string }>()
+  for (const a of b.attributes ?? JSON.parse(l.attributes ?? '[]')) {
+    if (!a.name || !a.value) continue
+    const k = a.name.toLowerCase()
+    if (seen.has(k)) seen.get(k)!.value = `${seen.get(k)!.value}, ${a.value}`.slice(0, 120)
+    else seen.set(k, { name: a.name, value: a.value })
+  }
+  const attributes = [...seen.values()].slice(0, 12)
+  const colours: string[] = [...new Map((b.colours ?? JSON.parse(l.colours)).map((x: string) => [x.toLowerCase(), x])).values()] as string[]
   const title = b.title ?? l.title
   const description = b.description ?? l.description
   const price = b.price !== undefined ? Number(b.price).toFixed(2) : l.price
-  const colours: string[] = b.colours ?? JSON.parse(l.colours)
   const quantity = b.quantity ?? l.quantity
-  const attributes = b.attributes ?? JSON.parse(l.attributes ?? '[]')
-  if (l.plb_id && l.status === 'ACTIVE') {
-    const details = attributes.map((a: { name: string; value: string }) => `${a.name}: ${a.value}`).join(' · ')
-    await updateLink(c.env, l.plb_id, {
-      listingId: l.id, title, description: details ? `${description}\n${details}` : description,
-      price, currency: l.currency, colours, returnUrl: new URL('/thanks', c.req.url).toString(),
-    })
+  const photoKey = b.photo_key ?? l.photo_key
+
+  const details = attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
+  const link = {
+    listingId: l.id, title, description: details ? `${description}\n${details}` : description,
+    price, currency: l.currency, colours, returnUrl: new URL('/thanks', c.req.url).toString(),
   }
-  await c.env.DB.prepare('UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ? WHERE id = ?')
-    .bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), l.id).run()
-  return c.json({ ok: true, paypal_updated: !!(l.plb_id && l.status === 'ACTIVE') })
+  let status: string = l.status
+  let plbId: string | null = l.plb_id
+  let plbUrl: string | null = l.plb_url
+  let paypal: 'updated' | 'relisted' | 'closed' | 'none' = 'none'
+
+  const hasStock = quantity > l.sold
+  if (!hasStock && status === 'ACTIVE') {
+    if (plbId) await deleteLink(c.env, plbId)
+    status = 'SOLD_OUT'
+    paypal = 'closed'
+  } else if (hasStock && (status === 'SOLD_OUT' || !plbId)) {
+    // PayPal deleted the old link when the product sold out. A fresh one is the only way to sell again.
+    const fresh = await createLink(c.env, link)
+    plbId = fresh.id
+    plbUrl = fresh.url
+    status = 'ACTIVE'
+    paypal = 'relisted'
+  } else if (status === 'ACTIVE' && plbId) {
+    try {
+      await updateLink(c.env, plbId, link)
+      paypal = 'updated'
+    } catch (e) {
+      // The link was deleted on PayPal's side. Save the edit and tell the seller the link is gone.
+      if (!(e instanceof PayPalError && e.status === 404)) throw e
+      status = 'SOLD_OUT'
+      plbId = null
+      paypal = 'closed'
+    }
+  }
+
+  await c.env.DB.prepare(
+    'UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ?, photo_key = ?, status = ?, plb_id = ?, plb_url = ? WHERE id = ?',
+  ).bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), photoKey, status, plbId, plbUrl, l.id).run()
+  if (b.photo_key && l.photo_key && b.photo_key !== l.photo_key) await c.env.PHOTOS.delete(l.photo_key).catch(() => {})
+  return c.json({ ok: true, paypal, paypal_updated: paypal === 'updated', status, url: plbUrl })
 })
 
 api.delete('/listings/:id', async (c) => {

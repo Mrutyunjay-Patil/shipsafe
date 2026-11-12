@@ -1,6 +1,6 @@
 // Preview mode: the real screens running on sample data, with no PayPal or AI calls.
 // Turned on at build time with VITE_MOCK=1. State lives in memory and resets on reload.
-import type { Account, Listing, ListingDetail, ListingDraft, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
+import type { Account, Listing, ListingDetail, ListingDraft, ListingPatch, ListingPatchResult, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
@@ -144,7 +144,7 @@ export const mockApi = {
   },
   listings: async (): Promise<Listing[]> => {
     await wait(250)
-    return listings.map((l) => ({ ...l, sold: orders.filter((o) => o.listing_id === l.id && o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length }))
+    return listings.filter((l) => l.status !== 'ARCHIVED').map((l) => ({ ...l, sold: orders.filter((o) => o.listing_id === l.id && o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length }))
   },
   listing: async (id: string): Promise<ListingDetail> => {
     await wait(250)
@@ -153,14 +153,32 @@ export const mockApi = {
     const own = orders.filter((o) => o.listing_id === id)
     return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary) }
   },
-  updateListing: async (id: string, b: { title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: { name: string; value: string }[] }) => {
-    await wait(700)
-    const clean = Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined))
-    if (clean.price) clean.price = Number(clean.price).toFixed(2)
-    listings = listings.map((l) => (l.id === id ? { ...l, ...clean } : l))
-    return { ok: true as const, paypal_updated: listings.find((l) => l.id === id)?.status === 'ACTIVE' }
+  uploadListingPhoto: async (photo: File) => {
+    await wait(900)
+    // Mock mode has no storage, so the photo lives in this tab as a data URL.
+    const photo_key = await new Promise<string>((r) => { const fr = new FileReader(); fr.onload = () => r(String(fr.result)); fr.readAsDataURL(photo) })
+    return { photo_key }
   },
-  archiveListing: async () => ({ ok: true }),
+  updateListing: async (id: string, b: ListingPatch): Promise<ListingPatchResult> => {
+    await wait(700)
+    const l = listings.find((x) => x.id === id)
+    if (!l) throw new Error('not_found')
+    const sold = orders.filter((o) => o.listing_id === id && o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length
+    const clean = Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined)) as ListingPatch
+    if (clean.price) clean.price = Number(clean.price).toFixed(2)
+    const quantity = clean.quantity ?? l.quantity
+    if (quantity < sold) throw new Error(`Already sold ${sold}, so stock can't go below that.`)
+    let { status, plb_url } = l
+    let paypal: ListingPatchResult['paypal'] = status === 'ACTIVE' ? 'updated' : 'none'
+    if (quantity <= sold && status === 'ACTIVE') { status = 'SOLD_OUT'; paypal = 'closed' }
+    else if (quantity > sold && status === 'SOLD_OUT') {
+      status = 'ACTIVE'; paypal = 'relisted'
+      plb_url = `https://www.sandbox.paypal.com/ncp/payment/PLB-DEMO${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+    }
+    listings = listings.map((x) => (x.id === id ? { ...x, ...clean, status, plb_url } : x))
+    return { ok: true, paypal, paypal_updated: paypal === 'updated', status, url: plb_url }
+  },
+  archiveListing: async (id: string) => { await wait(600); listings = listings.map((x) => (x.id === id ? { ...x, status: 'ARCHIVED' as const } : x)); return { ok: true } },
   orders: async () => { await wait(300); maybeArrive(); return orders.map(summary) },
   order: async (id: string) => { await wait(250); return find(id) },
   readSlip: async (id: string, _slip: File): Promise<SlipResult> => {

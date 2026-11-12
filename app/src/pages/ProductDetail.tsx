@@ -1,63 +1,172 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Copy, Loader2, Minus, PenLine, Pencil, Plus, Send, X } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { ArrowLeft, Camera, Copy, ImageUp, Loader2, Minus, PenLine, Pencil, Plus, RotateCcw, Send, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useBlocker, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Stamp } from '@/components/airmail'
 import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { StatStrip } from '@/components/dashboard'
 import { OrderRow } from '@/components/OrderRow'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, type Attribute, MOCK, money, photoUrl } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { api, type Attribute, type Listing, type ListingDetail, type ListingPatchResult, money, photoUrl } from '@/lib/api'
+import { PhotoError, preparePhoto } from '@/lib/image'
+import { backOr, cn } from '@/lib/utils'
 import { listingState } from './Products'
+
+type Draft = { title: string; price: string; qty: number; colours: string[]; desc: string; attrs: Attribute[] }
+
+const draftOf = (l: ListingDetail): Draft => ({
+  title: l.title, price: l.price, qty: l.quantity, colours: l.colours, desc: l.description, attrs: l.attributes ?? [],
+})
+const cleanAttrs = (a: Attribute[]) => a.map((x) => ({ name: x.name.trim(), value: x.value.trim() })).filter((x) => x.name && x.value)
+// Same shape the server stores, so "nothing changed" means the save would be a no-op.
+const canon = (d: Draft) => JSON.stringify({
+  t: d.title.trim(), p: Number(d.price).toFixed(2), q: d.qty, c: d.colours, d: d.desc.trim(), a: cleanAttrs(d.attrs),
+})
+const priceError = (p: string) =>
+  !/^\d{1,5}(\.\d{1,2})?$/.test(p) ? 'Use a price like 24 or 24.50.'
+    : Number(p) <= 0 ? 'The price must be more than 0.'
+      : Number(p) > 10000 ? 'The price can be at most 10,000.' : null
+
+const SAVED: Record<ListingPatchResult['paypal'], string> = {
+  updated: 'Saved. Buyers see the changes on the PayPal link.',
+  relisted: 'Back on sale with a new PayPal link. The old link no longer works, so send buyers this one.',
+  closed: 'Saved. Every unit is sold, so the PayPal link is now closed.',
+  none: 'Saved.',
+}
 
 export default function ProductDetail() {
   const { id = '' } = useParams()
   const nav = useNavigate()
   const qc = useQueryClient()
   const q = useQuery({ queryKey: ['listing', id], queryFn: () => api.listing(id) })
-  const [editing, setEditing] = useState(false)
-  const [attrs, setAttrs] = useState<Attribute[]>([])
-  const [desc, setDesc] = useState('')
-  const [title, setTitle] = useState('')
-  const [price, setPrice] = useState('')
-  const [qty, setQty] = useState(1)
-  const [colours, setColours] = useState<string[]>([])
+  const [draft, setDraft] = useState<Draft | null>(null)
   const [colour, setColour] = useState('')
+  const [photo, setPhoto] = useState<{ file: File; url: string } | null>(null)
+  const [preparing, setPreparing] = useState(false)
+  const [stage, setStage] = useState<'photo' | 'save' | null>(null)
+  const [ask, setAsk] = useState<'discard' | 'close' | null>(null)
+  const uploaded = useRef<{ file: File; key: string } | null>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const editing = draft !== null
+  const l = q.data
+
+  const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d))
+  const dirty = !!(l && draft && (photo || canon(draft) !== canon(draftOf(l))))
+
+  // Guard unsaved edits: in-app navigation asks first, a reload or tab close gets the browser prompt.
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && stage === null && currentLocation.pathname !== nextLocation.pathname)
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+  useEffect(() => () => { if (photo) URL.revokeObjectURL(photo.url) }, [photo])
+
+  const startEdit = () => { if (l) { setDraft(draftOf(l)); setColour(''); setPhoto(null) } }
+  const stopEdit = () => { setDraft(null); setPhoto(null); setColour('') }
+  const cancel = () => (dirty ? setAsk('discard') : stopEdit())
+
   const addColour = () => {
-    const c = colour.trim()
-    if (c && !colours.some((x) => x.toLowerCase() === c.toLowerCase())) setColours([...colours, c].slice(0, 10))
+    const c = colour.trim().replace(/\s+/g, ' ')
     setColour('')
+    if (!draft || !c) return
+    if (draft.colours.some((x) => x.toLowerCase() === c.toLowerCase())) return toast.message(`${c} is already on the list.`)
+    if (draft.colours.length >= 10) return toast.message('PayPal allows up to 10 colours.')
+    set('colours', [...draft.colours, c.slice(0, 40)])
   }
-  const clean = () => attrs.map((a) => ({ name: a.name.trim(), value: a.value.trim() })).filter((a) => a.name && a.value)
+
+  const pickPhoto = async (f?: File) => {
+    if (!f) return
+    setPreparing(true)
+    try {
+      const file = await preparePhoto(f)
+      setPhoto({ file, url: URL.createObjectURL(file) })
+    } catch (e) {
+      toast.error(e instanceof PhotoError ? e.message : "Couldn't open that photo. Try another one.")
+    } finally {
+      setPreparing(false)
+    }
+  }
+
   const save = useMutation({
-    mutationFn: () => api.updateListing(id, { title: title.trim(), description: desc.trim(), price, colours, quantity: qty, attributes: clean() }),
+    mutationFn: async () => {
+      const d = draft!
+      let photo_key: string | undefined
+      if (photo) {
+        // Reuse an upload that already worked if only the listing update failed last time.
+        if (uploaded.current?.file !== photo.file) {
+          setStage('photo')
+          uploaded.current = { file: photo.file, key: (await api.uploadListingPhoto(photo.file)).photo_key }
+        }
+        photo_key = uploaded.current.key
+      }
+      setStage('save')
+      return api.updateListing(id, {
+        title: d.title.trim(), description: d.desc.trim(), price: d.price, colours: d.colours, quantity: d.qty, attributes: cleanAttrs(d.attrs), photo_key,
+      })
+    },
     onSuccess: (r) => {
-      toast.success(r.paypal_updated ? 'Saved. The PayPal link is updated too.' : 'Saved.')
-      setEditing(false)
+      toast.success(SAVED[r.paypal], { duration: r.paypal === 'relisted' ? 8000 : 4000 })
+      uploaded.current = null
+      stopEdit()
       qc.invalidateQueries({ queryKey: ['listing', id] })
       qc.invalidateQueries({ queryKey: ['listings'] })
     },
-    onError: (e) => toast.error(`Couldn't save: ${(e as Error).message}`),
+    onError: (e) => {
+      toast.error(`Couldn't save. ${(e as Error).message}`)
+      // Something may have changed meanwhile, such as a new sale. Refresh what the page knows.
+      qc.invalidateQueries({ queryKey: ['listing', id] })
+    },
+    onSettled: () => setStage(null),
   })
   const rewrite = useMutation({
-    mutationFn: () => api.describeListing({ title: q.data!.title, category: q.data!.category ?? undefined, colours: q.data!.colours, attributes: clean(), current: desc }),
-    onSuccess: (r) => setDesc(r.description),
-    onError: (e) => toast.error(`Couldn't rewrite it: ${(e as Error).message}`),
+    mutationFn: () => api.describeListing({ title: draft!.title, category: l?.category ?? undefined, colours: draft!.colours, attributes: cleanAttrs(draft!.attrs), current: draft!.desc }),
+    onSuccess: (r) => set('desc', r.description.slice(0, 240)),
+    onError: (e) => toast.error(`Couldn't rewrite it. ${(e as Error).message}`),
   })
   const close = useMutation({
     mutationFn: () => api.archiveListing(id),
     onSuccess: () => {
       toast.success('Link closed. Buyers can no longer pay it.')
+      qc.setQueryData<Listing[]>(['listings'], (ls) => ls?.filter((x) => x.id !== id))
       qc.invalidateQueries({ queryKey: ['listings'] })
+      qc.invalidateQueries({ queryKey: ['listing', id] })
       nav('/products')
     },
-    onError: (e) => toast.error((e as Error).message),
+    onError: (e) => toast.error(`Couldn't close it. ${(e as Error).message}`),
   })
+
+  // What the seller should know before saving, worked out from the draft.
+  const checks = useMemo(() => {
+    if (!l || !draft) return null
+    const sold = l.sold
+    const wasLive = l.status === 'ACTIVE' && l.quantity > sold
+    const names = cleanAttrs(draft.attrs).map((a) => a.name.toLowerCase())
+    const dupes = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))]
+    const paidColours = new Set(l.orders.map((o) => o.variant).filter(Boolean) as string[])
+    const removedPaid = l.colours.filter((c) => !draft.colours.includes(c) && paidColours.has(c))
+    return {
+      title: draft.title.trim().length < 3 ? 'The title needs at least 3 characters.' : null,
+      price: priceError(draft.price),
+      desc: draft.desc.trim().length < 1 ? 'Write a line about the product.' : null,
+      stock:
+        wasLive && draft.qty <= sold ? `Every unit is sold at ${draft.qty}, so saving closes the PayPal link.`
+          : !wasLive && l.status !== 'ARCHIVED' && draft.qty > sold ? 'Saving makes a new PayPal link, because PayPal deleted the old one when it sold out.'
+            : !wasLive && draft.qty <= sold ? 'Add stock to sell it again.' : null,
+      dupes: dupes.length ? `Two details share a name (${dupes.join(', ')}). Saving joins their values.` : null,
+      removedPaid: removedPaid.length ? `Orders already paid in ${removedPaid.join(' and ')} keep that colour.` : null,
+      priceChange: wasLive && Number(draft.price) !== Number(l.price) && l.sold > 0 ? 'Buyers who already paid keep the price they paid.' : null,
+      oneColour: draft.colours.length === 1 ? 'With one colour, buyers have nothing to pick on PayPal.' : null,
+    }
+  }, [l, draft])
+  const invalid = !!(checks && (checks.title || checks.price || checks.desc))
 
   if (q.isLoading) {
     return (
@@ -67,7 +176,6 @@ export default function ProductDetail() {
       </div>
     )
   }
-  const l = q.data
   if (!l) return <p className="px-6 py-20 text-center text-muted-foreground">This product isn't in your shop.</p>
   const s = listingState(l)
   const share = async () => {
@@ -80,16 +188,50 @@ export default function ProductDetail() {
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
       <header className="flex items-center gap-1 py-2">
-        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
+        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => backOr(nav, "/products")} aria-label="Back">
           <ArrowLeft className="size-5" />
         </Button>
         <h1 className="min-w-0 flex-1 truncate text-[17px] font-semibold">Product</h1>
       </header>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14">
-      <div>
-      <Stamp src={photoUrl(l.photo_key)} alt={l.title} className="mx-auto mt-2 aspect-[4/5] w-[72%] -rotate-1 lg:sticky lg:top-8 lg:w-full" />
-
+      <div className="lg:sticky lg:top-8">
+      <div className="relative mx-auto mt-2 w-[72%] lg:w-full">
+        <Stamp src={photo?.url ?? photoUrl(l.photo_key)} alt={l.title} className={cn('aspect-[4/5] w-full -rotate-1 transition-opacity', (preparing || stage === 'photo') && 'opacity-60')} />
+        {(preparing || stage === 'photo') && (
+          <span className="absolute inset-0 grid place-items-center" role="status">
+            <span className="inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-[13px] font-medium shadow-[var(--sheet-shadow)]">
+              <Loader2 className="size-4 animate-spin" /> {preparing ? 'Preparing photo' : 'Uploading photo'}
+            </span>
+          </span>
+        )}
+        {photo && !preparing && stage === null && (
+          <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-0.5 text-[12px] font-semibold text-brand-foreground">New photo</span>
+        )}
+      </div>
+      {editing && (
+        <div className="mx-auto mt-4 w-[72%] space-y-2 lg:w-full">
+          {/* Two inputs: one opens the camera, one opens the photo library. */}
+          <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pickPhoto(e.target.files?.[0]); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { pickPhoto(e.target.files?.[0]); e.target.value = '' }} />
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="outline" className="h-11 rounded-lg" disabled={preparing || save.isPending} onClick={() => cameraRef.current?.click()}>
+              <Camera /> Take photo
+            </Button>
+            <Button type="button" variant="outline" className="h-11 rounded-lg" disabled={preparing || save.isPending} onClick={() => fileRef.current?.click()}>
+              <ImageUp /> From gallery
+            </Button>
+          </div>
+          {photo && (
+            <button type="button" className="mx-auto flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground" disabled={save.isPending} onClick={() => setPhoto(null)}>
+              <RotateCcw className="size-3.5" /> Keep the current photo
+            </button>
+          )}
+          <p className="text-center text-[12px] leading-snug text-muted-foreground">
+            The photo shows in ShipSafe and in chat previews. PayPal's checkout page has no photo, so buyers there see the title and details.
+          </p>
+        </div>
+      )}
       </div>
       <div>
       <section className="mt-6 lg:mt-2">
@@ -108,85 +250,102 @@ export default function ProductDetail() {
       </div>
       <div className="mb-2 mt-6 flex items-center justify-between px-1">
         <h2 className="text-[15px] font-semibold">{editing ? 'Edit product' : 'Details'}</h2>
-        {!editing && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-full"
-            onClick={() => {
-              setAttrs(l.attributes ?? []); setDesc(l.description); setTitle(l.title); setPrice(l.price)
-              setQty(l.quantity); setColours(l.colours); setColour(''); setEditing(true)
-            }}
-          >
+        {!editing && l.status !== 'ARCHIVED' && (
+          <Button variant="outline" size="sm" className="h-8 rounded-full" onClick={startEdit}>
             <Pencil /> Edit product
           </Button>
         )}
       </div>
 
-      {editing ? (
-        <section className="sheet space-y-4 rounded-2xl p-4">
+      {editing && draft && checks ? (
+        <section className="sheet space-y-4 rounded-2xl p-4" aria-busy={save.isPending}>
+          <fieldset disabled={save.isPending} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="pd-title" className="text-sm font-medium">Title</label>
-            <Input id="pd-title" value={title} maxLength={127} onChange={(e) => setTitle(e.target.value)} className="h-12 rounded-lg bg-card text-[16px]" />
+            <div className="flex items-baseline justify-between">
+              <label htmlFor="pd-title" className="text-sm font-medium">Title</label>
+              {draft.title.length > 100 && <span className="money text-xs text-muted-foreground">{draft.title.length} of 127</span>}
+            </div>
+            <Input id="pd-title" value={draft.title} maxLength={127} aria-invalid={!!checks.title} aria-describedby="pd-title-hint"
+              onChange={(e) => set('title', e.target.value)} className="h-12 rounded-lg bg-card text-[16px]" />
+            {checks.title && <p id="pd-title-hint" className="text-[12px] text-destructive">{checks.title}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label htmlFor="pd-price" className="text-sm font-medium">Price in {l.currency}</label>
-              <Input id="pd-price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ''))} className="money h-12 rounded-lg bg-card text-[20px] font-semibold" />
+              <Input id="pd-price" inputMode="decimal" value={draft.price} aria-invalid={!!checks.price} aria-describedby="pd-price-hint"
+                onChange={(e) => set('price', e.target.value.replace(',', '.').replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1'))}
+                onBlur={() => { if (!priceError(draft.price)) set('price', Number(draft.price).toFixed(2)) }}
+                className="money h-12 rounded-lg bg-card text-[20px] font-semibold" />
             </div>
             <div className="space-y-1.5">
-              <span className="text-sm font-medium">Units in stock</span>
-              <div className="flex h-12 items-center justify-between rounded-lg border border-input bg-card px-1">
-                <Button type="button" variant="ghost" size="icon" aria-label="One fewer" disabled={qty <= Math.max(1, l.sold)} onClick={() => setQty(Math.max(Math.max(1, l.sold), qty - 1))}><Minus /></Button>
-                <span className="money text-[20px] font-semibold">{qty}</span>
-                <Button type="button" variant="ghost" size="icon" aria-label="One more" onClick={() => setQty(Math.min(100, qty + 1))}><Plus /></Button>
+              <span className="text-sm font-medium" id="pd-qty-label">Units in stock</span>
+              <div className="flex h-12 items-center justify-between rounded-lg border border-input bg-card px-1" role="group" aria-labelledby="pd-qty-label">
+                <Button type="button" variant="ghost" size="icon" aria-label="One fewer" disabled={draft.qty <= Math.max(1, l.sold)} onClick={() => set('qty', Math.max(1, l.sold, draft.qty - 1))}><Minus /></Button>
+                <span className="money text-[20px] font-semibold" aria-live="polite">{draft.qty}</span>
+                <Button type="button" variant="ghost" size="icon" aria-label="One more" disabled={draft.qty >= 100} onClick={() => set('qty', Math.min(100, draft.qty + 1))}><Plus /></Button>
               </div>
-              {l.sold > 0 && <p className="text-[12px] text-muted-foreground">{l.sold} already sold, so at least {l.sold}.</p>}
+            </div>
+            <div className="col-span-2 -mt-1 space-y-1 empty:hidden">
+              {checks.price && <p id="pd-price-hint" className="text-[12px] text-destructive">{checks.price}</p>}
+              {!checks.price && checks.priceChange && <p className="text-[12px] text-muted-foreground">{checks.priceChange}</p>}
+              {l.sold > 0 && <p className="text-[12px] text-muted-foreground">{l.sold} already sold, so stock starts at {l.sold}.</p>}
+              {checks.stock && <p className="text-[12px] font-medium text-ink">{checks.stock}</p>}
             </div>
           </div>
           <div className="space-y-2">
             <label htmlFor="pd-colour" className="text-sm font-medium">Colours the buyer picks from</label>
             <div className="flex flex-wrap items-center gap-2">
-              {colours.map((c) => (
+              {draft.colours.map((c) => (
                 <span key={c} className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card pl-3.5 pr-1.5 text-sm font-medium">
                   {c}
-                  <button type="button" aria-label={`Remove ${c}`} onClick={() => setColours(colours.filter((x) => x !== c))} className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                  <button type="button" aria-label={`Remove ${c}`} onClick={() => set('colours', draft.colours.filter((x) => x !== c))} className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
                     <X className="size-3.5" />
                   </button>
                 </span>
               ))}
-              <Input
-                id="pd-colour"
-                value={colour}
-                placeholder="Add a colour"
-                onChange={(e) => setColour(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addColour() } }}
-                onBlur={addColour}
-                className="h-9 w-36 rounded-full bg-card"
-              />
+              {draft.colours.length < 10 && (
+                <Input
+                  id="pd-colour"
+                  value={colour}
+                  maxLength={40}
+                  placeholder={draft.colours.length ? 'Add a colour' : 'One style. Add a colour'}
+                  onChange={(e) => setColour(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addColour() } }}
+                  onBlur={addColour}
+                  className="h-9 w-44 rounded-full bg-card"
+                />
+              )}
             </div>
+            {(checks.removedPaid || checks.oneColour) && (
+              <p className="text-[12px] text-muted-foreground">{[checks.removedPaid, checks.oneColour].filter(Boolean).join(' ')}</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
               <label htmlFor="pd-desc" className="text-sm font-medium">Description</label>
-              <span className="money text-xs text-muted-foreground">{desc.length} of 240</span>
+              <span className="money text-xs text-muted-foreground">{draft.desc.length} of 240</span>
             </div>
-            <Textarea id="pd-desc" value={desc} maxLength={240} rows={4} onChange={(e) => setDesc(e.target.value)} className="rounded-lg bg-card text-[16px]" />
+            <Textarea id="pd-desc" value={draft.desc} maxLength={240} rows={4} aria-invalid={!!checks.desc}
+              onChange={(e) => set('desc', e.target.value)} className="rounded-lg bg-card text-[16px]" />
+            {checks.desc && <p className="text-[12px] text-destructive">{checks.desc}</p>}
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium">Product details</p>
-            <AttributeEditor value={attrs} onChange={setAttrs} suggestions={fallbackFor(l.category, l.title)} />
-            {clean().length > 0 && (
+            <AttributeEditor value={draft.attrs} onChange={(v) => set('attrs', v)} suggestions={fallbackFor(l.category, draft.title)} />
+            {checks.dupes && <p className="text-[12px] text-muted-foreground">{checks.dupes}</p>}
+            {cleanAttrs(draft.attrs).length > 0 && (
               <Button type="button" variant="outline" className="h-10 rounded-lg" disabled={rewrite.isPending} onClick={() => rewrite.mutate()}>
                 {rewrite.isPending ? <Loader2 className="animate-spin" /> : <PenLine />} Rewrite description from details
               </Button>
             )}
           </div>
-          {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link: buyers who open it see the new price, colours and details. The link stays the same, and orders already paid don't change.</p>}
+          </fieldset>
+          {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link. The link stays the same, and orders already paid don't change.</p>}
           <div className="grid grid-cols-[auto_1fr] gap-2.5">
-            <Button variant="outline" size="lg" className="h-12 rounded-xl" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</Button>
-            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || desc.trim().length < 1 || title.trim().length < 3 || !/^\d+(\.\d{1,2})?$/.test(price)}>
-              {save.isPending && <Loader2 className="animate-spin" />} Save changes
+            <Button variant="outline" size="lg" className="h-12 rounded-xl" onClick={cancel} disabled={save.isPending}>Cancel</Button>
+            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || preparing || !dirty || invalid}>
+              {save.isPending && <Loader2 className="animate-spin" />}
+              {stage === 'photo' ? 'Uploading photo' : stage === 'save' ? 'Saving' : dirty ? 'Save changes' : 'No changes yet'}
             </Button>
           </div>
         </section>
@@ -213,7 +372,7 @@ export default function ProductDetail() {
         </dl>
       )}
 
-      {s.live && l.plb_url && (
+      {s.live && l.plb_url && !editing && (
         <section className="mt-4">
           <p className="tracking-code break-all rounded-md bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{l.plb_url}</p>
           <div className="mt-3 grid grid-cols-[auto_1fr] gap-2.5">
@@ -225,7 +384,7 @@ export default function ProductDetail() {
         </section>
       )}
 
-      {s.live && l.plb_url && (
+      {s.live && l.plb_url && !editing && (
         <section className="mt-7">
           <h2 className="mb-2 px-1 text-[15px] font-semibold">How buyers see it in a chat</h2>
           <div className="rounded-2xl bg-[color-mix(in_oklch,var(--paper-deep)_70%,var(--muted))] p-4">
@@ -256,17 +415,40 @@ export default function ProductDetail() {
         </div>
       </section>
 
-      {s.live && (
+      {s.live && !editing && (
         <Button
           variant="outline"
           size="lg"
           className="mt-6 h-12 w-full rounded-xl text-status-refund"
-          disabled={close.isPending || MOCK}
-          onClick={() => close.mutate()}
+          disabled={close.isPending}
+          onClick={() => setAsk('close')}
         >
-          Close this link
+          {close.isPending && <Loader2 className="animate-spin" />} Close this link
         </Button>
       )}
+      {l.status === 'ARCHIVED' && (
+        <p className="mt-4 rounded-xl bg-muted px-4 py-3 text-[13px] text-muted-foreground">This link is closed, so the product can't be edited. List it again from Sell to make a new link.</p>
+      )}
+
+      <ConfirmDialog
+        open={ask === 'discard' || blocker.state === 'blocked'}
+        title="Throw away your changes?"
+        body="You've edited this product but haven't saved. Leaving now keeps it as it was."
+        confirm="Discard changes"
+        danger
+        onConfirm={() => { setAsk(null); stopEdit(); if (blocker.state === 'blocked') blocker.proceed() }}
+        onCancel={() => { setAsk(null); if (blocker.state === 'blocked') blocker.reset() }}
+      />
+      <ConfirmDialog
+        open={ask === 'close'}
+        title="Close this PayPal link?"
+        body="Buyers who open the link won't be able to pay. Paid orders stay as they are. You can't reopen it, but you can list the product again."
+        confirm="Close link"
+        cancel="Keep it live"
+        danger
+        onConfirm={() => { setAsk(null); close.mutate() }}
+        onCancel={() => setAsk(null)}
+      />
       </div>
       </div>
     </main>

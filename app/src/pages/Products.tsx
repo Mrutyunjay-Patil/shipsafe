@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 
 export const listingState = (l: Pick<Listing, 'status' | 'quantity' | 'sold'>) => {
   const left = Math.max(0, l.quantity - l.sold)
+  if (l.status === 'ARCHIVED') return { label: 'Closed', live: false, left }
   if (l.status === 'SOLD_OUT' || left === 0) return { label: 'Sold out', live: false, left }
   return { label: 'Link live', live: true, left }
 }

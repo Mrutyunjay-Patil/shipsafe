@@ -8,8 +8,9 @@ import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { preparePhoto } from '@/lib/image'
 import { api, money, photoUrl, type SlipResult } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { backOr, cn } from '@/lib/utils'
 import { s10Valid } from '@shared/validators'
 
 function CheckLine({ ok, label, hint }: { ok: boolean; label: string; hint?: string }) {
@@ -50,7 +51,7 @@ export default function OrderDetail() {
   }
 
   const read = useMutation({
-    mutationFn: (f: File) => api.readSlip(id, f),
+    mutationFn: async (f: File) => api.readSlip(id, await preparePhoto(f)),
     onSuccess: (r) => { setSlip(r); setNumber(r.read.tracking_number) },
     onError: (e) => toast.error(`Couldn't read that slip. ${(e as Error).message}. Try a sharper photo in good light.`),
   })
@@ -110,7 +111,7 @@ export default function OrderDetail() {
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
       <header className="flex items-center gap-1 py-2">
-        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
+        <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => backOr(nav, "/orders")} aria-label="Back">
           <ArrowLeft className="size-5" />
         </Button>
         <h1 className="min-w-0 flex-1 truncate text-[17px] font-semibold">Order to {o.ship_city ?? o.ship_country ?? "your buyer"}</h1>
