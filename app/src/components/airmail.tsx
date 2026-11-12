@@ -48,14 +48,14 @@ export function ParAvion({ className, small }: { className?: string; small?: boo
   return (
     <span
       className={cn(
-        'inline-flex flex-col items-center justify-center rounded-[5px] bg-etiquette text-etiquette-foreground shadow-[0_1px_0_oklch(0_0_0/0.15),0_6px_14px_-8px_oklch(0.3_0.15_265/0.7)]',
+        'inline-flex flex-col items-center justify-center rounded-[5px] bg-etiquette text-etiquette-foreground shadow-[var(--label-shadow)]',
         'outline outline-1 -outline-offset-[3px] outline-etiquette-foreground/50',
         small ? 'px-2 py-1' : 'px-3 py-1.5',
         className,
       )}
     >
       <span className={cn('label-caps leading-none', small ? 'text-[10px]' : 'text-[13px] tracking-[0.06em]')}>Par avion</span>
-      <span className={cn('leading-tight opacity-90', small ? 'text-[8px]' : 'text-[10px]')}>Protected by PayPal</span>
+      <span className={cn('leading-tight opacity-90', small ? 'text-[10px]' : 'text-[11px]')}>Protected by PayPal</span>
     </span>
   )
 }

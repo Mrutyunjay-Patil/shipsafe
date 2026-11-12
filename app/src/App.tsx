@@ -34,7 +34,7 @@ export default function App() {
   return (
     <div className="min-h-dvh pb-28">
       {MOCK && (
-        <div className="bg-brand px-4 py-1.5 text-center text-xs font-medium text-brand-foreground">
+        <div className="bg-ink px-4 py-1.5 text-center text-xs font-medium text-paper">
           Preview with sample data. Nothing is sent to PayPal.
         </div>
       )}

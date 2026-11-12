@@ -34,7 +34,7 @@ export function BottomNav() {
   )
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),10px)]">
-      <div className="mx-auto flex max-w-md items-center rounded-[22px] border border-border bg-card/95 px-1.5 shadow-[0_10px_30px_-12px_oklch(0.3_0.1_265/0.35)] backdrop-blur-md">
+      <div className="mx-auto flex max-w-md items-center rounded-[22px] border border-border bg-card/95 px-1.5 shadow-[var(--nav-shadow)] backdrop-blur-md">
         {items.slice(0, 2).map(link)}
         <NavLink
           to="/sell"
