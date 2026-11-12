@@ -44,7 +44,7 @@ export default function ProductDetail() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)]">
+    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
       <header className="flex items-center gap-1 py-2">
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />
@@ -52,10 +52,14 @@ export default function ProductDetail() {
         <h1 className="min-w-0 flex-1 truncate text-[17px] font-semibold">Product</h1>
       </header>
 
-      <Stamp src={photoUrl(l.photo_key)} alt={l.title} className="mx-auto mt-2 aspect-[4/5] w-[72%] -rotate-1" />
+      <div className="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14">
+      <div>
+      <Stamp src={photoUrl(l.photo_key)} alt={l.title} className="mx-auto mt-2 aspect-[4/5] w-[72%] -rotate-1 lg:sticky lg:top-8 lg:w-full" />
 
-      <section className="mt-6">
-        <h2 className="text-[24px] font-semibold leading-tight">{l.title}</h2>
+      </div>
+      <div>
+      <section className="mt-6 lg:mt-2">
+        <h2 className="text-[24px] lg:text-[32px] font-semibold leading-tight">{l.title}</h2>
         <p className="money mt-2 text-[28px] font-semibold leading-none text-ink">{money(l.price, l.currency)}</p>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{l.description}</p>
       </section>
@@ -110,6 +114,8 @@ export default function ProductDetail() {
           Close this link
         </Button>
       )}
+      </div>
+      </div>
     </main>
   )
 }

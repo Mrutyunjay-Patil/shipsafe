@@ -78,8 +78,8 @@ export default function Home({ seller }: { seller: Seller }) {
   const name = seller.display_name?.split(' ')[0]
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
-      <header className="flex items-center justify-between gap-3 pt-2">
+    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)] lg:max-w-6xl lg:px-10 lg:pt-10">
+      <header className="flex items-center justify-between gap-3 pt-2 lg:hidden">
         <span className="flex items-center gap-2">
           <img src="/icon.svg" alt="" className="size-7 rounded-md" />
           <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">ShipSafe</span>
@@ -95,10 +95,12 @@ export default function Home({ seller }: { seller: Seller }) {
           </span>
         </Link>
       </header>
-      <h1 className="mt-4 text-[clamp(22px,7vw,28px)] font-semibold leading-tight">
+      <h1 className="mt-4 text-[clamp(22px,7vw,28px)] font-semibold leading-tight lg:mt-0 lg:text-[32px]">
         {greeting()}{name ? `, ${name}` : ''}
       </h1>
 
+      <div className="lg:mt-2 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
+      <div>
       {orders.isLoading ? (
         <Skeleton className="mt-4 h-[330px] rounded-2xl" />
       ) : toPost[0] ? (
@@ -121,7 +123,9 @@ export default function Home({ seller }: { seller: Seller }) {
         </Link>
       )}
 
-      <section className="mt-8">
+      </div>
+      <div className="lg:pt-4">
+      <section className="mt-8 lg:mt-0">
         <div className="mb-2.5 flex items-baseline justify-between">
           <h2 className="text-[17px] font-semibold">In the post</h2>
           <Link to="/orders" className="text-sm font-medium text-brand">All orders</Link>
@@ -141,6 +145,8 @@ export default function Home({ seller }: { seller: Seller }) {
           {live.length > 1 ? 's' : ''}, {protectedN} protected.
         </p>
       )}
+      </div>
+      </div>
     </main>
   )
 }

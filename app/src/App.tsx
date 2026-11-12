@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
-import { BottomNav } from '@/components/BottomNav'
+import { BottomNav, SideNav } from '@/components/BottomNav'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, MOCK } from '@/lib/api'
 import Account from '@/pages/Account'
@@ -34,7 +34,7 @@ export default function App() {
   if (!me.data?.signedIn) return <SignIn />
 
   return (
-    <div className="min-h-dvh pb-28">
+    <div className="min-h-dvh pb-28 lg:pb-12 lg:pl-[248px]">
       {MOCK && (
         <div className="bg-ink px-4 py-1.5 text-center text-xs font-medium text-paper">
           Preview with sample data. Nothing is sent to PayPal.
@@ -55,6 +55,7 @@ export default function App() {
       </Routes>
       </div>
       <BottomNav />
+      <SideNav initial={(me.data.seller.display_name ?? 'S').slice(0, 1).toUpperCase()} />
     </div>
   )
 }

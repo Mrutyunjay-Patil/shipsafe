@@ -40,7 +40,7 @@ const FILTERS: { key: 'ALL' | OrderStatus; label: string }[] = [
 const cell = (node: React.ReactNode) => <span className="flex h-full items-center leading-normal">{node}</span>
 
 function useWide() {
-  const q = '(min-width: 768px)'
+  const q = '(min-width: 1024px)'
   const [wide, setWide] = useState(() => matchMedia(q).matches)
   useEffect(() => {
     const m = matchMedia(q)
@@ -105,7 +105,7 @@ export default function Orders() {
   ], [wide])
 
   return (
-    <main className={cn('mx-auto px-5 pt-[max(env(safe-area-inset-top),20px)]', wide ? 'max-w-7xl pb-10' : 'max-w-md')}>
+    <main className={cn('mx-auto px-5 pt-[max(env(safe-area-inset-top),20px)]', wide ? 'max-w-7xl px-10 pb-10 pt-8' : 'max-w-md')}>
       <header className="pb-4 pt-3">
         <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
         <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own. Tap a row to open it{wide ? '' : ', swipe the table for more columns'}.</p>

@@ -7,13 +7,14 @@ const scarf = '/sample/paisley-scarf.jpg'
 export default function SignIn() {
   const failed = new URLSearchParams(location.search).get('login')
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),28px)]">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 lg:grid lg:max-w-6xl lg:grid-cols-2 lg:content-center lg:items-center lg:gap-16 lg:px-10 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),28px)]">
+      <div className="lg:col-start-1 lg:row-start-1 lg:self-end">
       <div className="flex items-center gap-2.5">
         <img src="/icon.svg" alt="" className="size-8 rounded-md" />
         <span className="text-[17px] font-semibold">ShipSafe</span>
       </div>
 
-      <h1 className="mt-10 text-[40px] font-semibold leading-[1.02]">
+      <h1 className="mt-10 text-[40px] font-semibold leading-[1.02] lg:text-[56px]">
         Sell in the chat.
         <br />
         Post with proof.
@@ -22,7 +23,8 @@ export default function SignIn() {
         A PayPal link for every sale, and a photo of the courier slip turns into tracking PayPal can see.
       </p>
 
-      <Envelope inTransit className="mt-8">
+      </div>
+      <Envelope inTransit className="mt-8 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:rotate-[1.5deg]">
         <div className="relative px-5 pb-5 pt-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -41,7 +43,7 @@ export default function SignIn() {
         </div>
       </Envelope>
 
-      <div className="mt-auto pt-10">
+      <div className="mt-auto pt-10 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:self-start lg:pt-8">
         {failed && (
           <p role="alert" className="mb-3 rounded-lg bg-[color-mix(in_oklch,var(--status-refund)_10%,var(--card))] px-3.5 py-2.5 text-sm">
             PayPal sign-in didn't finish. Try again.

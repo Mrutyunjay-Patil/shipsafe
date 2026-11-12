@@ -98,7 +98,7 @@ export default function OrderDetail() {
     .join('\n')
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)]">
+    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
       <header className="flex items-center gap-1 py-2">
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />
@@ -107,6 +107,8 @@ export default function OrderDetail() {
         <StatusBadge status={o.status} short className="shrink-0" />
       </header>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
+      <div>
       <Envelope inTransit={o.status !== 'REFUNDED'} className="mt-1">
         <div className="relative px-5 pb-5 pt-4">
           <div className="flex items-start justify-between gap-4">
@@ -163,6 +165,8 @@ export default function OrderDetail() {
         <dd className="tracking-code truncate text-right text-[12px]">{o.id}</dd>
       </dl>
 
+      </div>
+      <div>
       {o.status === 'NEEDS_REFUND' && (
         <section className="mt-5 rounded-xl border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_8%,var(--card))] p-4">
           <p className="flex items-center gap-2 font-semibold"><TriangleAlert className="size-4 text-status-refund" /> This buyer paid after it sold out</p>
@@ -250,6 +254,8 @@ export default function OrderDetail() {
           </div>
         </section>
       )}
+      </div>
+      </div>
     </main>
   )
 }

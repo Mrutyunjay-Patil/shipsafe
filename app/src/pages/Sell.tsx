@@ -67,7 +67,7 @@ export default function Sell() {
 
   if (link && form) {
     return (
-      <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
+      <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)] lg:max-w-xl lg:pt-10">
         <h1 className="pt-3 text-[26px] font-semibold leading-tight">Your link is ready to send</h1>
         <p className="mt-1 text-[15px] text-muted-foreground">Paste it into the chat. The buyer pays on PayPal and gives you their address there.</p>
 
@@ -105,10 +105,12 @@ export default function Sell() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
+    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)] lg:max-w-5xl lg:px-10 lg:pt-8">
       <h1 className="pt-3 text-[26px] font-semibold leading-tight">List a product</h1>
       <p className="mt-1 text-[15px] text-muted-foreground">Take one clear photo. ShipSafe writes the listing, you check it.</p>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-12">
+      <div>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
 
       <button
@@ -142,8 +144,10 @@ export default function Sell() {
         )}
       </button>
 
+      </div>
+      <div>
       {form && (
-        <form className="mt-8 space-y-5" onSubmit={(e) => { e.preventDefault(); create.mutate() }}>
+        <form className="mt-8 space-y-5 lg:mt-5" onSubmit={(e) => { e.preventDefault(); create.mutate() }}>
           {confidence !== undefined && confidence < 0.6 && (
             <p className="rounded-lg border border-[color-mix(in_oklch,var(--status-paid)_35%,transparent)] bg-[color-mix(in_oklch,var(--status-paid)_10%,var(--card))] px-3.5 py-2.5 text-sm">
               The photo was hard to read. Check every field before you share it.
@@ -201,6 +205,8 @@ export default function Sell() {
           </Button>
         </form>
       )}
+      </div>
+      </div>
     </main>
   )
 }

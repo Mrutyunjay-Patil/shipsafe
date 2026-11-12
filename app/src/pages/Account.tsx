@@ -40,7 +40,7 @@ export default function Account() {
   const name = a?.seller.display_name ?? 'Your shop'
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)]">
+    <main className="mx-auto max-w-md px-5 lg:max-w-2xl lg:pt-8 pt-[max(env(safe-area-inset-top),12px)]">
       <header className="flex items-center gap-1 py-2">
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />

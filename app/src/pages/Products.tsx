@@ -33,7 +33,7 @@ export default function Products() {
   const listings = useQuery({ queryKey: ['listings'], queryFn: api.listings })
   const list = listings.data ?? []
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
+    <main className="mx-auto max-w-md px-5 sm:max-w-3xl lg:max-w-6xl lg:px-10 lg:pt-8 pt-[max(env(safe-area-inset-top),20px)]">
       <header className="flex items-center justify-between gap-3 pb-5 pt-3">
         <div>
           <h1 className="text-[26px] font-semibold leading-tight">Products</h1>
@@ -53,7 +53,7 @@ export default function Products() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-10">
           {list.map((l) => <ProductCard key={l.id} l={l} />)}
         </div>
       )}
