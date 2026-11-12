@@ -40,13 +40,25 @@ if tok.status_code != 200:
     save_evidence("badge", {"exchange_status": tok.status_code, "response": tj}, name=f"badge-{who}.json")
     raise SystemExit(1)
 
-ui = httpx.get(f"{BASE}/v1/identity/openidconnect/userinfo", params={"schema": "openid"},
-               headers={"Authorization": f"Bearer {tj['access_token']}"}, timeout=30)
-u = ui.json()
+attempts = []
+u, ui = {}, None
+for path, schema in (("/v1/identity/oauth2/userinfo", "paypalv1.1"), ("/v1/identity/oauth2/userinfo", "openid"),
+                     ("/v1/identity/openidconnect/userinfo", "openid")):
+    ui = httpx.get(f"{BASE}{path}", params={"schema": schema},
+                   headers={"Authorization": f"Bearer {tj['access_token']}"}, timeout=30)
+    attempts.append({"path": path, "schema": schema, "status": ui.status_code,
+                     "body": ui.text[:200] if ui.status_code != 200 else None})
+    try:
+        u = ui.json()
+    except ValueError:
+        u = {}
+    if ui.status_code == 200 and u:
+        break
+print("userinfo attempts:", attempts)
 fields = {k: u.get(k) for k in ("verified_account", "email_verified", "account_type", "payer_id")}
 fields["user_id"] = mask(u.get("user_id"))
 fields["address_country"] = (u.get("address") or {}).get("country")
 fields["returned_keys"] = sorted(u.keys())
 print("userinfo:", ui.status_code, fields)
 save_evidence("badge", {"who": who, "exchange_status": tok.status_code, "granted_scope": tj.get("scope"),
-                        "userinfo_status": ui.status_code, "fields": fields}, name=f"badge-{who}.json")
+                        "userinfo_attempts": attempts, "fields": fields}, name=f"badge-{who}.json")

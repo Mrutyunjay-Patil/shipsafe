@@ -21,10 +21,11 @@ GO with the Payment Links architecture. Keep Orders v2 per buyer as a tested fal
 | C9 | Orders v2 fallback | PASS | 4 min | Create, approve, capture 201 and track 201 all work. `custom_id` reaches the capture. The legacy `trackers-batch` returns 403. | `evidence/c09-*.json` |
 | C10 | Refund | PASS | 1 min | Refunded the duplicate Payment Link sale. Status `COMPLETED` at once. | `evidence/c10-1.json` |
 | C11 | Disputes read | PASS | 1 min | 200 with an empty list. | `evidence/c11-1.json` |
-| C12 | PayPal MCP server | PARTIAL | 15 min | `@paypal/mcp` 1.8.1 starts in sandbox with 28 tools. `get_order` and `list_disputes` work. `list_transactions` and `get_shipment_tracking` return 403, even after Transaction Search was ticked and a fresh token was issued. | `evidence/mcp-tools.json`, `evidence/c12-calls.json` |
+| C12 | PayPal MCP server | PASS | 15 min | `@paypal/mcp` 1.8.1 starts in sandbox with 28 tools. `get_order`, `list_disputes` and `list_transactions` return 200 once Transaction Search is saved and a fresh token is issued. `get_shipment_tracking` still returns 403. | `evidence/mcp-tools.json`, `evidence/c12-calls.json` |
 | C13 | Vision extraction | PASS, slips only | 6 min | `claude-haiku-5-5`, 4 of 4 tracking numbers exact. The injection slip returned only schema fields. The product photo step was not run, because no photo was supplied. | `evidence/c13-slips.json` |
 | C14 | Validators | PASS | 3 min | 10 of 10 cases, including the three given and seven more. | `evidence/c14-validators.json` |
 | C15 | Render hosting | SKIPPED | 0 min | No Render key. The Cloudflare Worker covers webhook delivery for development. | none |
+| C17 | Verified seller badge, Log in with PayPal | PARTIAL | 20 min | Consent screen, return URL and code exchange all work, and the granted scope includes `paypalattributes` and `email`. Userinfo returns 400 "Unable to fetch details" for the Business seller, and only `sub` and `user_id` for the Personal buyer. `verified_account` never came back. | `evidence/badge-seller.json`, `evidence/badge-buyer.json` |
 | C16 | AG Grid build | PASS | 3 min | `npm run build` succeeds with a status cell renderer. | `evidence/c16-build.log` |
 
 ## 3. Facts we now know
@@ -71,6 +72,13 @@ Vision:
 Market:
 - PayPal refused an India-to-India payment with `UNSUPPORTED_PAYEE_CURRENCY`. ShipSafe's Indian sellers can only take PayPal payments from buyers outside India. The demo buyer has to be a foreign account.
 
+Log in with PayPal:
+- The authorize URL is `https://www.sandbox.paypal.com/connect/?flowEntry=static&client_id=...&response_type=code&scope=openid email https://uri.paypal.com/services/paypalattributes&redirect_uri=...&state=...`.
+- The return URL must be registered under the app's Log in with PayPal > Manage, or PayPal shows "invalid client_id or redirect_uri".
+- The code exchange is `POST /v1/oauth2/token` with `grant_type=authorization_code`, and it works.
+- `GET /v1/identity/oauth2/userinfo?schema=paypalv1.1` is the endpoint that answers. `/v1/identity/openidconnect/userinfo` returns 401.
+- Orders already carry a buyer-side trust signal, `payment_source.paypal.account_status: VERIFIED`, with no extra setup.
+
 ## 4. Blockers and workarounds
 
 | Check | Problem | Workaround |
@@ -80,6 +88,7 @@ Market:
 | C12 | `list_transactions` and `get_shipment_tracking` return 403, and the Transaction Search scope hasn't reached the token yet. | Re-test later with `python probes/c02_token.py`. If the token lists a `reporting/search` scope, C12 should pass. Either way, back "Ask your shop" with read-only tools that call `GET /v2/checkout/orders/{id}` and read the trackers, which work today. |
 | C13 | Product photo step not run. | Run `python probes/vision_probe.py product <photo>` once a photo is available. |
 | C15 | No Render key. | Deploy later. The Worker relay covers the hackathon demo. |
+| C17 | Sandbox userinfo returns no verification fields. | Retry after the app settings have had time to apply, with `python probes/verified_badge.py seller`. If it stays empty, show the badge from the seller completing Log in with PayPal, worded as "PayPal account connected", and skip the word "verified". |
 | Links | No single-use or inventory limit. | Delete the link via API on the first `PAYMENT-RESOURCE.PAYMENT-COMPLETED`. If a second buyer pays in the gap, refund them, as tested in C10. |
 
 ## 5. Recommended architecture
@@ -103,7 +112,8 @@ Market:
 - Does tracking show on the buyer's transaction details page itself, beyond the emails?
 - Does a `PAYMENT.CAPTURE.REFUNDED` event arrive for refunds of Payment Link sales? None had arrived when this report was written.
 - Do any later events fire for a link sale, such as `PAYMENT.CAPTURE.COMPLETED` delivered late? Re-run `python probes/pull_webhooks.py`.
-- When does the Transaction Search permission reach the token? It hadn't shortly after it was ticked.
+- Transaction Search reached the token once the app settings were saved. Today's sales hadn't appeared in transaction search yet, which is normal sandbox lag.
+- Does userinfo start returning `verified_account` once the Log in with PayPal settings apply?
 - How does vision do on a real product photo and a real slip photo?
 
 ## How to re-run
