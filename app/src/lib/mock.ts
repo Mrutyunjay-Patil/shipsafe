@@ -81,8 +81,8 @@ export const mockApi = {
     return {
       photo_key: 'demo',
       draft: {
-        title: 'Indigo shibori cotton scarf', description: 'Soft cotton scarf, hand block-printed in Jaipur with a small floral motif.',
-        colours: ['Indigo', 'Rust'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86,
+        title: 'Indigo shibori cotton scarf', description: 'Soft cotton scarf, hand-dyed in indigo with a folded shibori pattern.',
+        colours: ['Deep indigo', 'Sky blue'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86,
       },
       ms: 1800,
     }
