@@ -51,16 +51,20 @@ if tok.status_code != 200:
 attempts = []
 u, ui = {}, None
 # Documented form first: no schema parameter. https://developer.paypal.com/docs/log-in-with-paypal/integrate/
-for path, schema in (("/v1/identity/oauth2/userinfo", None), ("/v1/identity/openidconnect/userinfo", None),
-                     ("/v1/identity/oauth2/userinfo", "paypalv1.1")):
+# openidconnect first, as the current Identity API reference lists it.
+for path, schema in (("/v1/identity/openidconnect/userinfo", None), ("/v1/identity/openidconnect/userinfo", "openid"),
+                     ("/v1/identity/oauth2/userinfo", None)):
     ui = httpx.get(f"{BASE}{path}", params={"schema": schema} if schema else None,
-                   headers={"Authorization": f"Bearer {tj['access_token']}"}, timeout=30)
+                   headers={"Authorization": f"Bearer {tj['access_token']}", "Accept": "application/json",
+                            "Content-Type": "application/json"}, timeout=30)
     attempts.append({"path": path, "schema": schema, "status": ui.status_code,
                      "body": ui.text[:200] if ui.status_code != 200 else None})
     try:
         u = ui.json()
     except ValueError:
         u = {}
+    if ui.status_code == 401:
+        attempts[-1]["www_authenticate"] = ui.headers.get("www-authenticate")
     if ui.status_code == 200 and u:
         break
 print("userinfo attempts:", attempts)
