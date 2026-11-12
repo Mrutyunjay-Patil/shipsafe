@@ -1,11 +1,8 @@
 import { Envelope, ParAvion, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 
-const scarf =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 96"><rect width="80" height="96" fill="#2b3f8f"/>${Array.from({ length: 30 }, (_, i) => `<circle cx="${8 + (i % 5) * 16}" cy="${10 + Math.floor(i / 5) * 15}" r="4" fill="none" stroke="#e9e4d4" stroke-width="1.4"/><circle cx="${8 + (i % 5) * 16}" cy="${10 + Math.floor(i / 5) * 15}" r="1.2" fill="#c8563a"/>`).join('')}</svg>`,
-  )
+// Example parcel uses a credited Unsplash sample photo (public/sample/CREDITS.md).
+const scarf = '/sample/indigo-fabric.jpg'
 
 export default function SignIn() {
   const failed = new URLSearchParams(location.search).get('login')
@@ -31,7 +28,7 @@ export default function SignIn() {
             <div className="min-w-0">
               <p className="label-caps text-[42px] leading-[0.9] text-ink">Berlin</p>
               <p className="money mt-3 text-[24px] font-semibold leading-none">$24.00</p>
-              <p className="mt-1.5 text-sm text-muted-foreground">Block-printed scarf · Indigo</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">Shibori scarf · Deep indigo</p>
             </div>
             <Stamp src={scarf} className="h-[86px] w-[72px] rotate-[3deg]" />
           </div>
