@@ -8,7 +8,7 @@ import type { Env } from './env'
 export const ListingDraft = z.object({
   title: z.string().describe('Short marketplace title, at most 80 characters'),
   description: z.string().describe('At most 240 characters, only what is visible'),
-  colours: z.array(z.string()).describe('Plain colour names visible on the product'),
+  colours: z.array(z.string()).describe('The colourways a buyer picks from, one name per version of the product. Empty or one name if there is only one version'),
   category: z.string(),
   suggested_price_usd: z.number(),
   confidence: z.number().describe('0 to 1'),
@@ -33,6 +33,10 @@ const PROMPTS = {
   listing:
     'You draft marketplace listings for small handmade sellers from one product photo. Describe only what is visible. ' +
     'Keep the description to 240 characters. Suggest a realistic price in USD for an international buyer. ' +
+    'The title is short and plain, under 60 characters, in sentence case, and names no colours, because colours are the ' +
+    'options a buyer picks. Colours are the versions on sale, not every colour in the pattern: if the photo shows the same ' +
+    'product in three colourways, return three names such as "Indigo" or "Cream with red". If it shows one item, return its ' +
+    'main colour. Never repeat a colour. ' +
     'The product can be anything: pottery, furniture, art, food, electronics, jewellery, textiles and more. Name its category ' +
     'precisely. Only list attributes you can see in the photo, and suggest the names of the details a buyer of this exact ' +
     'kind of product would want the seller to add.',
@@ -65,8 +69,15 @@ async function read<T extends z.ZodType>(env: Env, schema: T, system: string, by
   return { value: res.parsed_output as z.infer<T>, ms: Date.now() - t0, model: res.model }
 }
 
-export const draftListing = (env: Env, bytes: ArrayBuffer, media: Media) =>
-  read(env, ListingDraft, PROMPTS.listing, bytes, media)
+// PayPal rejects a link whose colour options repeat, so the draft is tidied before anyone sees it.
+export const uniqueColours = (cs: string[]) =>
+  [...new Map(cs.map((c) => c.trim().replace(/\s+/g, ' ')).filter(Boolean).map((c) => [c.toLowerCase(), c.slice(0, 40)])).values()].slice(0, 10)
+
+export async function draftListing(env: Env, bytes: ArrayBuffer, media: Media) {
+  const r = await read(env, ListingDraft, PROMPTS.listing, bytes, media)
+  const v = r.value
+  return { ...r, value: { ...v, title: v.title.slice(0, 127), description: v.description.slice(0, 240), colours: uniqueColours(v.colours) } }
+}
 
 export const readSlip = (env: Env, bytes: ArrayBuffer, media: Media) => read(env, SlipRead, PROMPTS.slip, bytes, media)
 

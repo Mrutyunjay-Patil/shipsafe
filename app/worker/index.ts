@@ -5,7 +5,7 @@ import { askShop } from './ask'
 import { currentSeller, finishLogin, logout, requireSeller, startLogin } from './auth'
 import { type AppEnv, newId } from './env'
 import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture, updateLink } from './paypal'
-import { describeListing, draftListing, mediaType, readSlip } from './vision'
+import { describeListing, draftListing, mediaType, readSlip, uniqueColours } from './vision'
 import { handleWebhook } from './webhooks'
 
 const app = new Hono<AppEnv>()
@@ -15,6 +15,7 @@ app.onError((err, c) => {
     console.error('paypal', err.status, err.debugId, JSON.stringify(err.body))
     return c.json({ error: 'paypal', status: err.status, issue: err.issue, debug_id: err.debugId }, 502)
   }
+  if (err instanceof UploadError) return c.json({ error: 'invalid', message: err.message }, 400)
   if (err instanceof z.ZodError) return c.json({ error: 'invalid', message: err.issues[0]?.message, issues: err.issues }, 400)
   console.error(err)
   return c.json({ error: 'server', message: String(err) }, 500)
@@ -38,12 +39,15 @@ app.post('/webhooks/paypal', async (c) => {
 const api = new Hono<AppEnv>()
 api.use('*', requireSeller)
 
+// A plain Error subclass: Hono only hands real Errors to onError, and a hand-built zod 4 ZodError isn't one.
+class UploadError extends Error {}
+
 async function photoFrom(c: any, field: string) {
-  const form = await c.req.formData()
-  const f = form.get(field)
-  if (!(f instanceof File)) throw new z.ZodError([{ code: 'custom', path: [field], message: 'file required', input: null }])
-  if (!f.type.startsWith('image/') && !/\.(heic|heif)$/i.test(f.name)) throw new z.ZodError([{ code: 'custom', path: [field], message: 'That file is not a photo', input: null }])
-  if (f.size > 8 * 1024 * 1024) throw new z.ZodError([{ code: 'custom', path: [field], message: 'max 8 MB', input: null }])
+  const form = await c.req.formData().catch(() => null)
+  const f = form?.get(field)
+  if (!(f instanceof File)) throw new UploadError('Attach a photo.')
+  if (!f.type.startsWith('image/') && !/\.(heic|heif)$/i.test(f.name)) throw new UploadError('That file is not a photo. Choose a JPG, PNG or WebP image.')
+  if (f.size > 8 * 1024 * 1024) throw new UploadError('That photo is over 8 MB. Choose a smaller one.')
   return f
 }
 
@@ -74,6 +78,7 @@ const NewListing = z.object({
 
 api.post('/listings', async (c) => {
   const b = NewListing.parse(await c.req.json())
+  b.colours = uniqueColours(b.colours)
   const id = newId('lst')
   const price = Number(b.price).toFixed(2)
   const details = b.attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
@@ -160,7 +165,7 @@ api.patch('/listings/:id', async (c) => {
     else seen.set(k, { name: a.name, value: a.value })
   }
   const attributes = [...seen.values()].slice(0, 12)
-  const colours: string[] = [...new Map((b.colours ?? JSON.parse(l.colours)).map((x: string) => [x.toLowerCase(), x])).values()] as string[]
+  const colours = uniqueColours(b.colours ?? JSON.parse(l.colours))
   const title = b.title ?? l.title
   const description = b.description ?? l.description
   const price = b.price !== undefined ? Number(b.price).toFixed(2) : l.price
