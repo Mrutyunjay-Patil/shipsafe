@@ -8,15 +8,14 @@ import Account from '@/pages/Account'
 import Ask from '@/pages/Ask'
 import Home from '@/pages/Home'
 import OrderDetail from '@/pages/OrderDetail'
-import Orders from '@/pages/Orders'
 import ProductDetail from '@/pages/ProductDetail'
 import Products from '@/pages/Products'
 import Sell from '@/pages/Sell'
 import SignIn from '@/pages/SignIn'
 import Thanks from '@/pages/Thanks'
 
-// AG Grid is large, so the board loads only when opened.
-const Board = lazy(() => import('@/pages/Board'))
+// AG Grid is large, so the orders board loads only when opened.
+const Orders = lazy(() => import('@/pages/Orders'))
 
 export default function App() {
   const me = useQuery({ queryKey: ['me'], queryFn: api.me })
@@ -45,13 +44,13 @@ export default function App() {
       <Routes location={loc}>
         <Route path="/" element={<Home seller={me.data.seller} />} />
         <Route path="/sell" element={<Sell />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders" element={<Suspense fallback={<Skeleton className="m-5 h-96 rounded-2xl" />}><Orders /></Suspense>} />
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/ask" element={<Ask />} />
         <Route path="/account" element={<Account />} />
-        <Route path="/board" element={<Suspense fallback={<Skeleton className="m-5 h-96 rounded-2xl" />}><Board /></Suspense>} />
+        <Route path="/board" element={<Navigate to="/orders" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </div>

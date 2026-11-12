@@ -1,10 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
-import { Table2 } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router'
-import { OrderRow, primeSeen } from '@/components/OrderRow'
-import { Skeleton } from '@/components/ui/skeleton'
-import { api, MOCK, type OrderStatus } from '@/lib/api'
+import { AgGridReact } from 'ag-grid-react'
+import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type ICellRendererParams } from 'ag-grid-community'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
+import { sentenceCase, Stamp } from '@/components/airmail'
+import { StatusBadge } from '@/components/StatusBadge'
+import { api, MOCK, money, type Order, type OrderStatus, photoUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
+
+ModuleRegistry.registerModules([AllCommunityModule])
+
+// AG Grid reads the app's colours from theme.css through CSS variables.
+const gridTheme = themeQuartz.withParams({
+  fontFamily: 'var(--brand-font)',
+  fontSize: 14,
+  backgroundColor: 'var(--envelope)',
+  foregroundColor: 'var(--foreground)',
+  headerBackgroundColor: 'var(--envelope)',
+  headerTextColor: 'var(--muted-foreground)',
+  headerFontWeight: 600,
+  borderColor: 'var(--border)',
+  accentColor: 'var(--brand)',
+  rowHoverColor: 'var(--accent)',
+  wrapperBorder: false,
+  wrapperBorderRadius: 0,
+  rowHeight: 72,
+  headerHeight: 44,
+  cellHorizontalPadding: 14,
+})
 
 const FILTERS: { key: 'ALL' | OrderStatus; label: string }[] = [
   { key: 'ALL', label: 'All' },
@@ -14,24 +37,80 @@ const FILTERS: { key: 'ALL' | OrderStatus; label: string }[] = [
   { key: 'NEEDS_REFUND', label: 'Refund' },
 ]
 
+const cell = (node: React.ReactNode) => <span className="flex h-full items-center leading-normal">{node}</span>
+
+function useWide() {
+  const q = '(min-width: 768px)'
+  const [wide, setWide] = useState(() => matchMedia(q).matches)
+  useEffect(() => {
+    const m = matchMedia(q)
+    const on = () => setWide(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return wide
+}
+
 export default function Orders() {
+  const nav = useNavigate()
+  const wide = useWide()
   const [params, setParams] = useSearchParams()
   const filter = (params.get('filter') ?? 'ALL') as (typeof FILTERS)[number]['key']
   const orders = useQuery({ queryKey: ['orders'], queryFn: api.orders, refetchInterval: MOCK ? 4_000 : 20_000 })
-  if (orders.data) primeSeen(orders.data.map((o) => o.id))
-  const list = (orders.data ?? []).filter((o) => filter === 'ALL' || o.status === filter)
+  const all = orders.data ?? []
+  const rows = all.filter((o) => filter === 'ALL' || o.status === filter)
+  const count = (k: (typeof FILTERS)[number]['key']) => (k === 'ALL' ? all.length : all.filter((o) => o.status === k).length)
+
+  const cols = useMemo<ColDef<Order>[]>(() => [
+    {
+      headerName: 'Ship to', colId: 'dest', minWidth: wide ? 230 : 120, flex: 1.2, sortable: true,
+      valueGetter: (p) => p.data?.ship_city ?? '',
+      cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(
+        <span className="flex min-w-0 items-center gap-3">
+          <Stamp src={photoUrl(p.data.photo_key)} className={cn('shrink-0', wide ? 'size-11' : 'size-10')} />
+          <span className="min-w-0 leading-tight">
+            <span className="label-caps block truncate text-[18px] text-ink">{p.data.ship_city}</span>
+            <span className="block truncate text-[12px] text-muted-foreground">
+              {wide ? [p.data.ship_postcode, p.data.ship_country].filter(Boolean).join(' ') : `${money(p.data.amount, p.data.currency)} · ${p.data.title}`}
+            </span>
+          </span>
+        </span>,
+      ),
+    },
+    {
+      field: 'status', headerName: 'Status', width: wide ? 180 : 134,
+      cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(<StatusBadge status={p.data.status} short />),
+    },
+    {
+      headerName: 'Item', flex: 1.5, minWidth: 220, hide: !wide, valueGetter: (p) => p.data?.title ?? '',
+      cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate font-medium">{p.data.title}</span>
+          {p.data.variant && <span className="block text-[12px] text-muted-foreground">{p.data.variant}</span>}
+        </span>,
+      ),
+    },
+    { field: 'amount', headerName: 'Amount', width: 120, hide: !wide, type: 'rightAligned', valueFormatter: (p) => (p.data ? money(p.value, p.data.currency) : ''), cellClass: 'money font-semibold' },
+    {
+      field: 'tracking_number', headerName: 'Tracking', width: 190, hide: !wide,
+      cellRenderer: (p: ICellRendererParams<Order>) =>
+        cell(p.value ? <span className="tracking-code text-[13px]">{p.value}</span> : <span className="text-[13px] text-muted-foreground">Not posted yet</span>),
+    },
+    { field: 'seller_protection', headerName: 'Seller protection', width: 170, hide: !wide, valueFormatter: (p) => sentenceCase(p.value) || 'Not reported' },
+    {
+      field: 'paid_at', headerName: 'Paid', width: 110, sort: 'desc', hide: !wide,
+      valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : ''),
+      cellClass: 'money',
+    },
+  ], [wide])
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
+    <main className={cn('mx-auto px-5 pt-[max(env(safe-area-inset-top),20px)]', wide ? 'max-w-7xl pb-10' : 'max-w-md')}>
       <header className="pb-4 pt-3">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
-          <Link to="/board" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3.5 text-sm font-medium text-ink hover:bg-accent">
-            <Table2 className="size-4" /> Board
-          </Link>
-        </div>
-        <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own.</p>
+        <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
+        <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own. Tap a row to open it.</p>
       </header>
+
       <div role="tablist" aria-label="Filter orders" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,#000_20px,#000_calc(100%-28px),transparent)]">
         {FILTERS.map((f) => (
           <button
@@ -40,19 +119,30 @@ export default function Orders() {
             role="tab"
             aria-selected={filter === f.key}
             className={cn(
-              'h-9 shrink-0 rounded-full border px-4 text-sm font-medium transition-colors duration-200',
+              'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors duration-200',
               filter === f.key ? 'border-ink bg-ink text-paper' : 'border-border bg-card text-muted-foreground hover:text-foreground',
             )}
           >
             {f.label}
+            <span className="money text-[12px] opacity-70">{count(f.key)}</span>
           </button>
         ))}
       </div>
-      <div className="sheet divide-y divide-border/70 overflow-hidden rounded-2xl">
-        {orders.isLoading && [0, 1, 2, 3].map((i) => <Skeleton key={i} className="m-3 h-12" />)}
-        {!orders.isLoading && list.length === 0 && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{filter === 'ALL' ? 'No orders yet. Share a PayPal link in a chat and paid orders appear here.' : 'Nothing in this pile right now.'}</p>}
-        {list.map((o) => <OrderRow key={o.id} order={o} />)}
-      </div>
+
+      <section className="envelope">
+        <AgGridReact<Order>
+          theme={gridTheme}
+          rowData={rows}
+          columnDefs={cols}
+          loading={orders.isLoading}
+          domLayout="autoHeight"
+          getRowId={(p) => p.data.id}
+          suppressMovableColumns
+          suppressHorizontalScroll={!wide}
+          onRowClicked={(e) => e.data && nav(`/orders/${e.data.id}`)}
+          overlayNoRowsTemplate={filter === 'ALL' ? 'No orders yet. Share a PayPal link in a chat and paid orders land here.' : 'Nothing in this pile right now.'}
+        />
+      </section>
     </main>
   )
 }
