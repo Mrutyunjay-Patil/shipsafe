@@ -98,7 +98,7 @@ export const MOCK = import.meta.env.VITE_MOCK === '1'
 export const api: typeof realApi = MOCK ? (mockApi as unknown as typeof realApi) : realApi
 
 export const photoUrl = (key: string | null) =>
-  !key ? null : key.startsWith('data:') ? key : MOCK ? null : `/api/photos/${key}`
+  !key ? null : key.startsWith('data:') || key.startsWith('/sample/') ? key : MOCK ? null : `/api/photos/${key}`
 
 export const money = (v: string | number, currency = 'USD') =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(v))

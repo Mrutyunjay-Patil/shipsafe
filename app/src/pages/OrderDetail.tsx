@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { carrierName, Destination, Envelope, ParAvion, Postmark, postmarkDate, sentenceCase, Stamp } from '@/components/airmail'
-import { STATUS, StatusBadge } from '@/components/StatusBadge'
+import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -103,7 +103,7 @@ export default function OrderDetail() {
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />
         </Button>
-        <span className="flex-1 truncate text-[15px] font-medium text-muted-foreground">{STATUS[o.status].next}</span>
+        <h1 className="flex-1 truncate text-[17px] font-semibold">Order to {o.ship_city ?? o.ship_country ?? "your buyer"}</h1>
         <StatusBadge status={o.status} />
       </header>
 
@@ -183,8 +183,8 @@ export default function OrderDetail() {
                   <span className="tracking-code block truncate text-[16px] font-semibold">{t.tracking_number}</span>
                   <span className="block text-[12px] text-muted-foreground">{carrierName(t.carrier)} · buyer emailed by PayPal</span>
                 </span>
-                <Button variant="ghost" size="sm" className="shrink-0 text-status-refund hover:text-status-refund" disabled={cancel.isPending} onClick={() => cancel.mutate(t.id)}>
-                  Wrong number
+                <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground" disabled={cancel.isPending} onClick={() => cancel.mutate(t.id)}>
+                  Fix number
                 </Button>
               </div>
             ))}

@@ -6,12 +6,11 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
 const ago = (h: number) => new Date(now - h * 3600_000).toISOString()
 
-const scarf =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b4fd8"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><rect width="120" height="120" fill="url(#a)"/><path d="M20 30h80v14H20zM20 56h80v14H20zM20 82h80v14H20z" fill="#fff" opacity=".35"/></svg>`)
-const rust =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#b4532a"/><circle cx="60" cy="60" r="30" fill="#f3c9a4" opacity=".55"/></svg>`)
+// Sample product photos rendered for the preview (public/sample). Synthetic, labelled by the preview banner.
+const scarf = '/sample/scarf-indigo.jpg'
+const rust = '/sample/scarf-rust.jpg'
+const diya = '/sample/brass-diya.jpg'
+const tote = '/sample/jute-tote.jpg'
 
 let orders: OrderDetail[] = [
   {
@@ -38,7 +37,7 @@ let orders: OrderDetail[] = [
   },
   {
     id: '9KL55120MN0011223', listing_id: 'lst_diya', capture_id: '6RT77120MN0011224', status: 'SHIPPED',
-    amount: '18.00', currency: 'USD', variant: null, title: 'Brass diya, hand polished', photo_key: null,
+    amount: '18.00', currency: 'USD', variant: null, title: 'Brass diya, hand polished', photo_key: diya,
     buyer_country: 'CA', buyer_account_status: 'UNVERIFIED', ship_name: 'L. Tremblay', ship_line1: '400 Rue Sherbrooke',
     ship_line2: null, ship_city: 'Montreal', ship_state: 'QC', ship_postcode: 'H3A 0B9', ship_country: 'CA',
     seller_protection: 'PARTIALLY_ELIGIBLE', paid_at: ago(50), shipped_at: ago(40), tracking_number: 'RR287043775IN',
@@ -66,7 +65,7 @@ function maybeArrive() {
   if (Date.now() < arrivedAt || orders.some((o) => o.id === '2WX19004AB8812345')) return
   orders = [{
     id: '2WX19004AB8812345', listing_id: 'lst_bag', capture_id: '4QP81022CD7765432', status: 'PAID',
-    amount: '38.00', currency: 'USD', variant: 'Mustard', title: 'Hand-stitched jute tote', photo_key: null,
+    amount: '38.00', currency: 'USD', variant: 'Mustard', title: 'Hand-stitched jute tote', photo_key: tote,
     buyer_country: 'AU', buyer_account_status: 'VERIFIED', ship_name: 'K. Nguyen', ship_line1: '88 Smith St',
     ship_line2: null, ship_city: 'Melbourne', ship_state: 'VIC', ship_postcode: '3065', ship_country: 'AU',
     seller_protection: 'ELIGIBLE', paid_at: new Date().toISOString(), shipped_at: null, trackers: [],

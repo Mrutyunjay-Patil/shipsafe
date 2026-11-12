@@ -17,16 +17,13 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
     <Envelope inTransit className="mt-4">
       <div className="relative px-5 pb-5 pt-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 pt-1">
-            <p className="text-sm font-medium text-muted-foreground">
-              Post next{more > 0 && <span className="text-muted-foreground/80"> · {more} more after this</span>}
-            </p>
-            <Destination city={o.ship_city} country={o.ship_country} className="mt-2 block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
+          <div className="min-w-0 pt-2">
+            <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
           </div>
           <Stamp src={photoUrl(o.photo_key)} value={money(o.amount, o.currency).replace('.00', '')} className="h-[86px] w-[72px] rotate-[3deg]" />
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
-          <address className="min-w-0 border-l-2 border-ink/15 pl-3 text-[15px] not-italic leading-snug">
+          <address className="min-w-0 text-[15px] not-italic leading-snug">
             <span className="block font-semibold">{o.ship_name}</span>
             <span className="block text-muted-foreground">{o.ship_line1}</span>
             <span className="block text-muted-foreground">{[o.ship_city, o.ship_state, o.ship_postcode].filter(Boolean).join(' ')}</span>
@@ -40,6 +37,11 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
         <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-[14px] text-[15px]">
           <Link to={`/orders/${o.id}`}><ScanLine /> Post it and scan the slip</Link>
         </Button>
+        {more > 0 && (
+          <p className="mt-3 text-center text-[13px] text-muted-foreground">
+            {more} more parcel{more > 1 ? 's' : ''} to post after this one
+          </p>
+        )}
       </div>
     </Envelope>
   )

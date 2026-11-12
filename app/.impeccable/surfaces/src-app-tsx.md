@@ -16,7 +16,7 @@ Constraints: blue glass palette and Outfit are brand-pinned; every value lives i
 
 THESIS: ShipSafe is international airmail for social sellers. Every sale is a letter going abroad, and protection is the airmail label PayPal lets you stick on. It refuses the fintech wallet arrangement of a balance hero over icon tiles.
 
-OWN-WORLD: Onion-skin blue paper ground, airmail ultramarine ink, the red and blue chevron border used only as the in-transit edge, perforated stamp frames around product photos, circular postmarks for dates and destinations, the blue PAR AVION etiquette as the Protected mark. Outfit for UI, a mono only for tracking numbers. Brand blue fills only what can be pressed.
+OWN-WORLD: Onion-skin blue paper ground, airmail ultramarine ink, the red and blue chevron border used only as the in-transit edge, perforated stamp frames around product photos, circular postmarks for dates and destinations, the blue PAR AVION etiquette as the Protected mark. Archivo for UI, with its condensed width for city capitals (the user released the earlier Outfit choice: "You can change outfit and anything to make it look best"), a mono only for tracking numbers. Brand blue fills only what can be pressed.
 
 STORY: The seller sees what to post next, posts it, and watches each parcel earn its airmail label. Judges see a chat sale become a PayPal order with tracking and protection.
 
