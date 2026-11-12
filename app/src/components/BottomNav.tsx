@@ -55,7 +55,7 @@ export function SideNav({ initial }: { initial: string }) {
   return (
     <aside aria-label="Main" className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-border bg-card/70 px-4 pb-5 pt-6 backdrop-blur-md lg:flex">
       <span className="flex items-center gap-2 px-2">
-        <img src="/icon.svg" alt="" className="size-8 rounded-md" />
+        <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="size-8 rounded-md" />
         <span className="text-[19px] font-bold tracking-[-0.02em] text-ink">ShipSafe</span>
       </span>
       <NavLink

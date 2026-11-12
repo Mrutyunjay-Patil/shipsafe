@@ -134,7 +134,7 @@ export default function Home({ seller }: { seller: Seller }) {
     <main className="mx-auto max-w-md px-5 pb-6 pt-[max(env(safe-area-inset-top),20px)] lg:max-w-[1180px] lg:px-10 lg:pt-9">
       <header className="flex items-center justify-between gap-3 pt-2 lg:hidden">
         <span className="flex items-center gap-2">
-          <img src="/icon.svg" alt="" className="size-7 rounded-md" />
+          <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="size-7 rounded-md" />
           <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">ShipSafe</span>
         </span>
         <Link

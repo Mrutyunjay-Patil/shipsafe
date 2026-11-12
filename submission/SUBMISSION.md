@@ -20,7 +20,7 @@ Hackathon: PayPal AI Hackathon, https://paypalaihackathon.devpost.com/. The dead
 
 ## 2. Links for the form
 
-- **Live app, PayPal sandbox:** https://shipsafe.patilmrutyunjay2.workers.dev
+- **Live app, PayPal sandbox:** https://mrutyunjaypatil.dev/shipsafe
 - **Preview with sample data:** https://shipsafe-preview.patilmrutyunjay2.workers.dev
 - **Repository:** https://github.com/Mrutyunjay-Patil/shipsafe
 - **Video:** the YouTube link, once uploaded.
@@ -117,7 +117,7 @@ Claude Haiku 5.5 handles vision and text through Anthropic's SDK, with structure
 Fill the angle-bracket parts from `shipsafe-prereq/.env`. Keep the logins out of the repository.
 
 ```
-Live app (PayPal sandbox): https://shipsafe.patilmrutyunjay2.workers.dev
+Live app (PayPal sandbox): https://mrutyunjaypatil.dev/shipsafe
 1. Tap "Continue with PayPal" and sign in with the sandbox seller:
    <SANDBOX_SELLER_EMAIL> / <SANDBOX_SELLER_PASSWORD>
 2. Tap + to list a product. Use any photo; sample photos are in the repo under test-products/.

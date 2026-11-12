@@ -5,7 +5,9 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Served under /shipsafe on every host; see worker/index.ts and shared/base.ts.
 export default defineConfig({
+  base: '/shipsafe/',
   plugins: [
     react(),
     tailwindcss(),
@@ -20,13 +22,14 @@ export default defineConfig({
         theme_color: '#111111',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        start_url: './',
+        scope: './',
         icons: [
-          { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
         ],
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/api\//, /^\/webhooks\//, /^\/auth\//],
+        navigateFallbackDenylist: [/\/api\//, /\/webhooks\//, /\/auth\//],
       },
     }),
   ],

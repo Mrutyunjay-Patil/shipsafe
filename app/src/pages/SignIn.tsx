@@ -3,7 +3,7 @@ import { Envelope, Postmark, postmarkDate, ShippedSafe, Stamp } from '@/componen
 import { Button } from '@/components/ui/button'
 
 // Example parcel uses the shop owner's sample photo (public/sample).
-const scarf = '/sample/paisley-scarf.jpg'
+const scarf = `${import.meta.env.BASE_URL}sample/paisley-scarf.jpg`
 
 const STEPS = [
   { icon: Camera, title: 'Snap the product', text: 'AI reads the photo and drafts the title, description, colours and a price. You check it before anything is published.' },
@@ -29,7 +29,7 @@ const FAQ = [
 function LoginButton({ className }: { className?: string }) {
   return (
     <Button asChild size="lg" className={className ?? 'h-14 w-full rounded-xl text-[16px]'}>
-      <a href="/auth/paypal/login">Log in with PayPal</a>
+      <a href={`${import.meta.env.BASE_URL}auth/paypal/login`}>Log in with PayPal</a>
     </Button>
   )
 }
@@ -41,7 +41,7 @@ export default function SignIn() {
       <header className="sticky top-0 z-30 border-b border-border/60 bg-paper/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-10">
           <span className="flex items-center gap-2.5">
-            <img src="/icon.svg" alt="" className="size-8 rounded-md" />
+            <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="size-8 rounded-md" />
             <span className="text-[18px] font-bold tracking-[-0.02em] text-ink">ShipSafe</span>
           </span>
           <nav className="hidden items-center gap-7 text-[14px] font-medium text-muted-foreground md:flex">
@@ -161,7 +161,7 @@ export default function SignIn() {
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <span className="flex items-center gap-2">
-            <img src="/icon.svg" alt="" className="size-5 rounded" /> ShipSafe
+            <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="size-5 rounded" /> ShipSafe
           </span>
           <span>Built for the PayPal AI Hackathon. Runs on the PayPal sandbox.</span>
         </div>

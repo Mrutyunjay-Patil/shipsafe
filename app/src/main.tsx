@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router'
+import { BASE } from '@shared/base'
 import { Toaster } from '@/components/ui/sonner'
 import App from './App'
 import './index.css'
@@ -20,7 +21,7 @@ const queryClient = new QueryClient({
 })
 
 // A data router, so pages can use useBlocker to guard unsaved edits.
-const router = createBrowserRouter([{ path: '*', element: <App /> }])
+const router = createBrowserRouter([{ path: '*', element: <App /> }], { basename: BASE })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

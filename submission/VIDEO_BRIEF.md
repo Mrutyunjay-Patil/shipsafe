@@ -12,7 +12,7 @@ The story to tell: **from a product photo to a protected PayPal sale, without le
 
 | What | Where |
 |---|---|
-| Live app, real PayPal sandbox | https://shipsafe.patilmrutyunjay2.workers.dev |
+| Live app, real PayPal sandbox | https://mrutyunjaypatil.dev/shipsafe |
 | Sample-data preview, no login | https://shipsafe-preview.patilmrutyunjay2.workers.dev |
 | Buyer checkout | PayPal sandbox pages opened from a link, `www.sandbox.paypal.com/ncp/payment/PLB-…` |
 
