@@ -5,7 +5,7 @@
   "userinfo_attempts": [
     {
       "path": "/v1/identity/oauth2/userinfo",
-      "schema": "paypalv1.1",
+      "schema": null,
       "status": 200,
       "body": null
     }

@@ -42,9 +42,10 @@ if tok.status_code != 200:
 
 attempts = []
 u, ui = {}, None
-for path, schema in (("/v1/identity/oauth2/userinfo", "paypalv1.1"), ("/v1/identity/oauth2/userinfo", "openid"),
-                     ("/v1/identity/openidconnect/userinfo", "openid")):
-    ui = httpx.get(f"{BASE}{path}", params={"schema": schema},
+# Documented form first: no schema parameter. https://developer.paypal.com/docs/log-in-with-paypal/integrate/
+for path, schema in (("/v1/identity/oauth2/userinfo", None), ("/v1/identity/openidconnect/userinfo", None),
+                     ("/v1/identity/oauth2/userinfo", "paypalv1.1")):
+    ui = httpx.get(f"{BASE}{path}", params={"schema": schema} if schema else None,
                    headers={"Authorization": f"Bearer {tj['access_token']}"}, timeout=30)
     attempts.append({"path": path, "schema": schema, "status": ui.status_code,
                      "body": ui.text[:200] if ui.status_code != 200 else None})
