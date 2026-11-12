@@ -1,0 +1,8 @@
+name = "shipsafe-webhook-probe"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "HOOKS"
+id = "b389001cdcf542019fe6c41b766f07fa"

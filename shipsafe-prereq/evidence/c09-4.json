@@ -1,0 +1,103 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v2/checkout/orders/7DD18315GK263354G",
+    "params": null,
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 606,
+  "debug_id": "f376223ef288c",
+  "response": {
+    "id": "7DD18315GK263354G",
+    "intent": "CAPTURE",
+    "status": "APPROVED",
+    "payment_source": {
+      "paypal": {
+        "email_address": "<redacted>",
+        "account_id": "JLGDF7FGE9K6N",
+        "account_status": "VERIFIED",
+        "name": "<redacted>",
+        "address": {
+          "country_code": "US"
+        }
+      }
+    },
+    "purchase_units": [
+      {
+        "reference_id": "listing_demo_001",
+        "amount": {
+          "currency_code": "USD",
+          "value": "24.00",
+          "breakdown": {
+            "item_total": {
+              "currency_code": "USD",
+              "value": "24.00"
+            }
+          }
+        },
+        "payee": {
+          "email_address": "<redacted>",
+          "merchant_id": "MZXSDB8AZ47E6",
+          "display_data": {
+            "brand_name": "ShipSafe Probe"
+          }
+        },
+        "description": "Hand block-printed cotton scarf",
+        "custom_id": "listing_demo_001",
+        "items": [
+          {
+            "name": "Hand block-printed cotton scarf",
+            "unit_amount": {
+              "currency_code": "USD",
+              "value": "24.00"
+            },
+            "quantity": "1",
+            "sku": "SCARF-INDIGO",
+            "category": "PHYSICAL_GOODS"
+          }
+        ],
+        "shipping": {
+          "name": "<redacted>",
+          "address": {
+            "address_line_1": "<redacted>",
+            "admin_area_2": "San Jose",
+            "admin_area_1": "CA",
+            "postal_code": "95131",
+            "country_code": "US"
+          }
+        }
+      }
+    ],
+    "payer": {
+      "name": "<redacted>",
+      "email_address": "<redacted>",
+      "payer_id": "JLGDF7FGE9K6N",
+      "address": {
+        "country_code": "US"
+      }
+    },
+    "create_time": "2026-11-12T05:45:47Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G",
+        "rel": "update",
+        "method": "PATCH"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G/capture",
+        "rel": "capture",
+        "method": "POST"
+      }
+    ]
+  }
+}

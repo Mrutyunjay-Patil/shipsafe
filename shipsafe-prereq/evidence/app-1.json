@@ -1,0 +1,59 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/checkout/payment-resources/PLB-VVVYBJUTPDW9",
+    "params": null,
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 1087,
+  "debug_id": "f4473804a0071",
+  "response": {
+    "id": "PLB-VVVYBJUTPDW9",
+    "integration_mode": "LINK",
+    "type": "BUY_NOW",
+    "reusable": "MULTIPLE",
+    "return_url": "https://shipsafe.patilmrutyunjay2.workers.dev/thanks",
+    "line_items": [
+      {
+        "name": "Edit test mug",
+        "product_id": "lst_436373f03d6a4806",
+        "description": "Hand-thrown stoneware mug, glazed inside.\nClay: Stoneware · Capacity: 350 ml · Food safe: Yes",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "12.00"
+        },
+        "collect_shipping_address": true
+      }
+    ],
+    "status": "ACTIVE",
+    "create_time": "2026-11-12T15:17:01Z",
+    "update_time": "2026-11-12T15:17:02Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-VVVYBJUTPDW9",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-VVVYBJUTPDW9",
+        "rel": "replace",
+        "method": "PUT"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-VVVYBJUTPDW9",
+        "rel": "delete",
+        "method": "DELETE"
+      },
+      {
+        "href": "https://www.sandbox.paypal.com/ncp/payment/PLB-VVVYBJUTPDW9",
+        "rel": "payment_link",
+        "method": "GET"
+      }
+    ]
+  }
+}

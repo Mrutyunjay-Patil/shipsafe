@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE482913507IN",
+    "params": null,
+    "body": [
+      {
+        "op": "replace",
+        "path": "/status",
+        "value": "CANCELLED"
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 204,
+  "elapsed_ms": 1193,
+  "debug_id": "ca593689288a0",
+  "response": ""
+}

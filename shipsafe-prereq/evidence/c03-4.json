@@ -1,0 +1,64 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/checkout/payment-resources",
+    "params": null,
+    "body": {
+      "integration_mode": "LINK",
+      "type": "BUY_NOW",
+      "return_url": "https://example.com/thanks",
+      "line_items": [
+        {
+          "name": "Hand block-printed cotton scarf",
+          "product_id": "listing_demo_001",
+          "description": "Cotton, hand block-printed in Jaipur",
+          "unit_amount": {
+            "currency_code": "USD",
+            "value": "24.00"
+          },
+          "collect_shipping_address": true,
+          "variants": {
+            "dimensions": [
+              {
+                "name": "Colour",
+                "primary": true,
+                "options": [
+                  {
+                    "label": "Indigo"
+                  },
+                  {
+                    "label": "Rust"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "reusable": "SINGLE_USE"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation",
+      "PayPal-Request-Id": "354fb49a-2959-4b35-a771-2e8132c31e1a"
+    }
+  },
+  "status": 400,
+  "elapsed_ms": 561,
+  "debug_id": "f4715434f6f05",
+  "response": {
+    "name": "<redacted>",
+    "message": "Request is not well-formed, syntactically incorrect, or violates schema.",
+    "debug_id": "f4715434f6f05",
+    "details": [
+      {
+        "field": "/reusable",
+        "value": "SINGLE_USE",
+        "location": "body",
+        "issue": "INVALID_PARAMETER_VALUE",
+        "description": "the value of a field is invalid."
+      }
+    ],
+    "links": []
+  }
+}

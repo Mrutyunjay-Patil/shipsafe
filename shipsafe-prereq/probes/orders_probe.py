@@ -19,8 +19,9 @@ from validators import s10_make, s10_valid
 
 ITEM = {"name": "Hand block-printed cotton scarf", "quantity": "1",
         "unit_amount": {"currency_code": "USD", "value": "24.00"}, "sku": "SCARF-INDIGO"}
-# Carrier enum: see https://developer.paypal.com/docs/tracking/reference/carriers/
-CARRIER = os.getenv("PROBE_CARRIER", "IN_INDIAPOST")
+# Carrier enum: INDIA_POST_INT (India Post International), INDIA_POST (domestic).
+# https://developer.paypal.com/track-orders/carriers
+CARRIER = os.getenv("PROBE_CARRIER", "INDIA_POST_INT")
 
 
 def _pu_trackers(order: dict) -> list:

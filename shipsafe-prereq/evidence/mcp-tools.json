@@ -1,0 +1,282 @@
+[
+  {
+    "name": "create_invoice",
+    "description": "\nCreate Invoices on PayPal.\n\nThis function creates a draft invoice, specifying a currency code, the invoicer's business information, one or more recipients to bill, and line items. Once created, the i",
+    "input": [
+      "currency_code",
+      "invoice_number",
+      "invoice_date",
+      "reference",
+      "note",
+      "invoicer_business_name",
+      "invoicer_given_name",
+      "invoicer_surname",
+      "invoicer_email_address",
+      "invoicer_tax_id",
+      "invoicer_address_line_1",
+      "invoicer_address_line_2",
+      "invoicer_city",
+      "invoicer_state",
+      "invoicer_postal_code",
+      "invoicer_country_code",
+      "primary_recipients",
+      "items",
+      "allow_tip",
+      "theme_color",
+      "shipping_cost",
+      "enable_pay_by_bank",
+      "pay_by_bank_exclusive_above_threshold",
+      "allow_partial_payment",
+      "minimum_partial_payment_amount"
+    ]
+  },
+  {
+    "name": "list_invoices",
+    "description": "\nList invoices from PayPal.\n\nThis function retrieves a list of invoices with optional pagination parameters.\n",
+    "input": [
+      "page",
+      "page_size",
+      "total_required"
+    ]
+  },
+  {
+    "name": "get_invoice",
+    "description": "\nGet an invoice from PayPal.\n\nThis function retrieves details of a specific invoice using its ID.\n",
+    "input": [
+      "invoice_id"
+    ]
+  },
+  {
+    "name": "send_invoice",
+    "description": "\nSend an invoice to the recipient(s).\n\nThis function sends a previously created invoice to its intended recipients.\n",
+    "input": [
+      "invoice_id",
+      "note",
+      "send_to_recipient",
+      "additional_recipients"
+    ]
+  },
+  {
+    "name": "send_invoice_reminder",
+    "description": "\nSend a reminder for an invoice.\n\nThis function sends a reminder for an invoice that has already been sent but hasn't been paid yet.\n",
+    "input": [
+      "invoice_id",
+      "subject",
+      "note",
+      "additional_recipients"
+    ]
+  },
+  {
+    "name": "cancel_sent_invoice",
+    "description": "\nCancel a sent invoice.\n\nThis function cancels an invoice that has already been sent to the recipient(s).\n",
+    "input": [
+      "invoice_id",
+      "note",
+      "send_to_recipient",
+      "additional_recipients"
+    ]
+  },
+  {
+    "name": "generate_invoice_qr_code",
+    "description": "\nGenerate a QR code for an invoice.\n\nThis function generates a QR code for an invoice, which can be used to pay the invoice using a mobile device or scanning app.\n",
+    "input": [
+      "invoice_id",
+      "width",
+      "height"
+    ]
+  },
+  {
+    "name": "create_product",
+    "description": "\nCreate a product in PayPal using product catalog - create products API.\nThis function creates a new product that will be used in subscription plans, subscriptions.\nRequired parameters are: name (prod",
+    "input": [
+      "name",
+      "type",
+      "description",
+      "category",
+      "image_url",
+      "home_url"
+    ]
+  },
+  {
+    "name": "list_products",
+    "description": "\nList products from PayPal.\n\nThis function retrieves a list of products with optional pagination parameters.\n",
+    "input": [
+      "page",
+      "page_size",
+      "total_required"
+    ]
+  },
+  {
+    "name": "update_product",
+    "description": "\nUpdate a product in PayPal.\n\nThis function updates an existing product using JSON Patch operations.\n",
+    "input": [
+      "product_id",
+      "operations"
+    ]
+  },
+  {
+    "name": "show_product_details",
+    "description": "\nList products from PayPal.\n\nThis function retrieves a list of products with optional pagination parameters.\n",
+    "input": [
+      "product_id"
+    ]
+  },
+  {
+    "name": "create_subscription_plan",
+    "description": "\nCreate a subsctiption plan in PayPal using subscription - create plan API.\nThis function creates a new subscription plan that defines pricing and billing cycle details for subscriptions.\nRequired par",
+    "input": [
+      "product_id",
+      "name",
+      "description",
+      "billing_cycles",
+      "payment_preferences",
+      "taxes"
+    ]
+  },
+  {
+    "name": "list_subscription_plans",
+    "description": "\nList subscription plans from PayPal.\n\nThis function retrieves a list of subscription plans with optional product filtering and pagination parameters.\n",
+    "input": [
+      "product_id",
+      "page",
+      "page_size",
+      "total_required"
+    ]
+  },
+  {
+    "name": "show_subscription_plan_details",
+    "description": "\nShow subscription plan details from PayPal.\nThis function retrieves the details of a specific subscription plan using its ID.\nRequired parameters are: plan_id (the ID of the subscription plan).\n",
+    "input": [
+      "plan_id"
+    ]
+  },
+  {
+    "name": "create_subscription",
+    "description": "\nCreate a subscription in PayPal using the subscription - create subscription API.\nThis function allows you to create a new subscription for a specific plan, enabling the management of recurring payme",
+    "input": [
+      "plan_id",
+      "quantity",
+      "shipping_amount",
+      "subscriber",
+      "application_context"
+    ]
+  },
+  {
+    "name": "show_subscription_details",
+    "description": "\nShow subscription details from PayPal.\nThis function retrieves the details of a specific subscription using its ID.\nRequired parameters are: subscription_id (the ID of the subscription).\n",
+    "input": [
+      "subscription_id",
+      "get_additional_details"
+    ]
+  },
+  {
+    "name": "cancel_subscription",
+    "description": "\nCancel a customer subscription in PayPal.\n\nThis function cancels an active subscription for a customer. It requires the subscription ID and an optional reason for cancellation.\nRequired parameters ar",
+    "input": [
+      "subscription_id",
+      "payload"
+    ]
+  },
+  {
+    "name": "create_shipment_tracking",
+    "description": "\nCreate a shipment for a transaction in PayPal.\nThis function creates a shipment record for a specific transaction, allowing you to track the shipment status and details.\nThe transaction_id can fetch ",
+    "input": [
+      "order_id",
+      "tracking_number",
+      "transaction_id",
+      "status",
+      "carrier"
+    ]
+  },
+  {
+    "name": "get_shipment_tracking",
+    "description": "\nGet tracking information for a shipment by ID.\nThis function retrieves tracking information for a specific shipment using the transaction ID and tracking number.\nThe transaction_id can fetch from the",
+    "input": [
+      "order_id",
+      "transaction_id"
+    ]
+  },
+  {
+    "name": "create_order",
+    "description": "\nCreate an order in PayPal.\n\nThis tool is used to create a new order in PayPal. This is typically the first step in initiating a payment flow. It sets up an order with specified details such as item(s",
+    "input": [
+      "currencyCode",
+      "items",
+      "discount",
+      "shippingCost",
+      "shippingAddress",
+      "notes",
+      "returnUrl",
+      "cancelUrl"
+    ]
+  },
+  {
+    "name": "get_order",
+    "description": "\nRetrieves the order details from PayPal for a given order ID.\n\nThis tool is used to retrieve details of an existing order in PayPal. It provides information about the order, including items, amounts,",
+    "input": [
+      "id"
+    ]
+  },
+  {
+    "name": "pay_order",
+    "description": "\nCapture a payment for an order.\n\nThis tool is used to capture a payment for an order. It allows you to capture funds that have been authorized for a specific order but not yet captured.\n",
+    "input": [
+      "id"
+    ]
+  },
+  {
+    "name": "list_disputes",
+    "description": "\nList disputes from PayPal.\n\nThis function retrieves a list of disputes with optional pagination and filtering parameters.\n",
+    "input": [
+      "disputed_transaction_id",
+      "dispute_state",
+      "page_size",
+      "page"
+    ]
+  },
+  {
+    "name": "get_dispute",
+    "description": "\nGet details for a specific dispute from PayPal.\n\nThis tool is used to lists disputes with a summary set of details, which shows the dispute_id, reason, status, dispute_state, dispute_life_cycle_stage",
+    "input": [
+      "dispute_id"
+    ]
+  },
+  {
+    "name": "accept_dispute_claim",
+    "description": "\nAccept liability for a dispute claim.\n\nThis tool is used to accept liability for a dispute claim. When you accept liability for a dispute claim, the dispute closes in the customer's favor and PayPal ",
+    "input": [
+      "dispute_id",
+      "note"
+    ]
+  },
+  {
+    "name": "list_transactions",
+    "description": "\nList transactions from PayPal.\n\nThis tool is used to list transactions with optional filtering parameters within a date range of 31 days. This tool can also be used to list details of a transaction g",
+    "input": [
+      "transaction_id",
+      "transaction_status",
+      "start_date",
+      "end_date",
+      "search_months",
+      "page_size",
+      "page"
+    ]
+  },
+  {
+    "name": "create_refund",
+    "description": "\nInitiate a refund for a PayPal payment capture.\nIf you have an order ID instead of a capture ID, first use the get order tool to obtain the capture ID from the order details.\nThis function allows you",
+    "input": [
+      "capture_id",
+      "amount",
+      "invoice_id",
+      "note_to_payer"
+    ]
+  },
+  {
+    "name": "get_refund",
+    "description": "\nRetrieve detailed information about a PayPal payment refund.\nIf you have an order ID instead of a refund ID, first use the get order tool to obtain the refund ID from the order details. \nThis functio",
+    "input": [
+      "refund_id"
+    ]
+  }
+]

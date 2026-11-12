@@ -1,0 +1,77 @@
+"""Seller verified badge probe: Log in with PayPal, then read verification fields.
+
+Usage: python probes/verified_badge.py [seller|buyer]
+1. Runs login_paypal.js, which signs in on PayPal's consent screen.
+2. Fetches the authorization code the Worker stored.
+3. Exchanges it at /v1/oauth2/token (grant_type=authorization_code).
+4. Calls /v1/identity/openidconnect/userinfo?schema=openid.
+Records verified_account, email_verified, account_type and payer_id.
+"""
+import os
+import secrets
+import subprocess
+import sys
+from pathlib import Path
+
+import httpx
+
+from common import BASE, mask, save_evidence
+
+who = sys.argv[1] if len(sys.argv) > 1 else "seller"
+RELAY = "https://shipsafe-webhook-probe.patilmrutyunjay2.workers.dev"
+state = secrets.token_hex(8)
+here = Path(__file__).resolve().parent
+out = subprocess.run(["node", str(here / "login_paypal.js"), who, state], capture_output=True, text=True, timeout=180)
+print(out.stdout.strip()[-600:], out.stderr.strip()[-300:])
+
+r = httpx.get(f"{RELAY}/auth/paypal/code", params={"state": state},
+              headers={"Authorization": f"Bearer {os.getenv('PROBE_READ_TOKEN')}"}, timeout=30)
+if r.status_code != 200:
+    raise SystemExit(f"no authorization code stored for state {state}: {r.status_code}")
+rec = r.json()
+if not rec.get("code"):
+    raise SystemExit(f"PayPal returned an error: {rec.get('error')} {rec.get('error_description')}")
+
+tok = httpx.post(f"{BASE}/v1/oauth2/token", auth=(os.getenv("PAYPAL_CLIENT_ID"), os.getenv("PAYPAL_CLIENT_SECRET")),
+                 data={"grant_type": "authorization_code", "code": rec["code"]}, timeout=30)
+tj = tok.json()
+print("code exchange:", tok.status_code, "scope:", tj.get("scope"))
+import base64, json as _json
+idt = tj.get("id_token")
+claims = {}
+if idt:
+    seg = idt.split(".")[1]; seg += "=" * (-len(seg) % 4)
+    claims = _json.loads(base64.urlsafe_b64decode(seg))
+print("token keys:", sorted(k for k in tj if k not in ("access_token", "refresh_token", "id_token")), "| id_token present:", bool(idt),
+      "| claim keys:", sorted(claims), "| verified claims:", {k: claims.get(k) for k in ("verified_account", "email_verified", "account_type")})
+if tok.status_code != 200:
+    save_evidence("badge", {"exchange_status": tok.status_code, "response": tj}, name=f"badge-{who}.json")
+    raise SystemExit(1)
+
+attempts = []
+u, ui = {}, None
+# Documented form first: no schema parameter. https://developer.paypal.com/docs/log-in-with-paypal/integrate/
+# openidconnect first, as the current Identity API reference lists it.
+for path, schema in (("/v1/identity/openidconnect/userinfo", None), ("/v1/identity/openidconnect/userinfo", "openid"),
+                     ("/v1/identity/oauth2/userinfo", None)):
+    ui = httpx.get(f"{BASE}{path}", params={"schema": schema} if schema else None,
+                   headers={"Authorization": f"Bearer {tj['access_token']}", "Accept": "application/json",
+                            "Content-Type": "application/json"}, timeout=30)
+    attempts.append({"path": path, "schema": schema, "status": ui.status_code,
+                     "body": ui.text[:200] if ui.status_code != 200 else None})
+    try:
+        u = ui.json()
+    except ValueError:
+        u = {}
+    if ui.status_code == 401:
+        attempts[-1]["www_authenticate"] = ui.headers.get("www-authenticate")
+    if ui.status_code == 200 and u:
+        break
+print("userinfo attempts:", attempts)
+fields = {k: u.get(k) for k in ("verified_account", "email_verified", "account_type", "payer_id")}
+fields["user_id"] = mask(u.get("user_id"))
+fields["address_country"] = (u.get("address") or {}).get("country")
+fields["returned_keys"] = sorted(u.keys())
+print("userinfo:", ui.status_code, fields)
+save_evidence("badge", {"who": who, "exchange_status": tok.status_code, "granted_scope": tj.get("scope"),
+                        "userinfo_attempts": attempts, "id_token_claim_keys": sorted(claims), "fields": fields}, name=f"badge-{who}.json")

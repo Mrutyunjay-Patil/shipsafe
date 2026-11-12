@@ -1,0 +1,109 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/checkout/payment-resources",
+    "params": null,
+    "body": {
+      "integration_mode": "LINK",
+      "type": "BUY_NOW",
+      "return_url": "https://example.com/thanks",
+      "line_items": [
+        {
+          "name": "Hand block-printed cotton scarf",
+          "product_id": "listing_demo_001",
+          "description": "Cotton, hand block-printed in Jaipur",
+          "unit_amount": {
+            "currency_code": "USD",
+            "value": "24.00"
+          },
+          "collect_shipping_address": true,
+          "variants": {
+            "dimensions": [
+              {
+                "name": "Colour",
+                "primary": true,
+                "options": [
+                  {
+                    "label": "Indigo"
+                  },
+                  {
+                    "label": "Rust"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "reusable": "MULTIPLE"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation",
+      "PayPal-Request-Id": "8cac0cdd-ae77-4939-8f19-49de1d0eb1e6"
+    }
+  },
+  "status": 201,
+  "elapsed_ms": 895,
+  "debug_id": "f3826529abd97",
+  "response": {
+    "id": "PLB-5PGXCE53JB4F",
+    "integration_mode": "LINK",
+    "type": "BUY_NOW",
+    "reusable": "MULTIPLE",
+    "return_url": "https://example.com/thanks",
+    "line_items": [
+      {
+        "name": "Hand block-printed cotton scarf",
+        "product_id": "listing_demo_001",
+        "description": "Cotton, hand block-printed in Jaipur",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "24.00"
+        },
+        "collect_shipping_address": true,
+        "variants": {
+          "dimensions": [
+            {
+              "name": "Colour",
+              "primary": true,
+              "options": [
+                {
+                  "label": "Indigo"
+                },
+                {
+                  "label": "Rust"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "status": "ACTIVE",
+    "create_time": "2026-11-12T05:43:39Z",
+    "update_time": "2026-11-12T05:43:39Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-5PGXCE53JB4F",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-5PGXCE53JB4F",
+        "rel": "replace",
+        "method": "PUT"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-5PGXCE53JB4F",
+        "rel": "delete",
+        "method": "DELETE"
+      },
+      {
+        "href": "https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F",
+        "rel": "payment_link",
+        "method": "GET"
+      }
+    ]
+  }
+}

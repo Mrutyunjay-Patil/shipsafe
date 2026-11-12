@@ -1,0 +1,58 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v2/payments/captures/3HJ288433F935922A/refund",
+    "params": null,
+    "body": {
+      "note_to_payer": "Sorry, the last one sold twice."
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 201,
+  "elapsed_ms": 1799,
+  "debug_id": "ca593699b6f7f",
+  "response": {
+    "id": "0A1818930T5060744",
+    "amount": {
+      "currency_code": "USD",
+      "value": "26.00"
+    },
+    "note_to_payer": "Sorry, the last one sold twice.",
+    "seller_payable_breakdown": {
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "26.00"
+      },
+      "paypal_fee": {
+        "currency_code": "USD",
+        "value": "0.00"
+      },
+      "net_amount": {
+        "currency_code": "USD",
+        "value": "26.00"
+      },
+      "total_refunded_amount": {
+        "currency_code": "USD",
+        "value": "26.00"
+      }
+    },
+    "status": "COMPLETED",
+    "create_time": "2026-11-11T22:17:15-08:00",
+    "update_time": "2026-11-11T22:17:15-08:00",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/payments/refunds/0A1818930T5060744",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/3HJ288433F935922A",
+        "rel": "up",
+        "method": "GET"
+      }
+    ]
+  }
+}

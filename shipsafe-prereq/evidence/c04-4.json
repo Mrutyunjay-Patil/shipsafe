@@ -1,0 +1,49 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/notifications/webhooks",
+    "params": null,
+    "body": {
+      "url": "https://shipsafe.patilmrutyunjay2.workers.dev/webhooks/paypal",
+      "event_types": [
+        {
+          "name": "*"
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 201,
+  "elapsed_ms": 619,
+  "debug_id": "f176218c9b501",
+  "response": {
+    "id": "6TM58143KR6871923",
+    "url": "https://shipsafe.patilmrutyunjay2.workers.dev/webhooks/paypal",
+    "event_types": [
+      {
+        "name": "*",
+        "description": "ALL"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks/6TM58143KR6871923",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks/6TM58143KR6871923",
+        "rel": "update",
+        "method": "PATCH"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks/6TM58143KR6871923",
+        "rel": "delete",
+        "method": "DELETE"
+      }
+    ]
+  }
+}

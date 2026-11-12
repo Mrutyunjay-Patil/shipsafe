@@ -4,8 +4,8 @@ Usage:
   python probes/vision_probe.py slips                # the 4 synthetic slips
   python probes/vision_probe.py product <photo.jpg>  # one product photo
 
-Uses Claude (VISION_MODEL, default claude-opus-5-5) with a strict JSON schema
-and server-side refusal fallback, then validates with Pydantic.
+Uses Claude (VISION_MODEL, default claude-haiku-5-5) with a strict JSON schema
+then validates with Pydantic.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import EVIDENCE, save_evidence  # noqa: E402
 from validators import s10_valid  # noqa: E402
 
-MODEL = os.getenv("VISION_MODEL", "claude-opus-5-5")
+MODEL = os.getenv("VISION_MODEL", "claude-haiku-5-5")
 EFFORT = os.getenv("VISION_EFFORT", "low")
 
 
@@ -72,11 +72,9 @@ def extract(client: anthropic.Anthropic, image: Path, model_cls: type[BaseModel]
     media = mimetypes.guess_type(image.name)[0] or "image/png"
     data = base64.standard_b64encode(image.read_bytes()).decode()
     t0 = time.time()
-    resp = client.beta.messages.create(
+    resp = client.messages.create(
         model=MODEL,
         max_tokens=2000,
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
         output_config={"effort": EFFORT,
                        "format": {"type": "json_schema", "schema": strict_schema(model_cls)}},
         system=PROMPTS[model_cls],
@@ -126,7 +124,9 @@ def run_product(client, photo: Path):
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-    c = anthropic.Anthropic()
+    # This container sets ANTHROPIC_BASE_URL for its own use; probes go to the public API.
+    c = anthropic.Anthropic(base_url="https://api.anthropic.com",
+                            api_key=os.getenv("ANTHROPIC_API_KEY") or "proxy-injected")
     if sys.argv[1:2] == ["product"]:
         run_product(c, Path(sys.argv[2]))
     else:

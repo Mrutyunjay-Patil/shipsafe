@@ -1,0 +1,74 @@
+{
+  "create_multiple": 201,
+  "id": "PLB-5PGXCE53JB4F",
+  "status": "ACTIVE",
+  "url_top_level": null,
+  "url_links_rel": "https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F",
+  "response_keys": [
+    "create_time",
+    "id",
+    "integration_mode",
+    "line_items",
+    "links",
+    "return_url",
+    "reusable",
+    "status",
+    "type",
+    "update_time"
+  ],
+  "create_reusable_SINGLE": {
+    "status": 422,
+    "issue": "SINGLE_REUSABLE_NOT_SUPPORTED"
+  },
+  "create_reusable_ONCE": {
+    "status": 400,
+    "issue": "INVALID_PARAMETER_VALUE"
+  },
+  "create_reusable_SINGLE_USE": {
+    "status": 400,
+    "issue": "INVALID_PARAMETER_VALUE"
+  },
+  "get": 200,
+  "shipping_collection_kept": true,
+  "variants_kept": {
+    "dimensions": [
+      {
+        "name": "Colour",
+        "primary": true,
+        "options": [
+          {
+            "label": "Indigo"
+          },
+          {
+            "label": "Rust"
+          }
+        ]
+      }
+    ]
+  },
+  "list": {
+    "status": 200,
+    "keys": [
+      "links",
+      "resources",
+      "total_items",
+      "total_pages"
+    ]
+  },
+  "put": 204,
+  "price_after_put": {
+    "currency_code": "USD",
+    "value": "26.00"
+  },
+  "url_after_put": [
+    null,
+    "https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F"
+  ],
+  "delete": 204,
+  "get_after_delete": {
+    "status": 404,
+    "resource_status": null
+  },
+  "deleted_link_url": null,
+  "adjustable_quantity_max_1": 201
+}

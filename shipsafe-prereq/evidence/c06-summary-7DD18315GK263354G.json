@@ -1,0 +1,36 @@
+{
+  "order_status": "COMPLETED",
+  "intent": "CAPTURE",
+  "custom_id": "listing_demo_001",
+  "invoice_id": null,
+  "reference_id": "listing_demo_001",
+  "items": [
+    {
+      "name": "Hand block-printed cotton scarf",
+      "sku": "SCARF-INDIGO",
+      "quantity": "1",
+      "description": null
+    }
+  ],
+  "shipping_address_present": true,
+  "shipping_city_pc_cc": {
+    "admin_area_2": "San Jose",
+    "postal_code": "95131",
+    "country_code": "US"
+  },
+  "capture_ids": [
+    "5JM416817X145951N"
+  ],
+  "capture_status": [
+    "COMPLETED"
+  ],
+  "capture_get_status": "COMPLETED",
+  "capture_custom_id": "listing_demo_001",
+  "seller_protection": {
+    "status": "ELIGIBLE",
+    "dispute_categories": [
+      "ITEM_NOT_RECEIVED",
+      "UNAUTHORIZED_TRANSACTION"
+    ]
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v2/checkout/orders/0AY2418885929025Y/track",
+    "params": null,
+    "body": {
+      "capture_id": "0B495248659291430",
+      "tracking_number": "EE123456785IN",
+      "notify_payer": true,
+      "items": [
+        {
+          "name": "Hand block-printed cotton scarf",
+          "sku": "SCARF-INDIGO",
+          "quantity": "1"
+        }
+      ],
+      "carrier": "INDIA_POST_INT"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 201,
+  "elapsed_ms": 959,
+  "debug_id": "ca593689e7c88",
+  "response": {
+    "id": "0AY2418885929025Y",
+    "intent": "CAPTURE",
+    "status": "COMPLETED",
+    "payment_source": {
+      "paypal": {
+        "email_address": "<redacted>",
+        "account_id": "JLGDF7FGE9K6N",
+        "account_status": "VERIFIED",
+        "name": "<redacted>",
+        "address": {
+          "country_code": "US"
+        }
+      }
+    },
+    "purchase_units": [
+      {
+        "reference_id": "default",
+        "amount": {
+          "currency_code": "USD",
+          "value": "26.00",
+          "breakdown": {
+            "item_total": {
+              "currency_code": "USD",
+              "value": "26.00"
+            }
+          }
+        },
+        "payee": {
+          "merchant_id": "MZXSDB8AZ47E6"
+        },
+        "items": [
+          {
+            "item_id": "PLB-5PGXCE53JB4F",
+            "name": "Hand block-printed cotton scarf",
+            "unit_amount": {
+              "currency_code": "USD",
+              "value": "26.00"
+            },
+            "quantity": "1",
+            "description": "Cotton, hand block-printed in Jaipur",
+            "sku": "listing_demo_001",
+            "item_option_selections": [
+              {
+                "name": "<redacted>",
+                "select": "Rust"
+              }
+            ]
+          }
+        ],
+        "shipping": {
+          "name": "<redacted>",
+          "address": {
+            "address_line_1": "<redacted>",
+            "admin_area_2": "San Jose",
+            "admin_area_1": "CA",
+            "postal_code": "95131",
+            "country_code": "US"
+          },
+          "trackers": [
+            {
+              "id": "0B495248659291430-EE482913507IN",
+              "status": "CANCELLED",
+              "items": [
+                {
+                  "name": "Hand block-printed cotton scarf",
+                  "sku": "SCARF-INDIGO",
+                  "quantity": "1",
+                  "upc": {}
+                }
+              ],
+              "links": [
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y",
+                  "rel": "up",
+                  "method": "GET"
+                },
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE482913507IN",
+                  "rel": "update",
+                  "method": "PATCH"
+                }
+              ],
+              "notify_payer": true
+            },
+            {
+              "id": "0B495248659291430-EE123456785IN",
+              "status": "SHIPPED",
+              "items": [
+                {
+                  "name": "Hand block-printed cotton scarf",
+                  "sku": "SCARF-INDIGO",
+                  "quantity": "1"
+                }
+              ],
+              "links": [
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y",
+                  "rel": "up",
+                  "method": "GET"
+                },
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE123456785IN",
+                  "rel": "update",
+                  "method": "PATCH"
+                }
+              ],
+              "notify_payer": true
+            }
+          ]
+        },
+        "payments": {
+          "captures": [
+            {
+              "id": "0B495248659291430",
+              "status": "COMPLETED",
+              "amount": {
+                "currency_code": "USD",
+                "value": "26.00"
+              },
+              "final_capture": true,
+              "seller_protection": {
+                "status": "ELIGIBLE",
+                "dispute_categories": [
+                  "ITEM_NOT_RECEIVED",
+                  "UNAUTHORIZED_TRANSACTION"
+                ]
+              },
+              "seller_receivable_breakdown": {
+                "gross_amount": {
+                  "currency_code": "USD",
+                  "value": "26.00"
+                },
+                "paypal_fee": {
+                  "currency_code": "USD",
+                  "value": "1.55"
+                },
+                "net_amount": {
+                  "currency_code": "USD",
+                  "value": "24.45"
+                }
+              },
+              "links": [
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/payments/captures/0B495248659291430",
+                  "rel": "self",
+                  "method": "GET"
+                },
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/payments/captures/0B495248659291430/refund",
+                  "rel": "refund",
+                  "method": "POST"
+                },
+                {
+                  "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y",
+                  "rel": "up",
+                  "method": "GET"
+                }
+              ],
+              "create_time": "2026-11-12T06:13:20Z",
+              "update_time": "2026-11-12T06:16:33Z"
+            }
+          ]
+        }
+      }
+    ],
+    "payer": {
+      "name": "<redacted>",
+      "email_address": "<redacted>",
+      "payer_id": "JLGDF7FGE9K6N",
+      "address": {
+        "country_code": "US"
+      }
+    },
+    "create_time": "2026-11-12T06:13:20Z",
+    "update_time": "2026-11-12T06:16:33Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y",
+        "rel": "self",
+        "method": "GET"
+      }
+    ]
+  }
+}

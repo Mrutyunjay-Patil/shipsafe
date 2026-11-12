@@ -1,0 +1,169 @@
+/* ShipSafe theme: airmail. Every colour, surface, radius and font lives in this one file.
+   Switch the whole look by setting data-theme on <html> in index.html:
+     data-theme="blue"  default. Airmail ultramarine on onion-skin blue paper.
+     data-theme="lime"  deep green and lime, from the wallet references.
+   To make a new look, copy a block, rename it, and change the values. Components only
+   ever read these variables, never raw colours. */
+
+:root {
+  --brand-font: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --label-stretch: 72%;          /* condensed capitals for cities and labels, like a postal label */
+  --code-font: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  /* Corner scale. Nested corners follow: inner = outer - padding between them.
+     Pills (rounded-full) are only for small controls. */
+  --radius: 0.875rem;
+  --r-xs: 4px;    /* tiny labels, PAR AVION etiquette */
+  --r-sm: 8px;    /* small tags */
+  --r-md: 10px;   /* small buttons, code boxes */
+  --r-lg: 12px;   /* inputs, inner segments */
+  --r-xl: 14px;   /* buttons, notices */
+  --r-2xl: 16px;  /* cards, envelopes, sheets */
+  --r-3xl: 20px;  /* the raised Sell button */
+  --r-4xl: 24px;  /* the bottom nav bar */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Airmail, light (default) ---------- */
+:root, [data-theme="blue"] {
+  /* The world */
+  --ink: oklch(0.36 0.17 266);            /* airmail ultramarine, the envelope ink */
+  --airmail-red: oklch(0.58 0.2 25);      /* only on the chevron edge and stamps */
+  --airmail-blue: oklch(0.45 0.19 264);   /* the other chevron stripe */
+  --paper: oklch(0.975 0.012 250);        /* onion-skin airmail paper */
+  --paper-deep: oklch(0.94 0.024 252);    /* a second sheet under the first */
+  --postmark: oklch(0.42 0.06 265 / 0.55);/* cancellation ink, always translucent */
+  --etiquette: oklch(0.42 0.18 265);      /* PAR AVION label ground */
+  --etiquette-foreground: oklch(0.985 0.005 250);
+
+  /* Actions: the only saturated blue on screen */
+  --brand: oklch(0.5 0.21 265);
+  --brand-foreground: oklch(0.99 0 0);
+  --brand-soft: oklch(0.93 0.035 260);
+
+  /* Status hues. Each status owns one hue, used for its badge, its row mark and its icon. */
+  --status-paid: oklch(0.64 0.15 76);     /* amber: money in, parcel not posted */
+  --status-shipped: oklch(0.52 0.15 250); /* sky: in the post */
+  --status-protected: var(--etiquette);   /* the PAR AVION blue: PayPal has the proof */
+  --success: oklch(0.55 0.14 155);        /* a check passed */
+  --status-refund: oklch(0.56 0.2 25);    /* red: act now */
+  --status-closed: oklch(0.55 0.02 260);  /* grey: refunded, done */
+  --warning: var(--status-paid);
+
+  /* shadcn roles */
+  --background: var(--paper);
+  --foreground: oklch(0.24 0.05 266);
+  --card: oklch(0.995 0.004 250);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: oklch(0.93 0.025 258);
+  --secondary-foreground: oklch(0.3 0.1 265);
+  --muted: oklch(0.945 0.016 255);
+  --muted-foreground: oklch(0.47 0.04 262);   /* 5.6:1 on paper */
+  --accent: oklch(0.93 0.03 258);
+  --accent-foreground: oklch(0.3 0.12 265);
+  --destructive: var(--status-refund);
+  --border: oklch(0.89 0.022 258);
+  --input: oklch(0.86 0.028 258);
+  --ring: oklch(0.55 0.2 265);
+  --chart-1: var(--brand);
+  --chart-2: var(--status-shipped);
+  --chart-3: var(--status-protected);
+  --chart-4: var(--status-paid);
+  --chart-5: var(--status-refund);
+
+  /* Surfaces */
+  --page-gradient: linear-gradient(180deg, oklch(0.95 0.03 252) 0%, var(--paper) 340px);
+  --sheet: oklch(1 0 0 / 0.72);            /* onion-skin: you can just see the sheet below */
+  --sheet-border: oklch(0.88 0.03 258 / 0.9);
+  --sheet-shadow: 0 1px 2px oklch(0.3 0.08 265 / 0.06), 0 12px 28px -18px oklch(0.3 0.1 265 / 0.35);
+  --envelope: oklch(0.995 0.006 250);
+  --stamp-paper: oklch(0.985 0.008 85);    /* gummed stamp paper, light in both themes */
+  --envelope-shadow: 0 2px 4px oklch(0.3 0.1 265 / 0.06), 0 22px 40px -24px oklch(0.32 0.14 265 / 0.45);
+  --selection: oklch(0.86 0.08 262);
+  --stamp-shadow: drop-shadow(0 1px 1px oklch(0.3 0.08 265 / 0.22)) drop-shadow(0 6px 10px oklch(0.3 0.1 265 / 0.12));
+  --label-shadow: 0 1px 0 oklch(0 0 0 / 0.15), 0 6px 14px -8px oklch(0.3 0.15 265 / 0.7);
+  --nav-shadow: 0 10px 30px -12px oklch(0.3 0.1 265 / 0.35);
+  --nav-glass: oklch(1 0 0 / 0.55);
+  --paper-veil: oklch(0.975 0.012 250 / 0.85);
+  --paper-veil-soft: oklch(0.975 0.012 250 / 0.4);
+}
+
+/* ---------- Airmail, dark: the same letter read under a desk lamp ---------- */
+.dark, .dark[data-theme="blue"] {
+  --ink: oklch(0.8 0.1 262);
+  --airmail-red: oklch(0.64 0.19 25);
+  --airmail-blue: oklch(0.62 0.17 262);
+  --paper: oklch(0.18 0.03 266);
+  --paper-deep: oklch(0.15 0.028 266);
+  --postmark: oklch(0.82 0.05 262 / 0.5);
+  --etiquette: oklch(0.6 0.17 262);
+  --etiquette-foreground: oklch(0.15 0.03 266);
+  --brand: oklch(0.66 0.18 263);
+  --brand-foreground: oklch(0.13 0.03 266);
+  --brand-soft: oklch(0.29 0.06 265);
+  --status-paid: oklch(0.78 0.14 70);
+  --status-shipped: oklch(0.74 0.12 245);
+  --success: oklch(0.76 0.14 155);
+  --status-refund: oklch(0.7 0.17 25);
+  --status-closed: oklch(0.65 0.02 260);
+  --foreground: oklch(0.95 0.012 255);
+  --card: oklch(0.22 0.035 266);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.23 0.035 266);
+  --popover-foreground: var(--foreground);
+  --secondary: oklch(0.27 0.045 266);
+  --secondary-foreground: oklch(0.93 0.02 258);
+  --muted: oklch(0.25 0.035 266);
+  --muted-foreground: oklch(0.72 0.03 260);
+  --accent: oklch(0.29 0.05 266);
+  --accent-foreground: var(--foreground);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.7 0.15 263);
+  --page-gradient: linear-gradient(180deg, oklch(0.22 0.05 266) 0%, var(--paper) 340px);
+  --sheet: oklch(0.24 0.04 266 / 0.72);
+  --sheet-border: oklch(1 0 0 / 0.08);
+  --sheet-shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 28px -18px oklch(0 0 0 / 0.7);
+  --envelope: oklch(0.235 0.035 266);
+  --envelope-shadow: 0 2px 4px oklch(0 0 0 / 0.3), 0 22px 40px -24px oklch(0 0 0 / 0.8);
+  --selection: oklch(0.4 0.12 264);
+  --nav-glass: oklch(0.24 0.04 266 / 0.55);
+  --paper-veil: oklch(0.18 0.03 266 / 0.85);
+  --paper-veil-soft: oklch(0.18 0.03 266 / 0.4);
+}
+
+/* ---------- Lime and deep green, light ---------- */
+[data-theme="lime"] {
+  --ink: oklch(0.32 0.08 150);
+  --airmail-red: oklch(0.88 0.21 125);
+  --airmail-blue: oklch(0.32 0.08 150);
+  --paper: oklch(0.975 0.02 120);
+  --paper-deep: oklch(0.94 0.04 120);
+  --etiquette: oklch(0.32 0.08 150);
+  --etiquette-foreground: oklch(0.92 0.2 125);
+  --brand: oklch(0.32 0.08 150);
+  --brand-foreground: oklch(0.93 0.2 125);
+  --brand-soft: oklch(0.94 0.1 125);
+  --foreground: oklch(0.24 0.06 150);
+  --secondary: oklch(0.94 0.06 125);
+  --secondary-foreground: oklch(0.26 0.07 150);
+  --accent: oklch(0.93 0.08 125);
+  --accent-foreground: oklch(0.26 0.07 150);
+  --ring: oklch(0.6 0.18 135);
+  --page-gradient: linear-gradient(180deg, oklch(0.95 0.06 120) 0%, var(--paper) 340px);
+  --selection: oklch(0.9 0.15 125);
+}
+.dark[data-theme="lime"] {
+  --paper: oklch(0.16 0.02 150);
+  --foreground: oklch(0.96 0.03 125);
+  --card: oklch(0.21 0.03 150);
+  --envelope: oklch(0.22 0.03 150);
+  --brand: oklch(0.88 0.21 125);
+  --brand-foreground: oklch(0.2 0.05 150);
+  --etiquette: oklch(0.88 0.21 125);
+  --etiquette-foreground: oklch(0.2 0.05 150);
+  --page-gradient: linear-gradient(180deg, oklch(0.2 0.04 150) 0%, var(--paper) 340px);
+}

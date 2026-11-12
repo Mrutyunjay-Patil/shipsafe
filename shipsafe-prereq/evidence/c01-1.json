@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/identity/oauth2/userinfo",
+    "params": {
+      "schema": "paypalv1.1"
+    },
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 724,
+  "debug_id": "f5874983fffc9",
+  "response": {
+    "user_id": "https://www.paypal.com/webapps/auth/identity/user/6DEN-SG4AMoOyi0yNbfaFTczLKiwjBVBlePVGHZKI6Y",
+    "sub": "https://www.paypal.com/webapps/auth/identity/user/6DEN-SG4AMoOyi0yNbfaFTczLKiwjBVBlePVGHZKI6Y"
+  }
+}
