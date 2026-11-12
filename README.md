@@ -1,6 +1,8 @@
 # ShipSafe
 
-**From a product photo to a protected PayPal sale, without leaving the phone.**
+**Snap your product to get a PayPal payment link. Snap your courier slip to keep the money.**
+
+The AI drafts and reads, code decides, and the seller approves. Built on PayPal's Payment Links and Buttons API, Orders v2 tracking and webhooks, with Claude.
 
 People who sell through Instagram DMs and WhatsApp chats already take PayPal. What they lack is the proof trail. When a buyer says "it never arrived", a seller with no tracking on the PayPal order has little to stand on. ShipSafe gives every chat sale that trail:
 

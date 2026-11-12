@@ -28,9 +28,19 @@ Hackathon: PayPal AI Hackathon, https://paypalaihackathon.devpost.com/. The dead
 
 ## 3. Text for the Devpost description
 
+**Title:** ShipSafe
+
+**Tagline:** Snap your product to get a PayPal payment link. Snap your courier slip to keep the money.
+
 ### Inspiration
 
-A lot of small sellers run their whole shop inside Instagram DMs and WhatsApp chats: handmade scarves, block-print textiles, home goods. Many already take PayPal. The weak spot comes after the payment. When a buyer says the parcel never arrived, the seller's case rests on tracking that's attached to the PayPal order, and most chat sellers never add it. They're on a phone at a post office counter, and typing a 13-character tracking number into the right order isn't going to happen. ShipSafe makes that step a photo.
+Priya sells hand-block-printed scarves from Jaipur to buyers abroad. She has no Shopify store and no developer, just a phone, Instagram, WhatsApp and the local post office. A buyer asks "is the blue one available, how do I pay?", and today a PayPal link answers that. Getting paid is the easy part now. **Keeping the money is not.**
+
+PayPal's Seller Protection for an Item Not Received claim asks for proof of delivery, including "an online and verifiable tracking number", the delivered status and a recipient address that matches the transaction. PayPal's Add Tracking API overview says that for tangible goods on hold, "the fastest way that you can access these funds is to send PayPal the tracking number". Store platforms such as Shopify and WooCommerce sync tracking to PayPal for their merchants. A seller who works out of chats has nothing doing that. They're at a post office counter, and typing a 13-character tracking number into the right PayPal order by hand isn't going to happen.
+
+There are a lot of these sellers. Statista estimates worldwide social commerce at about $586 billion in 2026. Bain and Flipkart's *How India Shops Online 2026* found that the number of online sellers in India tripled, with growth led by smaller towns. ShipSafe turns the step they skip into a photo.
+
+This is human-to-human social selling. There are no shopping agents and no agent checkout. The AI drafts and reads, code decides, and the seller approves every change.
 
 ### What it does
 
@@ -93,6 +103,20 @@ Claude Haiku 5.5 handles vision and text through Anthropic's SDK, with structure
 - Carriers beyond India Post, and courier pickup booking.
 - Disputes in the app: when a buyer opens one, ShipSafe prepares the tracking evidence.
 - Moving from the sandbox to live PayPal accounts.
+- Listings in Hindi and Tamil, for sellers who write to buyers in their own language.
+
+### Honest limits
+
+- Everything runs in the PayPal sandbox. The sandbox doesn't show held funds being released or a parcel being delivered, so the demo shows what is real: the tracker added to the PayPal order and read back, and PayPal's own seller protection status for each order.
+- ShipSafe doesn't promise protection. It gives the sale the delivery evidence PayPal's Seller Protection policy asks for.
+
+### Sources for the facts above
+
+- PayPal Seller Protection policy: https://www.paypal.com/us/legalhub/paypal/seller-protection
+- PayPal Add Tracking API overview: https://developer.paypal.com/docs/tracking/tracking-api/
+- PayPal Payment Links and Buttons API: https://developer.paypal.com/api/payment-links-buttons
+- Statista, social commerce market size, worldwide, chart updated May 2026.
+- Bain & Company and Flipkart, *How India Shops Online 2026*, published April 8, 2026.
 
 ## 4. Tools and how they're used
 
@@ -130,7 +154,14 @@ Live app (PayPal sandbox): https://mrutyunjaypatil.dev/shipsafe
 No-login preview with sample data: https://shipsafe-preview.patilmrutyunjay2.workers.dev
 ```
 
-## 6. Where each judging criterion is answered
+## 6. Prizes to select on the form
+
+- **Main prizes and honorable mentions:** Most Impactful and Best Use of PayPal + AI fit best.
+- **Best Use of Agentic Commerce:** your research suggests skipping this one, because your team entry is in that lane. ShipSafe's Ask can act, but only after the seller taps Confirm, and it never shops for anyone.
+- **Sponsor prize:** Best Use of AG Grid. The desktop order board is built with AG Grid.
+- **Limit:** a project can win at most one main prize or honorable mention, plus one sponsor prize.
+
+## 7. Where each judging criterion is answered
 
 The five criteria are weighted equally.
 
