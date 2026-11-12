@@ -1,6 +1,6 @@
 // Preview mode: the real screens running on sample data, with no PayPal or AI calls.
 // Turned on at build time with VITE_MOCK=1. State lives in memory and resets on reload.
-import type { Account, BuyerLink, Listing, ListingDetail, ListingDraft, ListingPatch, ListingPatchResult, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
+import type { Account, BuyerLink, ProposedAction, Listing, ListingDetail, ListingDraft, ListingPatch, ListingPatchResult, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
@@ -233,14 +233,18 @@ export const mockApi = {
     return { ok: true }
   },
   refund: async (id: string) => { await wait(900); update(id, { status: 'REFUNDED' }); return { refund_id: 'DEMO', status: 'COMPLETED' } },
-  ask: async (question: string) => {
+  ask: async (question: string, _history: unknown[] = []): Promise<{ answer: string; actions: ProposedAction[] }> => {
     await wait(1400)
     const q = question.toLowerCase()
     if (q.includes('protect'))
-      return { answer: 'One paid order is not protected yet: 0AY2418885929025Y, the Slate blue paisley scarf going to San Jose, US. Scan its courier slip to add tracking. The Montreal order has tracking but PayPal marks it only partially eligible.' }
+      return { actions: [], answer: '**1 paid order isn\'t protected yet.**\n\n| Order | Product | Ship to | Next step |\n|---|---|---|---|\n| `0AY2418885929025Y` | Paisley scarf, Slate blue | San Jose, US | Scan the courier slip |\n\nThe Montreal order has tracking, but PayPal marks it only *partially eligible*.' }
     if (q.includes('ship'))
-      return { answer: 'Ship 1 order today: the Slate blue paisley scarf to San Jose, CA 95131. Also refund the London buyer who paid after it sold out.' }
-    if (q.includes('dispute')) return { answer: 'No open disputes on your PayPal account.' }
-    return { answer: 'Your scarf is the best seller: 3 paid orders, $76 in total. The brass diya has 1 order.' }
+      return { actions: [], answer: 'Ship **1 order** today:\n\n- Slate blue paisley scarf to **San Jose, CA 95131**\n\nThe London buyer paid after the scarf sold out, so that order needs a refund instead.' }
+    if (q.includes('dispute') || q.includes('refund'))
+      return {
+        answer: 'No open disputes on your orders.\n\nOne order needs a refund: the London buyer paid **$26.00** after the last scarf sold. I\'ve set up the refund below.',
+        actions: [{ id: 'act_refund', kind: 'refund', order_id: orders.find((o) => o.status === 'NEEDS_REFUND')?.id ?? '', summary: 'Refund $26.00 for Block-print paisley scarf to London, GB. They paid after it sold out.' }],
+      }
+    return { actions: [], answer: '### Sales by product\n\n| Product | Orders | Revenue |\n|---|---:|---:|\n| Block-print paisley scarf | 3 | $76.00 |\n| Brass lotus diya, pair | 1 | $18.00 |\n\nThe **scarf** is your best seller. Slate blue outsells Indigo 2 to 1.' }
   },
 }
