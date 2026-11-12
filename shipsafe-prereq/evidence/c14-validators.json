@@ -1,0 +1,62 @@
+[
+  {
+    "case": "s10_valid('EE482913507IN')",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('EE482913508IN')",
+    "expected": false,
+    "got": false,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('RR287043775IN')",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('EE 482 913 507 IN')",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('EE48291350IN')",
+    "expected": false,
+    "got": false,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('ee482913507in')",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "s10_valid('EE123456785IN')",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "address_match Berlin/10119/DE",
+    "expected": true,
+    "got": true,
+    "pass": true
+  },
+  {
+    "case": "address_match Munich vs Berlin",
+    "expected": false,
+    "got": false,
+    "pass": true
+  },
+  {
+    "case": "address_match K\u00f6ln vs KOLN",
+    "expected": true,
+    "got": true,
+    "pass": true
+  }
+]
