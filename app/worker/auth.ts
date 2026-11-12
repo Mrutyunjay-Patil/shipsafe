@@ -14,7 +14,9 @@ const COOKIE = 'ss_session'
 const STATE_COOKIE = 'ss_oauth_state'
 const DAYS = 7
 
-const callbackUrl = (c: Context<AppEnv>) => new URL('/auth/paypal/callback', c.req.url).toString()
+// PayPal must know the return URL. LOGIN_REDIRECT_URI lets sign-in return through another
+// registered URL that forwards here (see the probe Worker); unset, the app's own callback is used.
+const callbackUrl = (c: Context<AppEnv>) => c.env.LOGIN_REDIRECT_URI || new URL('/auth/paypal/callback', c.req.url).toString()
 
 async function sha256(s: string) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
@@ -22,7 +24,7 @@ async function sha256(s: string) {
 }
 
 export function startLogin(c: Context<AppEnv>) {
-  const state = crypto.randomUUID()
+  const state = `app.${crypto.randomUUID()}`
   setCookie(c, STATE_COOKIE, state, { httpOnly: true, secure: true, sameSite: 'Lax', path: '/auth', maxAge: 600 })
   return c.redirect(loginUrl(c.env, callbackUrl(c), state))
 }

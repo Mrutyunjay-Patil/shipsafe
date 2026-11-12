@@ -37,7 +37,7 @@ export default function Ask() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-md flex-col px-5 pt-[max(env(safe-area-inset-top),20px)]">
+    <main className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-md flex-col px-5 lg:max-w-2xl lg:pt-8 pt-[max(env(safe-area-inset-top),20px)]">
       {msgs.length === 0 ? (
         <section className="flex flex-1 flex-col pt-3">
           <h1 className="text-[26px] font-semibold leading-tight">Ask your shop</h1>

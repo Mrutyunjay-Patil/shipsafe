@@ -4,8 +4,8 @@ import { addressMatch, carrierEnum, normaliseTracking, s10Valid } from '../share
 import { askShop } from './ask'
 import { currentSeller, finishLogin, logout, requireSeller, startLogin } from './auth'
 import { type AppEnv, newId } from './env'
-import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture } from './paypal'
-import { draftListing, mediaType, readSlip } from './vision'
+import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture, updateLink } from './paypal'
+import { describeListing, draftListing, mediaType, readSlip } from './vision'
 import { handleWebhook } from './webhooks'
 
 const app = new Hono<AppEnv>()
@@ -59,6 +59,7 @@ api.post('/listings/draft', async (c) => {
 const NewListing = z.object({
   title: z.string().min(3).max(127),
   description: z.string().min(1).max(500),
+  attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).default([]),
   colours: z.array(z.string().min(1).max(40)).max(10).default([]),
   category: z.string().max(60).optional(),
   price: z.string().regex(/^\d+(\.\d{1,2})?$/),
@@ -71,16 +72,26 @@ api.post('/listings', async (c) => {
   const b = NewListing.parse(await c.req.json())
   const id = newId('lst')
   const price = Number(b.price).toFixed(2)
+  const details = b.attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
   const link = await createLink(c.env, {
-    listingId: id, title: b.title, description: b.description, price, currency: 'USD', colours: b.colours,
+    listingId: id, title: b.title, description: details ? `${b.description}\n${details}` : b.description, price, currency: 'USD', colours: b.colours,
     returnUrl: new URL('/thanks', c.req.url).toString(),
   })
   await c.env.DB.prepare(
-    `INSERT INTO listings (id, seller_id, title, description, colours, category, price, quantity, photo_key, plb_id, plb_url, status, ai_confidence)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?, 'ACTIVE', ?)`,
-  ).bind(id, c.get('sellerId'), b.title, b.description, JSON.stringify(b.colours), b.category ?? null, price, b.quantity,
+    `INSERT INTO listings (id, seller_id, title, description, attributes, colours, category, price, quantity, photo_key, plb_id, plb_url, status, ai_confidence)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?, 'ACTIVE', ?)`,
+  ).bind(id, c.get('sellerId'), b.title, b.description, JSON.stringify(b.attributes), JSON.stringify(b.colours), b.category ?? null, price, b.quantity,
     b.photo_key ?? null, link.id, link.url, b.ai_confidence ?? null).run()
   return c.json({ id, plb_id: link.id, url: link.url }, 201)
+})
+
+api.post('/listings/describe', async (c) => {
+  const b = z.object({
+    title: z.string().min(1).max(127), category: z.string().max(60).optional(), current: z.string().max(500).optional(),
+    colours: z.array(z.string().max(40)).max(10).default([]),
+    attributes: z.array(z.object({ name: z.string().max(40), value: z.string().max(120) })).max(12),
+  }).parse(await c.req.json())
+  return c.json({ description: await describeListing(c.env, b) })
 })
 
 api.get('/listings', async (c) => {
@@ -88,7 +99,7 @@ api.get('/listings', async (c) => {
     `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
      FROM listings l WHERE seller_id = ? AND status != 'ARCHIVED' ORDER BY created_at DESC`,
   ).bind(c.get('sellerId')).all()
-  return c.json(rows.results.map((r: any) => ({ ...r, colours: JSON.parse(r.colours) })))
+  return c.json(rows.results.map((r: any) => ({ ...r, colours: JSON.parse(r.colours), attributes: JSON.parse(r.attributes ?? '[]') })))
 })
 
 api.get('/listings/:id', async (c) => {
@@ -101,7 +112,29 @@ api.get('/listings/:id', async (c) => {
     `SELECT o.*, l.title, l.photo_key FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
      WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
   ).bind(l.id).all()
-  return c.json({ ...l, colours: JSON.parse(l.colours), orders: orders.results })
+  return c.json({ ...l, colours: JSON.parse(l.colours), attributes: JSON.parse(l.attributes ?? '[]'), orders: orders.results })
+})
+
+// Edit a listing's details and description. A live PayPal link is updated in place, so
+// buyers see the new details on PayPal's page; a closed link only updates ShipSafe.
+api.patch('/listings/:id', async (c) => {
+  const b = z.object({
+    description: z.string().min(1).max(500).optional(),
+    attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).optional(),
+  }).parse(await c.req.json())
+  const l = await c.env.DB.prepare('SELECT * FROM listings WHERE id = ? AND seller_id = ?').bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  if (!l) return c.json({ error: 'not_found' }, 404)
+  const description = b.description ?? l.description
+  const attributes = b.attributes ?? JSON.parse(l.attributes ?? '[]')
+  if (l.plb_id && l.status === 'ACTIVE') {
+    const details = attributes.map((a: { name: string; value: string }) => `${a.name}: ${a.value}`).join(' · ')
+    await updateLink(c.env, l.plb_id, {
+      listingId: l.id, title: l.title, description: details ? `${description}\n${details}` : description,
+      price: l.price, currency: l.currency, colours: JSON.parse(l.colours), returnUrl: new URL('/thanks', c.req.url).toString(),
+    })
+  }
+  await c.env.DB.prepare('UPDATE listings SET description = ?, attributes = ? WHERE id = ?').bind(description, JSON.stringify(attributes), l.id).run()
+  return c.json({ ok: true, paypal_updated: !!(l.plb_id && l.status === 'ACTIVE') })
 })
 
 api.delete('/listings/:id', async (c) => {

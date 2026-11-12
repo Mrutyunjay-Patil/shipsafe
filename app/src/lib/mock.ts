@@ -45,10 +45,36 @@ let orders: OrderDetail[] = [
   },
 ]
 
-const listings: Omit<Listing, 'sold'>[] = [
-  { id: 'lst_scarf', title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', price: '26.00', currency: 'USD', quantity: 5, photo_key: scarf, plb_id: 'PLB-5PGXCE53JB4F', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F', status: 'ACTIVE', created_at: ago(80) },
-  { id: 'lst_diya', title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', price: '18.00', currency: 'USD', quantity: 1, photo_key: diya, plb_id: 'PLB-DIYA0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DIYA0001PREV', status: 'SOLD_OUT', created_at: ago(120) },
-  { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 5, photo_key: tote, plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
+// Two weeks of earlier sample sales, so charts and activity have history to show.
+const CITIES: [string, string, string, string][] = [
+  ['Toronto', 'ON', 'M5V 2T6', 'CA'], ['Amsterdam', '', '1015 CJ', 'NL'], ['Melbourne', 'VIC', '3065', 'AU'],
+  ['Austin', 'TX', '78701', 'US'], ['Paris', '', '75003', 'FR'], ['Seattle', 'WA', '98101', 'US'],
+  ['Dublin', '', 'D02 X285', 'IE'], ['Singapore', '', '048616', 'SG'], ['Munich', '', '80331', 'DE'],
+  ['Brooklyn', 'NY', '11201', 'US'], ['Lisbon', '', '1100-148', 'PT'],
+]
+const history: OrderDetail[] = CITIES.map(([city, state, pc, cc], i) => {
+  const kind = i % 3 === 0 ? 'diya' : i % 3 === 1 ? 'scarf' : 'tote'
+  const paid = 30 + i * 28
+  const n = (5566778 + i * 7).toString().padStart(8, '0')
+  return {
+    id: `HIST${String(i).padStart(2, '0')}SAMPLEORDER`, listing_id: kind === 'diya' ? 'lst_diya' : kind === 'scarf' ? 'lst_scarf' : 'lst_bag',
+    capture_id: `HISTCAP${i}`, status: i === 4 ? 'REFUNDED' : 'PROTECTED',
+    amount: kind === 'diya' ? '18.00' : kind === 'scarf' ? '26.00' : '38.00', currency: 'USD',
+    variant: kind === 'scarf' ? (i % 2 ? 'Indigo' : 'Slate blue') : kind === 'tote' ? 'Natural' : null,
+    title: kind === 'diya' ? 'Brass lotus diya, pair' : kind === 'scarf' ? 'Block-print paisley scarf' : 'Jute tote bag',
+    photo_key: kind === 'diya' ? diya : kind === 'scarf' ? scarf : tote,
+    buyer_country: cc, buyer_account_status: 'VERIFIED', ship_name: 'Sample buyer', ship_line1: '1 Sample Street', ship_line2: null,
+    ship_city: city, ship_state: state || null, ship_postcode: pc, ship_country: cc, seller_protection: 'ELIGIBLE',
+    paid_at: ago(paid), shipped_at: i === 4 ? null : ago(paid - 14 - (i % 4) * 5),
+    trackers: i === 4 ? [] : [{ id: `HISTCAP${i}-EE${n}IN`, tracking_number: `EE${n}IN`, carrier: 'INDIA_POST_INT', status: 'SHIPPED', created_at: ago(paid - 16), checks: {} }],
+  }
+})
+orders = [...orders, ...history]
+
+let listings: Omit<Listing, 'sold'>[] = [
+  { id: 'lst_scarf', title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', attributes: [{ name: 'Material', value: '100% cotton' }, { name: 'Size', value: '180 × 70 cm' }, { name: 'Print technique', value: 'Hand block print' }, { name: 'Care', value: 'Hand wash cold' }], colours: ['Slate blue', 'Indigo'], category: 'Scarves', price: '26.00', currency: 'USD', quantity: 10, photo_key: scarf, plb_id: 'PLB-5PGXCE53JB4F', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F', status: 'ACTIVE', created_at: ago(80) },
+  { id: 'lst_diya', title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', attributes: [{ name: 'Material', value: 'Solid brass' }, { name: 'Height', value: '7 cm' }, { name: 'Set of', value: '2' }], colours: [], category: 'Home decor', price: '18.00', currency: 'USD', quantity: 5, photo_key: diya, plb_id: 'PLB-DIYA0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DIYA0001PREV', status: 'SOLD_OUT', created_at: ago(120) },
+  { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', attributes: [{ name: 'Material', value: 'Jute, cotton handles' }, { name: 'Size', value: '40 × 35 × 12 cm' }], colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 8, photo_key: tote, plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
 ]
 
 const summary = (o: OrderDetail): Order => {
@@ -100,11 +126,17 @@ export const mockApi = {
     // The sample draft follows what was photographed, judged from the file name.
     const n = photo.name.toLowerCase()
     const draft: ListingDraft = n.includes('tote') || n.includes('bag')
-      ? { title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', suggested_price_usd: 38, confidence: 0.82 }
+      ? { title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', suggested_price_usd: 38, confidence: 0.82, attributes: [{ name: 'Handles', value: 'Rolled cotton' }], suggested_attributes: ['Material', 'Size', 'Closure', 'Care'] }
       : n.includes('diya') || n.includes('lamp')
-        ? { title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', suggested_price_usd: 18, confidence: 0.84 }
-        : { title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86 }
+        ? { title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', suggested_price_usd: 18, confidence: 0.84, attributes: [{ name: 'Shape', value: 'Lotus' }], suggested_attributes: ['Material', 'Height', 'Weight', 'Set of'] }
+        : { title: 'Block-print paisley scarf', description: 'Scarf with a paisley print and tasselled edges.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86, attributes: [{ name: 'Pattern', value: 'Paisley' }, { name: 'Edges', value: 'Tasselled' }], suggested_attributes: ['Material', 'Size', 'Print technique', 'Care'] }
     return { photo_key: 'demo', draft, ms: 1800 }
+  },
+  describeListing: async (b: { title: string; colours: string[]; attributes: { name: string; value: string }[] }) => {
+    await wait(1200)
+    const facts = b.attributes.filter((a) => a.value).map((a) => `${a.name.toLowerCase()} ${a.value.toLowerCase()}`)
+    const d = `${b.title}${facts.length ? `, ${facts.join(', ')}` : ''}${b.colours.length > 1 ? `. Comes in ${b.colours.join(' or ')}` : ''}`
+    return { description: (d.charAt(0).toUpperCase() + d.slice(1) + '.').slice(0, 240) }
   },
   createListing: async () => {
     await wait(1200)
@@ -120,6 +152,11 @@ export const mockApi = {
     if (!l) throw new Error('not_found')
     const own = orders.filter((o) => o.listing_id === id)
     return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary) }
+  },
+  updateListing: async (id: string, b: { description?: string; attributes?: { name: string; value: string }[] }) => {
+    await wait(700)
+    listings = listings.map((l) => (l.id === id ? { ...l, ...(b.description ? { description: b.description } : {}), ...(b.attributes ? { attributes: b.attributes } : {}) } : l))
+    return { ok: true as const, paypal_updated: listings.find((l) => l.id === id)?.status === 'ACTIVE' }
   },
   archiveListing: async () => ({ ok: true }),
   orders: async () => { await wait(300); maybeArrive(); return orders.map(summary) },

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Check, Copy, Loader2, ScanLine, TriangleAlert, X } from 'lucide-react'
+import { ArrowLeft, Check, Copy, ImageUp, Loader2, ScanLine, TriangleAlert, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
@@ -32,11 +32,14 @@ function CheckLine({ ok, label, hint }: { ok: boolean; label: string; hint?: str
   )
 }
 
+const fmtWhen = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+
 export default function OrderDetail() {
   const { id = '' } = useParams()
   const nav = useNavigate()
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   const [slip, setSlip] = useState<SlipResult | null>(null)
   const [number, setNumber] = useState('')
   const [justStamped, setJustStamped] = useState(false)
@@ -88,6 +91,13 @@ export default function OrderDetail() {
   if (!o) return <p className="px-6 py-20 text-center text-muted-foreground">This order isn't in your shop.</p>
 
   const active = o.trackers.filter((t) => t.status === 'SHIPPED')
+  const firstTracker = [...active].sort((x, y) => x.created_at.localeCompare(y.created_at))[0]
+  const journey = [
+    { label: 'Paid with PayPal', at: o.paid_at, note: money(o.amount, o.currency), pending: '' },
+    { label: 'Posted', at: o.shipped_at, note: firstTracker ? carrierName(firstTracker.carrier) : undefined, pending: 'Post it and scan the courier slip' },
+    { label: 'Tracking on PayPal', at: firstTracker?.created_at ?? null, note: firstTracker ? `${firstTracker.tracking_number}, buyer emailed` : undefined, pending: 'Sent when you confirm the slip' },
+    { label: 'Shipped safe', at: o.status === 'PROTECTED' ? (firstTracker?.created_at ?? o.shipped_at) : null, note: 'Seller Protection has its proof', pending: o.status === 'REFUNDED' ? 'Refunded, no longer needed' : 'Once PayPal has the tracking' },
+  ]
   const posted = active.length > 0
   const protectedNow = o.status === 'PROTECTED'
   const numberOk = s10Valid(number)
@@ -98,7 +108,7 @@ export default function OrderDetail() {
     .join('\n')
 
   return (
-    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)]">
+    <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
       <header className="flex items-center gap-1 py-2">
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />
@@ -107,6 +117,8 @@ export default function OrderDetail() {
         <StatusBadge status={o.status} short className="shrink-0" />
       </header>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
+      <div>
       <Envelope inTransit={o.status !== 'REFUNDED'} className="mt-1">
         <div className="relative px-5 pb-5 pt-4">
           <div className="flex items-start justify-between gap-4">
@@ -154,15 +166,9 @@ export default function OrderDetail() {
         </div>
       </Envelope>
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 px-1 text-[13px]">
-        <dt className="text-muted-foreground">Buyer on PayPal</dt>
-        <dd className="text-right font-medium">{o.buyer_account_status === 'VERIFIED' ? 'Verified account' : 'Unverified account'}</dd>
-        <dt className="text-muted-foreground">Seller protection</dt>
-        <dd className="text-right font-medium">{o.seller_protection ? sentenceCase(o.seller_protection) : 'Not reported'}</dd>
-        <dt className="text-muted-foreground">PayPal order</dt>
-        <dd className="tracking-code truncate text-right text-[12px]">{o.id}</dd>
-      </dl>
 
+      </div>
+      <div>
       {o.status === 'NEEDS_REFUND' && (
         <section className="mt-5 rounded-xl border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_8%,var(--card))] p-4">
           <p className="flex items-center gap-2 font-semibold"><TriangleAlert className="size-4 text-status-refund" /> This buyer paid after it sold out</p>
@@ -194,25 +200,26 @@ export default function OrderDetail() {
 
       {canShip && !slip && (
         <section className="mt-5">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }}
-          />
-          <Button
-            size="lg"
-            variant={posted ? 'outline' : 'default'}
-            className="h-[52px] w-full rounded-xl text-[15px]"
-            disabled={read.isPending}
-            onClick={() => fileRef.current?.click()}
-          >
-            {read.isPending ? <><Loader2 className="animate-spin" /> Reading the slip</> : <><ScanLine /> {posted ? 'Scan another slip' : 'Scan the courier slip'}</>}
-          </Button>
+          <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }} />
+          <div className="grid grid-cols-[1fr_auto] gap-2.5">
+            <Button
+              size="lg"
+              variant={posted ? 'outline' : 'default'}
+              className="h-[52px] rounded-xl text-[15px]"
+              disabled={read.isPending}
+              onClick={() => cameraRef.current?.click()}
+            >
+              {read.isPending ? <><Loader2 className="animate-spin" /> Reading the slip</> : <><ScanLine /> {posted ? 'Scan another slip' : 'Scan the courier slip'}</>}
+            </Button>
+            <Button size="lg" variant="outline" className="h-[52px] rounded-xl" disabled={read.isPending} onClick={() => fileRef.current?.click()} aria-label="Upload a slip photo from the gallery">
+              <ImageUp /> Gallery
+            </Button>
+          </div>
           {!posted && (
-            <p className="mt-2 px-1 text-center text-[13px] text-muted-foreground">Take the photo at the counter. You'll check everything before PayPal sees it.</p>
+            <p className="mt-2 px-1 text-center text-[13px] text-muted-foreground">Snap it at the counter, or pick a photo you already took. You'll check everything before PayPal sees it.</p>
           )}
         </section>
       )}
@@ -250,6 +257,48 @@ export default function OrderDetail() {
           </div>
         </section>
       )}
+      <div className="lg:mt-1">
+      <section className="sheet mt-5 rounded-2xl p-4">
+        <h2 className="text-[15px] font-semibold">Journey</h2>
+        <ol className="mt-3">
+          {journey.map((j, i) => (
+            <li key={j.label} className="relative flex gap-3 pb-4 last:pb-0">
+              {i < journey.length - 1 && <span aria-hidden="true" className={cn('absolute left-[11px] top-6 h-[calc(100%-16px)] w-[2px] rounded-full', j.at ? 'bg-ink/40' : 'bg-border')} />}
+              <span className={cn('grid size-6 shrink-0 place-items-center rounded-full', j.at ? 'bg-ink text-paper' : 'border-2 border-dashed border-border text-muted-foreground')}>
+                {j.at ? <Check className="size-3.5" strokeWidth={3} /> : <span className="size-1.5 rounded-full bg-border" />}
+              </span>
+              <span className="min-w-0 flex-1 leading-snug">
+                <span className={cn('block text-[14px] font-medium', !j.at && 'text-muted-foreground')}>{j.label}</span>
+                <span className="block text-[12px] text-muted-foreground">{j.at ? `${fmtWhen(j.at)}${j.note ? ` · ${j.note}` : ''}` : j.pending}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="sheet mt-4 divide-y divide-border/70 rounded-2xl">
+        <h2 className="px-4 pb-2 pt-4 text-[15px] font-semibold">PayPal details</h2>
+        {[
+          ['Buyer account', o.buyer_account_status === 'VERIFIED' ? 'Verified by PayPal' : 'Not verified', null],
+          ['Seller protection', o.seller_protection ? sentenceCase(o.seller_protection) : 'Not reported', null],
+          ['Order ID', o.id, o.id],
+          ['Capture ID', o.capture_id, o.capture_id],
+        ].map(([k, v, copy]) => (
+          <div key={k} className="flex items-center justify-between gap-3 px-4 py-3 text-[14px]">
+            <span className="text-muted-foreground">{k}</span>
+            {copy ? (
+              <button className="tracking-code inline-flex min-w-0 items-center gap-1.5 truncate text-[12px] hover:text-brand" onClick={() => { navigator.clipboard.writeText(copy); toast.success(`${k} copied`) }}>
+                <span className="truncate">{v}</span> <Copy className="size-3.5 shrink-0" />
+              </button>
+            ) : (
+              <span className="font-medium">{v}</span>
+            )}
+          </div>
+        ))}
+      </section>
+      </div>
+      </div>
+      </div>
     </main>
   )
 }

@@ -57,7 +57,7 @@ try {
     }
     if (step === 'sell') {
       await p.goto(`${base}/sell`)
-      await p.setInputFiles('input[type=file]', path.join(here, '../public/sample/paisley-scarf.jpg'))
+      await p.setInputFiles('input[type=file]:not([capture])', path.join(here, '../public/sample/paisley-scarf.jpg'))
       await p.getByRole('button', { name: /Make the PayPal link/ }).waitFor({ timeout: 60000 })
       await shot(p, '2-draft')
       console.log('draft title:', await p.inputValue('#title'), '| price:', await p.inputValue('#price'))
@@ -100,7 +100,7 @@ try {
     if (step === 'ship') {
       await p.goto(`${base}/orders/${M.order}`)
       await p.getByRole('button', { name: /Scan the courier slip/ }).waitFor({ timeout: 20000 })
-      await p.setInputFiles('input[type=file]', path.join(here, 'slip.png'))
+      await p.setInputFiles('input[type=file]:not([capture])', path.join(here, 'slip.png'))
       await p.getByText('Check before PayPal sees it').waitFor({ timeout: 60000 })
       await shot(p, '5-checks')
       await p.getByRole('button', { name: /Send tracking to PayPal/ }).click()
