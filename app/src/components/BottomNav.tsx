@@ -36,12 +36,12 @@ export function BottomNav() {
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),10px)]">
       {/* Content scrolling under the nav softens into a blur instead of meeting a hard edge. */}
       <div aria-hidden="true" className="nav-scrim pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[calc(100%+56px)]" />
-      <div className="nav-glass mx-auto flex max-w-md items-center rounded-[22px] px-1.5 shadow-[var(--nav-shadow)]">
+      <div className="nav-glass mx-auto flex max-w-md items-center rounded-4xl px-1.5 shadow-[var(--nav-shadow)]">
         {items.slice(0, 2).map(link)}
         <NavLink
           to="/sell"
           aria-label="List a product"
-          className="mx-1 -mt-7 grid size-[58px] shrink-0 place-items-center rounded-[18px] bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)] ring-4 ring-paper transition-transform duration-200 ease-out active:scale-95"
+          className="mx-1 -mt-7 grid size-[58px] shrink-0 place-items-center rounded-3xl bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)] ring-4 ring-paper transition-transform duration-200 ease-out active:scale-95"
         >
           <Plus className="size-7" strokeWidth={2.4} />
         </NavLink>

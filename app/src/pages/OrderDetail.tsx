@@ -3,7 +3,7 @@ import { ArrowLeft, Check, Copy, Loader2, ScanLine, TriangleAlert, X } from 'luc
 import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
-import { carrierName, Destination, Envelope, ParAvion, Postmark, postmarkDate, sentenceCase, Stamp } from '@/components/airmail'
+import { carrierName, Destination, Envelope, ShippedSafe, Postmark, postmarkDate, sentenceCase, Stamp } from '@/components/airmail'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -80,7 +80,7 @@ export default function OrderDetail() {
     return (
       <div className="mx-auto max-w-md space-y-3 px-5 pt-16">
         <Skeleton className="h-[300px] rounded-2xl" />
-        <Skeleton className="h-14 rounded-[14px]" />
+        <Skeleton className="h-14 rounded-xl" />
       </div>
     )
   }
@@ -103,17 +103,17 @@ export default function OrderDetail() {
         <Button variant="ghost" size="icon" className="-ml-2 size-11 rounded-full" onClick={() => nav(-1)} aria-label="Back">
           <ArrowLeft className="size-5" />
         </Button>
-        <h1 className="flex-1 truncate text-[17px] font-semibold">Order to {o.ship_city ?? o.ship_country ?? "your buyer"}</h1>
-        <StatusBadge status={o.status} />
+        <h1 className="min-w-0 flex-1 truncate text-[17px] font-semibold">Order to {o.ship_city ?? o.ship_country ?? "your buyer"}</h1>
+        <StatusBadge status={o.status} short className="shrink-0" />
       </header>
 
       <Envelope inTransit={o.status !== 'REFUNDED'} className="mt-1">
         <div className="relative px-5 pb-5 pt-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
+              <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92]" />
               <p className="money mt-3 text-[28px] font-semibold leading-none">{money(o.amount, o.currency)}</p>
-              <p className="mt-1.5 text-sm text-muted-foreground">{[o.title, o.variant].filter(Boolean).join(' · ')}</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">{o.title}{o.variant && <span className="whitespace-nowrap"> · {o.variant}</span>}</p>
             </div>
             <Stamp src={photoUrl(o.photo_key)} className="h-[86px] w-[72px] rotate-[3deg]" />
           </div>
@@ -127,7 +127,7 @@ export default function OrderDetail() {
                 waves={false}
                 className={cn('size-[68px] -rotate-[10deg]', justStamped && 'strike')}
               />
-              {protectedNow && <ParAvion className={cn('-rotate-2', justStamped && 'settle')} />}
+              {protectedNow && <ShippedSafe className={cn('-rotate-2', justStamped && 'settle')} />}
             </div>
           )}
 
@@ -164,10 +164,10 @@ export default function OrderDetail() {
       </dl>
 
       {o.status === 'NEEDS_REFUND' && (
-        <section className="mt-5 rounded-[14px] border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_8%,var(--card))] p-4">
+        <section className="mt-5 rounded-xl border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_8%,var(--card))] p-4">
           <p className="flex items-center gap-2 font-semibold"><TriangleAlert className="size-4 text-status-refund" /> This buyer paid after it sold out</p>
           <p className="mt-1 text-sm text-muted-foreground">Refund them in full. PayPal emails the buyer and the money goes back the same way it came.</p>
-          <Button variant="destructive" size="lg" className="mt-4 h-12 w-full rounded-[14px]" disabled={refund.isPending} onClick={() => refund.mutate()}>
+          <Button variant="destructive" size="lg" className="mt-4 h-12 w-full rounded-xl" disabled={refund.isPending} onClick={() => refund.mutate()}>
             {refund.isPending && <Loader2 className="animate-spin" />} Refund {money(o.amount, o.currency)}
           </Button>
         </section>
@@ -205,7 +205,7 @@ export default function OrderDetail() {
           <Button
             size="lg"
             variant={posted ? 'outline' : 'default'}
-            className="h-[52px] w-full rounded-[14px] text-[15px]"
+            className="h-[52px] w-full rounded-xl text-[15px]"
             disabled={read.isPending}
             onClick={() => fileRef.current?.click()}
           >
@@ -227,7 +227,7 @@ export default function OrderDetail() {
             autoCapitalize="characters"
             spellCheck={false}
             onChange={(e) => setNumber(e.target.value.toUpperCase().replace(/\s+/g, ''))}
-            className="tracking-code mt-1.5 h-14 rounded-[12px] bg-card text-[20px] font-semibold"
+            className="tracking-code mt-1.5 h-14 rounded-lg bg-card text-[20px] font-semibold"
           />
           <ul className="mt-2 divide-y divide-border/70">
             <CheckLine ok={slip.checks.readable} label="It's a courier receipt" hint={`Sent to PayPal as ${carrierName(slip.carrier.carrier, slip.carrier.carrier_name_other)}`} />
@@ -243,8 +243,8 @@ export default function OrderDetail() {
             <p className="mt-2 text-[13px] text-muted-foreground">The address doesn't match. Only send it if you really posted to the address above.</p>
           )}
           <div className="mt-4 grid grid-cols-[auto_1fr] gap-2.5">
-            <Button variant="outline" size="lg" className="h-[52px] rounded-[14px]" onClick={() => setSlip(null)}>Rescan</Button>
-            <Button size="lg" className="h-[52px] rounded-[14px] text-[15px]" disabled={track.isPending || blocked || number.length < 8} onClick={() => track.mutate()}>
+            <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => setSlip(null)}>Rescan</Button>
+            <Button size="lg" className="h-[52px] rounded-xl text-[15px]" disabled={track.isPending || blocked || number.length < 8} onClick={() => track.mutate()}>
               {track.isPending && <Loader2 className="animate-spin" />} Send tracking to PayPal
             </Button>
           </div>

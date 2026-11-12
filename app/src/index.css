@@ -60,13 +60,14 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --radius-xs: var(--r-xs);
+    --radius-sm: var(--r-sm);
+    --radius-md: var(--r-md);
+    --radius-lg: var(--r-lg);
+    --radius-xl: var(--r-xl);
+    --radius-2xl: var(--r-2xl);
+    --radius-3xl: var(--r-3xl);
+    --radius-4xl: var(--r-4xl);
 }
 
 @layer base {
@@ -90,6 +91,7 @@
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
   a { text-underline-offset: 3px; }
   h1, h2, h3 { text-wrap: balance; letter-spacing: -0.025em; }
+  p, dd, address { text-wrap: pretty; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
 }
@@ -107,7 +109,7 @@
     position: relative;
     background: var(--envelope);
     box-shadow: var(--envelope-shadow);
-    border-radius: 16px;
+    border-radius: var(--r-2xl);
     overflow: hidden;
   }
   /* The red and blue airmail chevron, used only as the edge of something in transit. */

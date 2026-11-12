@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 
 type Form = { title: string; description: string; colours: string[]; category: string; price: string; quantity: number }
 
-const field = 'h-12 rounded-[12px] bg-card text-[16px]'
+const field = 'h-12 rounded-lg bg-card text-[16px]'
 
 export default function Sell() {
   const qc = useQueryClient()
@@ -81,15 +81,15 @@ export default function Sell() {
               </div>
               <Stamp src={preview} className="h-[96px] w-[80px] rotate-[3deg]" />
             </div>
-            <p className="tracking-code mt-5 select-all break-all rounded-[10px] bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{link.url}</p>
+            <p className="tracking-code mt-5 select-all break-all rounded-md bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{link.url}</p>
           </div>
         </Envelope>
 
         <div className="mt-4 grid grid-cols-[auto_1fr] gap-2.5">
-          <Button variant="outline" size="lg" className="h-[52px] rounded-[14px]" onClick={() => { navigator.clipboard.writeText(link.url); toast.success('Link copied') }}>
+          <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => { navigator.clipboard.writeText(link.url); toast.success('Link copied') }}>
             <Copy /> Copy
           </Button>
-          <Button size="lg" className="h-[52px] rounded-[14px] text-[15px]" onClick={share}>
+          <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={share}>
             <Send /> Send to a chat
           </Button>
         </div>
@@ -122,7 +122,7 @@ export default function Sell() {
         ) : (
           <span className="stamp flex size-full -rotate-1 flex-col items-center justify-center">
             <span className="flex size-full flex-col items-center justify-center gap-3 border border-dashed border-ink/25 bg-envelope text-center">
-              <span className="grid size-16 place-items-center rounded-[18px] bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)]">
+              <span className="grid size-16 place-items-center rounded-3xl bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)]">
                 <Camera className="size-7" />
               </span>
               <span className="text-[17px] font-semibold text-foreground">Take a photo</span>
@@ -145,7 +145,7 @@ export default function Sell() {
       {form && (
         <form className="mt-8 space-y-5" onSubmit={(e) => { e.preventDefault(); create.mutate() }}>
           {confidence !== undefined && confidence < 0.6 && (
-            <p className="rounded-[12px] border border-[color-mix(in_oklch,var(--status-paid)_35%,transparent)] bg-[color-mix(in_oklch,var(--status-paid)_10%,var(--card))] px-3.5 py-2.5 text-sm">
+            <p className="rounded-lg border border-[color-mix(in_oklch,var(--status-paid)_35%,transparent)] bg-[color-mix(in_oklch,var(--status-paid)_10%,var(--card))] px-3.5 py-2.5 text-sm">
               The photo was hard to read. Check every field before you share it.
             </p>
           )}
@@ -158,7 +158,7 @@ export default function Sell() {
               <Label htmlFor="desc">Description</Label>
               <span className="money text-xs text-muted-foreground">{form.description.length} of 140</span>
             </div>
-            <Textarea id="desc" value={form.description} maxLength={140} rows={3} onChange={(e) => set('description', e.target.value)} className="rounded-[12px] bg-card text-[16px]" />
+            <Textarea id="desc" value={form.description} maxLength={140} rows={3} onChange={(e) => set('description', e.target.value)} className="rounded-lg bg-card text-[16px]" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="colour">Colours the buyer picks from</Label>
@@ -189,14 +189,14 @@ export default function Sell() {
             </div>
             <div className="space-y-1.5">
               <Label>Units to sell</Label>
-              <div className="flex h-12 items-center justify-between rounded-[12px] border border-input bg-card px-1">
+              <div className="flex h-12 items-center justify-between rounded-lg border border-input bg-card px-1">
                 <Button type="button" variant="ghost" size="icon" aria-label="One fewer" onClick={() => set('quantity', Math.max(1, form.quantity - 1))}><Minus /></Button>
                 <span className="money text-[20px] font-semibold">{form.quantity}</span>
                 <Button type="button" variant="ghost" size="icon" aria-label="One more" onClick={() => set('quantity', Math.min(100, form.quantity + 1))}><Plus /></Button>
               </div>
             </div>
           </div>
-          <Button type="submit" size="lg" className="h-[52px] w-full rounded-[14px] text-[15px]" disabled={create.isPending || !/^\d+(\.\d{1,2})?$/.test(form.price) || form.title.trim().length < 3}>
+          <Button type="submit" size="lg" className="h-[52px] w-full rounded-xl text-[15px]" disabled={create.isPending || !/^\d+(\.\d{1,2})?$/.test(form.price) || form.title.trim().length < 3}>
             {create.isPending ? <><Loader2 className="animate-spin" /> Making your PayPal link</> : 'Make the PayPal link'}
           </Button>
         </form>

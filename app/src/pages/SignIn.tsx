@@ -1,4 +1,4 @@
-import { Envelope, ParAvion, Postmark, postmarkDate, Stamp } from '@/components/airmail'
+import { Envelope, ShippedSafe, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 
 // Example parcel uses the shop owner's sample photo (public/sample).
@@ -9,7 +9,7 @@ export default function SignIn() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),28px)]">
       <div className="flex items-center gap-2.5">
-        <img src="/icon.svg" alt="" className="size-8 rounded-[9px]" />
+        <img src="/icon.svg" alt="" className="size-8 rounded-md" />
         <span className="text-[17px] font-semibold">ShipSafe</span>
       </div>
 
@@ -34,7 +34,7 @@ export default function SignIn() {
           </div>
           <div className="mt-5 flex items-center gap-2">
             <Postmark city="Berlin" date={postmarkDate(new Date().toISOString())} waves={false} className="strike size-[64px] -rotate-[10deg]" />
-            <ParAvion className="settle -rotate-2" />
+            <ShippedSafe className="settle -rotate-2" />
           </div>
           <p className="tracking-code mt-4 text-[14px] font-semibold">EE 482 913 507 IN</p>
           <p className="text-[12px] text-muted-foreground">Example parcel</p>
@@ -43,11 +43,11 @@ export default function SignIn() {
 
       <div className="mt-auto pt-10">
         {failed && (
-          <p role="alert" className="mb-3 rounded-[12px] bg-[color-mix(in_oklch,var(--status-refund)_10%,var(--card))] px-3.5 py-2.5 text-sm">
+          <p role="alert" className="mb-3 rounded-lg bg-[color-mix(in_oklch,var(--status-refund)_10%,var(--card))] px-3.5 py-2.5 text-sm">
             PayPal sign-in didn't finish. Try again.
           </p>
         )}
-        <Button asChild size="lg" className="h-14 w-full rounded-[14px] text-[16px]">
+        <Button asChild size="lg" className="h-14 w-full rounded-xl text-[16px]">
           <a href="/auth/paypal/login">Log in with PayPal</a>
         </Button>
         <p className="mt-3 text-center text-[12px] text-muted-foreground">PayPal sandbox demo. No real money moves.</p>

@@ -453,7 +453,7 @@
       {
         "name": "etiquette-settle",
         "value": "520ms, 380ms delay; translateY -10px rotate 4deg -> rotate -2deg",
-        "purpose": "PAR AVION settles beside the postmark."
+        "purpose": "SHIPPED SAFE settles beside the postmark."
       },
       {
         "name": "page-in",
@@ -518,11 +518,11 @@
       "css": ".ds-status { font-family: var(--brand-font); display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; white-space: nowrap; background: color-mix(in oklch, var(--hue) 14%, transparent); color: color-mix(in oklch, var(--hue) 78%, var(--foreground)); }"
     },
     {
-      "name": "PAR AVION Etiquette",
+      "name": "SHIPPED SAFE Etiquette",
       "kind": "custom",
       "refersTo": "par-avion",
       "description": "The Protected mark; only when PayPal has tracking and protection applies.",
-      "html": "<span class=\"ds-paravion\"><span class=\"ds-paravion-t\">Par avion</span><span class=\"ds-paravion-s\">Protected by PayPal</span></span>",
+      "html": "<span class=\"ds-paravion\"><span class=\"ds-paravion-t\">Shipped safe</span><span class=\"ds-paravion-s\">Protected by PayPal</span></span>",
       "css": ".ds-paravion { font-family: var(--brand-font); display: inline-flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 5px; background: var(--etiquette); color: var(--etiquette-foreground); outline: 1px solid color-mix(in oklch, var(--etiquette-foreground) 50%, transparent); outline-offset: -3px; box-shadow: 0 1px 0 oklch(0 0 0 / 0.15), 0 6px 14px -8px oklch(0.3 0.15 265 / 0.7); transform: rotate(-2deg); } .ds-paravion-t { font-stretch: var(--label-stretch); text-transform: uppercase; font-weight: 700; font-size: 13px; letter-spacing: 0.06em; line-height: 1; } .ds-paravion-s { font-size: 10px; line-height: 1.25; opacity: 0.9; }"
     },
     {
@@ -559,10 +559,10 @@
   ],
   "narrative": {
     "northStar": "The Airmail Letter",
-    "overview": "Every order is a letter going abroad. The ground is onion-skin airmail paper with a faint blue wash from the top of the page; lists sit on translucent sheets; the order that matters now is an envelope with a red and blue chevron edge, a perforated stamp holding the product photo, the destination city set as a postal label, and a circular postmark for the date. Protection is the blue PAR AVION etiquette, and it appears only once PayPal actually has the tracking.\n\nThe system is quiet and paper-like: one next step per screen, one strong action colour, no hero numbers. Depth comes from paper sheets and envelope shadows, never from neon or glow. All values live in one swappable file, `src/theme.css`; components read only its variables, and a second look (`data-theme=\"lime\"`, deep green and lime) is kept ready. Light mode leads; dark mode is the same letter read under a desk lamp.",
+    "overview": "Every order is a letter going abroad. The ground is onion-skin airmail paper with a faint blue wash from the top of the page; lists sit on translucent sheets; the order that matters now is an envelope with a red and blue chevron edge, a perforated stamp holding the product photo, the destination city set as a postal label, and a circular postmark for the date. Protection is the blue SHIPPED SAFE label (airmail etiquette style), and it appears only once PayPal actually has the tracking.\n\nThe system is quiet and paper-like: one next step per screen, one strong action colour, no hero numbers. Depth comes from paper sheets and envelope shadows, never from neon or glow. All values live in one swappable file, `src/theme.css`; components read only its variables, and a second look (`data-theme=\"lime\"`, deep green and lime) is kept ready. Light mode leads; dark mode is the same letter read under a desk lamp.",
     "keyCharacteristics": [
       "Onion-skin paper ground, airmail ultramarine ink, translucent sheets.",
-      "Envelope, stamp, postmark and PAR AVION drawn as geometry from tokens, never as pictures.",
+      "Envelope, stamp, postmark and SHIPPED SAFE drawn as geometry from tokens, never as pictures.",
       "Destination leads every order, in condensed Archivo capitals.",
       "Saturated brand blue only on what can be pressed.",
       "One authored motion moment: the postmark strike."
@@ -585,7 +585,7 @@
       },
       {
         "name": "The Postal Capitals Rule",
-        "body": "Condensed bold capitals are for destinations and postal marks (cities, PAR AVION, postmark rings). Interface text stays at normal width and sentence case.",
+        "body": "Condensed bold capitals are for destinations and postal marks (cities, SHIPPED SAFE, postmark rings). Interface text stays at normal width and sentence case.",
         "section": "typography"
       },
       {
@@ -600,7 +600,7 @@
       },
       {
         "name": "The One Strike Rule",
-        "body": "There is one authored moment: when PayPal accepts tracking, the postmark strikes the envelope (620ms, scale 1.6 to 1, settling at -10 degrees) and PAR AVION settles beside it 380ms later (520ms). Supporting motion starts from a visible state (opacity 0.6) and only eases in: page-in 320ms, letter-arrive 900ms for an order that lands while the app is open, envelope-in 560ms. All use `cubic-bezier(0.16, 1, 0.3, 1)` and are switched off under `prefers-reduced-motion`.",
+        "body": "There is one authored moment: when PayPal accepts tracking, the postmark strikes the envelope (620ms, scale 1.6 to 1, settling at -10 degrees) and SHIPPED SAFE settles beside it 380ms later (520ms). Supporting motion starts from a visible state (opacity 0.6) and only eases in: page-in 320ms, letter-arrive 900ms for an order that lands while the app is open, envelope-in 560ms. All use `cubic-bezier(0.16, 1, 0.3, 1)` and are switched off under `prefers-reduced-motion`.",
         "section": "components"
       }
     ],
@@ -615,7 +615,7 @@
     ],
     "donts": [
       "Don't fill anything that cannot be pressed with brand blue.",
-      "Don't show PAR AVION unless PayPal has the tracking and protection applies.",
+      "Don't show SHIPPED SAFE unless PayPal has the tracking and protection applies.",
       "Don't lead a screen with a balance hero over icon tiles; earnings stay one quiet line.",
       "Don't add another authored animation beside the postmark strike.",
       "Don't use purple gradients, sparkles or glowing orbs, or a crypto or banking look.",

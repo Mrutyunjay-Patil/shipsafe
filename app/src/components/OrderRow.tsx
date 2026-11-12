@@ -1,6 +1,6 @@
 import { type CSSProperties, useState } from 'react'
 import { Link } from 'react-router'
-import { Destination, ParAvion, Stamp } from '@/components/airmail'
+import { Destination, Stamp } from '@/components/airmail'
 import { STATUS, StatusBadge } from '@/components/StatusBadge'
 import { money, type Order, photoUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -26,16 +26,16 @@ export function OrderRow({ order: o }: { order: Order }) {
       style={{ '--hue': hue } as CSSProperties}
       className={cn('group relative flex items-center gap-3.5 px-4 py-3.5 transition-colors hover:bg-accent/40 active:bg-accent/60', fresh && 'arrive')}
     >
-      <Stamp src={photoUrl(o.photo_key)} className="size-12" />
+      <Stamp src={photoUrl(o.photo_key)} className="size-14 self-start" />
       <span className="min-w-0 flex-1">
-        <Destination city={o.ship_city} country={o.ship_country} className="block truncate text-[19px]" />
-        <span className="mt-1 block truncate text-[13px] text-muted-foreground">
-          {[o.title, o.variant].filter(Boolean).join(' · ')}
+        <span className="flex items-baseline justify-between gap-3">
+          <Destination city={o.ship_city} country={o.ship_country} className="min-w-0 truncate text-[19px]" />
+          <span className="money shrink-0 text-[15px] font-semibold">{money(o.amount, o.currency)}</span>
         </span>
-      </span>
-      <span className="flex flex-col items-end gap-1.5">
-        <span className="money text-[15px] font-semibold">{money(o.amount, o.currency)}</span>
-        {o.status === 'PROTECTED' ? <ParAvion small /> : <StatusBadge status={o.status} short />}
+        <span className="mt-1 block truncate text-[13px] text-muted-foreground">
+          {o.title}{o.variant && ` · ${o.variant}`}
+        </span>
+        <StatusBadge status={o.status} short className="mt-2" />
       </span>
     </Link>
   )

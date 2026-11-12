@@ -26,7 +26,7 @@ export default function Orders() {
         <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
         <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own.</p>
       </header>
-      <div role="tablist" aria-label="Filter orders" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+      <div role="tablist" aria-label="Filter orders" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,#000_20px,#000_calc(100%-28px),transparent)]">
         {FILTERS.map((f) => (
           <button
             key={f.key}

@@ -3,7 +3,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type ICellRendererParams } from 'ag-grid-community'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ParAvion, sentenceCase, Stamp } from '@/components/airmail'
+import { ShippedSafe, sentenceCase, Stamp } from '@/components/airmail'
 import { StatusBadge } from '@/components/StatusBadge'
 import { api, MOCK, money, type Order, photoUrl } from '@/lib/api'
 
@@ -50,7 +50,7 @@ export default function Board() {
     },
     {
       field: 'status', headerName: 'Status', width: 190, filter: true,
-      cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(p.data.status === 'PROTECTED' ? <ParAvion small /> : <StatusBadge status={p.data.status} />),
+      cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(p.data.status === 'PROTECTED' ? <ShippedSafe small /> : <StatusBadge status={p.data.status} />),
     },
     {
       headerName: 'Item', flex: 1.6, minWidth: 240, valueGetter: (p) => p.data?.title ?? '',

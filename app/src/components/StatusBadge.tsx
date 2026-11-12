@@ -1,7 +1,7 @@
 import { CircleDollarSign, RotateCcw, ShieldCheck, TriangleAlert, Truck } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { OrderStatus } from '@/lib/api'
-import { ParAvion } from '@/components/airmail'
+import { ShippedSafe } from '@/components/airmail'
 import { cn } from '@/lib/utils'
 
 // Each status owns one hue (theme.css --status-*). Icon and words carry the meaning too,
@@ -15,7 +15,7 @@ export const STATUS: Record<OrderStatus, { label: string; short: string; icon: t
 }
 
 export function StatusBadge({ status, className, short }: { status: OrderStatus; className?: string; short?: boolean }) {
-  if (status === 'PROTECTED') return <ParAvion small className={className} />
+  if (status === 'PROTECTED') return <ShippedSafe small className={className} />
   const m = STATUS[status] ?? STATUS.PAID
   return (
     <span

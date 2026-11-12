@@ -54,11 +54,11 @@ export default function Account() {
         <Envelope className="mt-2">
           <div className="px-5 pb-5 pt-5">
             <div className="flex items-center gap-4">
-              <span className="grid size-14 shrink-0 place-items-center rounded-[16px] bg-ink text-[24px] font-semibold text-paper">
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-ink text-[24px] font-semibold text-paper">
                 {name.slice(0, 1).toUpperCase()}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[22px] font-semibold leading-tight">{name}</p>
+                <p className="text-[22px] font-semibold leading-tight [overflow-wrap:anywhere]">{name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">Seller since {new Date(a.seller.connected_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function Account() {
           {[
             { v: 'light', label: 'Light', icon: Sun },
             { v: 'dark', label: 'Dark', icon: Moon },
-            { v: 'system', label: 'Match phone', icon: Monitor },
+            { v: 'system', label: 'System', icon: Monitor },
           ].map((o) => (
             <button
               key={o.v}
@@ -128,7 +128,7 @@ export default function Account() {
               aria-checked={theme === o.v}
               onClick={() => setTheme(o.v)}
               className={cn(
-                'flex h-12 items-center justify-center gap-1.5 rounded-[12px] text-sm font-medium transition-colors duration-200',
+                'flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium transition-colors duration-200',
                 theme === o.v ? 'bg-ink text-paper' : 'text-muted-foreground hover:text-foreground',
               )}
             >
@@ -141,7 +141,7 @@ export default function Account() {
       <Button
         variant="outline"
         size="lg"
-        className="mt-8 h-[52px] w-full rounded-[14px] text-[15px]"
+        className="mt-8 h-[52px] w-full rounded-xl text-[15px]"
         disabled={logout.isPending || MOCK}
         onClick={() => logout.mutate()}
       >

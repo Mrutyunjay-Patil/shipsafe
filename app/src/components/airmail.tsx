@@ -14,7 +14,7 @@ export function Stamp({ src, alt = '', className, value }: { src?: string | null
         <div className="grid place-items-center bg-brand-soft text-ink"><Package className="size-1/3" strokeWidth={1.6} /></div>
       )}
       {value && (
-        <span className="money absolute bottom-2 right-2 rounded-[3px] bg-envelope/90 px-1 text-[12px] font-semibold leading-4 text-ink">{value}</span>
+        <span className="money absolute bottom-2 right-2 rounded-xs bg-envelope/90 px-1 text-[12px] font-semibold leading-4 text-ink">{value}</span>
       )}
     </div>
   )
@@ -43,18 +43,19 @@ export function Postmark({ city, date, className, waves = true }: { city: string
   )
 }
 
-/** The blue airmail etiquette. Shown only when PayPal has the tracking and seller protection is eligible. */
-export function ParAvion({ className, small }: { className?: string; small?: boolean }) {
+/** The ShipSafe label, in the style of a blue airmail etiquette. Shown only when PayPal has the
+ *  tracking and seller protection is eligible. */
+export function ShippedSafe({ className, small }: { className?: string; small?: boolean }) {
   return (
     <span
       className={cn(
-        'inline-flex flex-col items-center justify-center rounded-[5px] bg-etiquette text-etiquette-foreground shadow-[var(--label-shadow)]',
+        'inline-flex flex-col items-center justify-center rounded-xs bg-etiquette text-etiquette-foreground shadow-[var(--label-shadow)]',
         'outline outline-1 -outline-offset-[3px] outline-etiquette-foreground/50',
         small ? 'px-2 py-1' : 'px-3 py-1.5',
         className,
       )}
     >
-      <span className={cn('label-caps leading-none', small ? 'text-[10px]' : 'text-[13px] tracking-[0.06em]')}>Par avion</span>
+      <span className={cn('label-caps leading-none', small ? 'text-[10px]' : 'text-[13px] tracking-[0.06em]')}>Shipped safe</span>
       <span className={cn('leading-tight opacity-90', small ? 'text-[10px]' : 'text-[11px]')}>Protected by PayPal</span>
     </span>
   )
@@ -78,9 +79,9 @@ export function Envelope({ inTransit, className, children }: { inTransit?: boole
 /** Destination as a postal label sets it: condensed capitals, country code after. */
 export function Destination({ city, country, className }: { city?: string | null; country?: string | null; className?: string }) {
   return (
-    <span className={cn('label-caps leading-none text-ink', className)}>
+    <span className={cn('label-caps leading-none text-ink [overflow-wrap:normal]', className)}>
       {city ?? 'Destination'}
-      {country && <span className="ml-1.5 font-medium text-muted-foreground">{country}</span>}
+      {country && <span className="ml-[0.25em] inline-block whitespace-nowrap font-medium text-muted-foreground">{country}</span>}
     </span>
   )
 }

@@ -18,7 +18,7 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
       <div className="relative px-5 pb-5 pt-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 pt-2">
-            <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
+            <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92]" />
             <address className="mt-4 text-[15px] not-italic leading-snug">
               <span className="block font-semibold">{o.ship_name}</span>
               <span className="block text-muted-foreground">{o.ship_line1}</span>
@@ -32,9 +32,9 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
         </div>
         <p className="mt-3 text-sm">
           {o.title}
-          {o.variant && <span className="text-muted-foreground"> · {o.variant}</span>}
+          {o.variant && <span className="whitespace-nowrap text-muted-foreground"> · {o.variant}</span>}
         </p>
-        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-[14px] text-[15px]">
+        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-xl text-[15px]">
           <Link to={`/orders/${o.id}`}><ScanLine /> Post it and scan the slip</Link>
         </Button>
         {more > 0 && (
@@ -57,7 +57,7 @@ function NothingToPost({ hasOrders }: { hasOrders: boolean }) {
             ? 'Every paid order has tracking on PayPal. List something new while you wait.'
             : 'Photograph a product. ShipSafe writes the listing and makes a PayPal link for your chat.'}
         </p>
-        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-[14px] text-[15px]">
+        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-xl text-[15px]">
           <Link to="/sell"><Camera /> List a product</Link>
         </Button>
       </div>
@@ -79,21 +79,25 @@ export default function Home({ seller }: { seller: Seller }) {
 
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
-      <header className="flex items-center justify-between gap-3 pt-3">
-        <h1 className="min-w-0 truncate whitespace-nowrap text-[clamp(20px,6.2vw,26px)] font-semibold leading-tight">
-          {greeting()}{name ? `, ${name}` : ''}
-        </h1>
+      <header className="flex items-center justify-between gap-3 pt-2">
+        <span className="flex items-center gap-2">
+          <img src="/icon.svg" alt="" className="size-7 rounded-md" />
+          <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">ShipSafe</span>
+        </span>
         <Link
           to="/account"
           aria-label={`Your shop. ${seller.paypal_verified ? 'PayPal verified' : 'PayPal connected'}`}
-          className="relative grid size-11 shrink-0 place-items-center rounded-full bg-ink text-[17px] font-semibold text-paper shadow-[var(--sheet-shadow)] transition-transform duration-150 active:scale-95"
+          className="relative grid size-10 shrink-0 place-items-center rounded-full bg-ink text-[16px] font-semibold text-paper shadow-[var(--sheet-shadow)] transition-transform duration-150 active:scale-95"
         >
           {(seller.display_name ?? 'S').slice(0, 1).toUpperCase()}
-          <span className="absolute -bottom-0.5 -right-0.5 grid size-[18px] place-items-center rounded-full bg-etiquette text-etiquette-foreground ring-2 ring-paper">
+          <span className="absolute -bottom-0.5 -right-0.5 grid size-[17px] place-items-center rounded-full bg-etiquette text-etiquette-foreground ring-2 ring-paper">
             <Check className="size-3" strokeWidth={3.2} />
           </span>
         </Link>
       </header>
+      <h1 className="mt-4 text-[clamp(22px,7vw,28px)] font-semibold leading-tight">
+        {greeting()}{name ? `, ${name}` : ''}
+      </h1>
 
       {orders.isLoading ? (
         <Skeleton className="mt-4 h-[330px] rounded-2xl" />
@@ -106,7 +110,7 @@ export default function Home({ seller }: { seller: Seller }) {
       {refunds.length > 0 && (
         <Link
           to="/orders?filter=NEEDS_REFUND"
-          className="mt-3 flex items-center gap-3 rounded-[14px] border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_9%,var(--card))] px-4 py-3.5"
+          className="mt-3 flex items-center gap-3 rounded-xl border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_9%,var(--card))] px-4 py-3.5"
         >
           <TriangleAlert className="size-5 shrink-0 text-status-refund" />
           <span className="flex-1 text-sm">

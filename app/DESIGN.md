@@ -128,13 +128,13 @@ components:
 
 **Creative North Star: "The Airmail Letter"**
 
-Every order is a letter going abroad. The ground is onion-skin airmail paper with a faint blue wash from the top of the page; lists sit on translucent sheets; the order that matters now is an envelope with a red and blue chevron edge, a perforated stamp holding the product photo, the destination city set as a postal label, and a circular postmark for the date. Protection is the blue PAR AVION etiquette, and it appears only once PayPal actually has the tracking.
+Every order is a letter going abroad. The ground is onion-skin airmail paper with a faint blue wash from the top of the page; lists sit on translucent sheets; the order that matters now is an envelope with a red and blue chevron edge, a perforated stamp holding the product photo, the destination city set as a postal label, and a circular postmark for the date. Protection is the blue SHIPPED SAFE label (airmail etiquette style), and it appears only once PayPal actually has the tracking.
 
 The system is quiet and paper-like: one next step per screen, one strong action colour, no hero numbers. Depth comes from paper sheets and envelope shadows, never from neon or glow. All values live in one swappable file, `src/theme.css`; components read only its variables, and a second look (`data-theme="lime"`, deep green and lime) is kept ready. Light mode leads; dark mode is the same letter read under a desk lamp.
 
 **Key Characteristics:**
 - Onion-skin paper ground, airmail ultramarine ink, translucent sheets.
-- Envelope, stamp, postmark and PAR AVION drawn as geometry from tokens, never as pictures.
+- Envelope, stamp, postmark and SHIPPED SAFE drawn as geometry from tokens, never as pictures.
 - Destination leads every order, in condensed Archivo capitals.
 - Saturated brand blue only on what can be pressed.
 - One authored motion moment: the postmark strike.
@@ -148,7 +148,7 @@ An ultramarine-on-blue-paper airmail palette with one pressable blue and five st
 
 ### Secondary
 - **Airmail Ink** (airmail-ink): the envelope ink. Destination capitals, the active tab label and its indicator bar, the connected-account chip text.
-- **Etiquette Blue** (etiquette, on etiquette-foreground): the ground of the PAR AVION label only.
+- **Etiquette Blue** (etiquette, on etiquette-foreground): the ground of the SHIPPED SAFE label only.
 
 ### Tertiary
 - **Chevron Red and Chevron Blue** (airmail-red, airmail-blue): the two stripes of the in-transit chevron edge, nothing else.
@@ -189,7 +189,7 @@ An ultramarine-on-blue-paper airmail palette with one pressable blue and five st
 - **Tracking** (Geist Mono, tabular, +0.04em): tracking numbers and order IDs, 12-20px.
 
 ### Named Rules
-**The Postal Capitals Rule.** Condensed bold capitals are for destinations and postal marks (cities, PAR AVION, postmark rings). Interface text stays at normal width and sentence case.
+**The Postal Capitals Rule.** Condensed bold capitals are for destinations and postal marks (cities, SHIPPED SAFE, postmark rings). Interface text stays at normal width and sentence case.
 
 **The Mono Means Code Rule.** Geist Mono appears only on strings the seller reads off a slip or copies: tracking numbers, PayPal IDs, payment links.
 
@@ -227,7 +227,7 @@ Tall, calm, thumb-sized.
 
 ### Status badges
 - **Style:** pill, 11px semibold, 3px by 8px, icon at 14px plus words; hue at 14% ground, 78% mixed text.
-- **Protected** is never a badge: a protected order shows the PAR AVION etiquette instead.
+- **Protected** is never a badge: a protected order shows the SHIPPED SAFE label (airmail etiquette style) instead.
 
 ### Envelope (signature)
 The order in focus. Envelope white, 16px, envelope shadow, a 10px chevron edge on top while in transit (absent once refunded). Destination capitals top left, a stamp tilted 3 degrees top right (72 by 86px), address block below a dashed rule, postmark tilted -10 to -12 degrees.
@@ -235,10 +235,10 @@ The order in focus. Envelope white, 16px, envelope shadow, a 10px chevron edge o
 ### Sheet / order rows
 Translucent sheet, 25.2px corners, rows divided by 70% border. Each row: stamp, destination capitals, item in Faded Ink, amount and status on the right. Rows tint with accent on hover and press.
 
-### Stamp, Postmark, PAR AVION
+### Stamp, Postmark, SHIPPED SAFE
 - **Stamp:** product photo inside 7px of perforated gummed paper; a parcel icon on brand-soft when there is no photo.
 - **Postmark:** SVG double ring in translucent cancellation ink, city around the ring, date in mono across the centre.
-- **PAR AVION:** etiquette blue label, "Par avion" in condensed capitals over "Protected by PayPal", tilted -2 degrees.
+- **SHIPPED SAFE:** etiquette blue label, "Shipped safe" in condensed capitals over "Protected by PayPal", tilted -2 degrees.
 
 ### Inputs
 Tracking input: 56px tall, 12px radius, card background, 20px semibold mono, auto-uppercased.
@@ -247,7 +247,7 @@ Tracking input: 56px tall, 12px radius, card background, 20px semibold mono, aut
 Floating bottom bar, card at 95% with backdrop blur, 22px radius, ink-tinted shadow. Four tabs (icon 22px, 11px label): active is Airmail Ink with a 3px ink bar on top, inactive Faded Ink. The Sell action is raised 28px in the centre: a 58px brand square with 18px corners, a 4px paper ring and the brand lift.
 
 ### Motion
-**The One Strike Rule.** There is one authored moment: when PayPal accepts tracking, the postmark strikes the envelope (620ms, scale 1.6 to 1, settling at -10 degrees) and PAR AVION settles beside it 380ms later (520ms). Supporting motion starts from a visible state (opacity 0.6) and only eases in: page-in 320ms, letter-arrive 900ms for an order that lands while the app is open, envelope-in 560ms. All use `cubic-bezier(0.16, 1, 0.3, 1)` and are switched off under `prefers-reduced-motion`.
+**The One Strike Rule.** There is one authored moment: when PayPal accepts tracking, the postmark strikes the envelope (620ms, scale 1.6 to 1, settling at -10 degrees) and SHIPPED SAFE settles beside it 380ms later (520ms). Supporting motion starts from a visible state (opacity 0.6) and only eases in: page-in 320ms, letter-arrive 900ms for an order that lands while the app is open, envelope-in 560ms. All use `cubic-bezier(0.16, 1, 0.3, 1)` and are switched off under `prefers-reduced-motion`.
 
 ## Do's and Don'ts
 
@@ -262,7 +262,7 @@ Floating bottom bar, card at 95% with backdrop blur, 22px radius, ink-tinted sha
 
 ### Don't:
 - **Don't** fill anything that cannot be pressed with brand blue.
-- **Don't** show PAR AVION unless PayPal has the tracking and protection applies.
+- **Don't** show SHIPPED SAFE unless PayPal has the tracking and protection applies.
 - **Don't** lead a screen with a balance hero over icon tiles; earnings stay one quiet line.
 - **Don't** add another authored animation beside the postmark strike.
 - **Don't** use purple gradients, sparkles or glowing orbs, or a crypto or banking look.

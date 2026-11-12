@@ -24,7 +24,9 @@ export default function Ask() {
     onSuccess: (r) => setMsgs((m) => [...m, { role: 'assistant', text: r.answer }]),
     onError: (e) => setMsgs((m) => [...m, { role: 'assistant', text: `Sorry, that failed: ${(e as Error).message}` }]),
   })
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth' }), [msgs, ask.isPending])
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [msgs, ask.isPending])
 
   const send = (text: string) => {
     const t = text.trim()
@@ -65,8 +67,8 @@ export default function Ask() {
         </section>
       )}
       <form className="sticky bottom-24 flex gap-2 py-3" onSubmit={(e) => { e.preventDefault(); send(q) }}>
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask anything about your shop" className="h-12 flex-1 rounded-[14px] bg-card px-4 text-[16px] shadow-[var(--sheet-shadow)]" />
-        <Button type="submit" size="icon" className="size-12 rounded-[14px]" disabled={!q.trim() || ask.isPending} aria-label="Send"><ArrowUp /></Button>
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask about your shop" className="h-12 flex-1 rounded-xl bg-card px-4 text-[16px] shadow-[var(--sheet-shadow)]" />
+        <Button type="submit" size="icon" className="size-12 rounded-xl" disabled={!q.trim() || ask.isPending} aria-label="Send"><ArrowUp /></Button>
       </form>
     </main>
   )

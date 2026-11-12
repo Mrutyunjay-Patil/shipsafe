@@ -9,7 +9,17 @@
   --brand-font: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
   --label-stretch: 72%;          /* condensed capitals for cities and labels, like a postal label */
   --code-font: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
-  --radius: 0.875rem;            /* cards 14px; pills only for small controls */
+  /* Corner scale. Nested corners follow: inner = outer - padding between them.
+     Pills (rounded-full) are only for small controls. */
+  --radius: 0.875rem;
+  --r-xs: 4px;    /* tiny labels, PAR AVION etiquette */
+  --r-sm: 8px;    /* small tags */
+  --r-md: 10px;   /* small buttons, code boxes */
+  --r-lg: 12px;   /* inputs, inner segments */
+  --r-xl: 14px;   /* buttons, notices */
+  --r-2xl: 16px;  /* cards, envelopes, sheets */
+  --r-3xl: 20px;  /* the raised Sell button */
+  --r-4xl: 24px;  /* the bottom nav bar */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
