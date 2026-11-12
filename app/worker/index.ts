@@ -416,8 +416,22 @@ api.get('/account', async (c) => {
 
 // ---- ask your shop ----
 api.post('/ask', async (c) => {
-  const { question } = z.object({ question: z.string().min(2).max(2000) }).parse(await c.req.json())
-  return c.json({ answer: await askShop(c.env, c.get('sellerId'), question) })
+  const b = z.object({
+    question: z.string().trim().min(2).max(2000),
+    // Earlier turns of this chat, so follow-ups like "refund that one" make sense. Text only; the
+    // tools always re-read the shop, so nothing here can widen what the model sees.
+    history: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(8000) })).max(20).default([]),
+  }).parse(await c.req.json())
+  const turns = [...b.history, { role: 'user' as const, content: b.question }]
+  while (turns.length && turns[0].role !== 'user') turns.shift()
+  // The API needs turns to alternate; merge any two in a row from the same side.
+  const merged = turns.reduce<typeof turns>((acc, t) => {
+    const last = acc.at(-1)
+    if (last && last.role === t.role) last.content += `\n\n${t.content}`
+    else acc.push({ ...t })
+    return acc
+  }, [])
+  return c.json(await askShop(c.env, c.get('sellerId'), merged))
 })
 
 app.route('/api', api)

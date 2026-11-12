@@ -47,6 +47,15 @@ export type OrderDetail = Order & { trackers: Tracker[] }
 
 export type Attribute = { name: string; value: string }
 
+/** A change Ask proposes. Nothing runs until the seller confirms it in the app. */
+export type ProposedAction = { id: string; summary: string } & (
+  | { kind: 'refund'; order_id: string }
+  | { kind: 'update_listing'; listing_id: string; price?: string; quantity?: number }
+  | { kind: 'create_buyer_link'; listing_id: string; label: string; price?: string; colour?: string; expires_days?: number }
+  | { kind: 'close_buyer_link'; buyer_link_id: string }
+  | { kind: 'close_listing'; listing_id: string }
+)
+
 export type ListingPatch = {
   title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: Attribute[]; photo_key?: string; photos?: string[]
 }
@@ -127,7 +136,8 @@ const realApi = {
     req<{ tracker_id: string; status: OrderStatus }>(`/api/orders/${id}/track`, json('POST', b)),
   cancelTracker: (id: string, tid: string) => req(`/api/orders/${id}/trackers/${encodeURIComponent(tid)}/cancel`, json('POST')),
   refund: (id: string) => req<{ refund_id: string; status: string }>(`/api/orders/${id}/refund`, json('POST')),
-  ask: (question: string) => req<{ answer: string }>('/api/ask', json('POST', { question })),
+  ask: (question: string, history: { role: 'user' | 'assistant'; content: string }[] = []) =>
+    req<{ answer: string; actions: ProposedAction[] }>('/api/ask', json('POST', { question, history })),
 }
 
 export const MOCK = import.meta.env.VITE_MOCK === '1'
