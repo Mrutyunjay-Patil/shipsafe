@@ -20,7 +20,7 @@ People who sell through Instagram DMs and WhatsApp chats already take PayPal. Wh
 - **The live app** signs in with Log in with PayPal using a sandbox Business account. Its logins are in the Devpost testing instructions.
 - **To pay as a buyer,** open any payment link the app makes and pay with the sandbox Personal account from the same instructions.
 - **The preview** runs the same app on built-in sample data, with nothing sent to PayPal.
-- **Test photos:** product photos are in `test-products/`. Courier slips addressed to the sandbox buyer are in `submission/demo-assets/` and `test-slips/`.
+- **Test photos:** product photos are in `submission/demo-assets/test-products/`. Courier slips addressed to the sandbox buyer are in `submission/demo-assets/test-slips/`.
 
 ## What's in it
 

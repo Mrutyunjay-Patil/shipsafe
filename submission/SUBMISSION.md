@@ -120,11 +120,11 @@ Fill the angle-bracket parts from `shipsafe-prereq/.env`. Keep the logins out of
 Live app (PayPal sandbox): https://mrutyunjaypatil.dev/shipsafe
 1. Tap "Continue with PayPal" and sign in with the sandbox seller:
    <SANDBOX_SELLER_EMAIL> / <SANDBOX_SELLER_PASSWORD>
-2. Tap + to list a product. Use any photo; sample photos are in the repo under test-products/.
+2. Tap + to list a product. Use any photo; sample photos are in the repo under submission/demo-assets/test-products/.
 3. Copy the payment link, open it in a private window, and pay with the sandbox buyer:
    <SANDBOX_BUYER_EMAIL> / <SANDBOX_BUYER_PASSWORD>
 4. Back in ShipSafe, open Orders; the order arrives within a minute. Open it, tap
-   "Scan the courier slip" and use a slip from submission/demo-assets/ (addressed to the
+   "Scan the courier slip" and use a slip from submission/demo-assets/test-slips/ (addressed to the
    sandbox buyer). Each tracking number can be sent once.
 
 No-login preview with sample data: https://shipsafe-preview.patilmrutyunjay2.workers.dev
