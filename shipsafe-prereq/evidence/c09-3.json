@@ -1,0 +1,72 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v2/checkout/orders/7DD18315GK263354G",
+    "params": null,
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 1125,
+  "debug_id": "f54255449c8bd",
+  "response": {
+    "id": "7DD18315GK263354G",
+    "intent": "CAPTURE",
+    "status": "PAYER_ACTION_REQUIRED",
+    "payment_source": {
+      "paypal": {}
+    },
+    "purchase_units": [
+      {
+        "reference_id": "listing_demo_001",
+        "amount": {
+          "currency_code": "USD",
+          "value": "24.00",
+          "breakdown": {
+            "item_total": {
+              "currency_code": "USD",
+              "value": "24.00"
+            }
+          }
+        },
+        "payee": {
+          "email_address": "<redacted>",
+          "merchant_id": "MZXSDB8AZ47E6",
+          "display_data": {
+            "brand_name": "ShipSafe Probe"
+          }
+        },
+        "description": "Hand block-printed cotton scarf",
+        "custom_id": "listing_demo_001",
+        "items": [
+          {
+            "name": "Hand block-printed cotton scarf",
+            "unit_amount": {
+              "currency_code": "USD",
+              "value": "24.00"
+            },
+            "quantity": "1",
+            "sku": "SCARF-INDIGO",
+            "category": "PHYSICAL_GOODS"
+          }
+        ]
+      }
+    ],
+    "create_time": "2026-11-12T05:45:47Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://www.sandbox.paypal.com/checkoutnow?token=7DD18315GK263354G",
+        "rel": "payer-action",
+        "method": "GET"
+      }
+    ]
+  }
+}

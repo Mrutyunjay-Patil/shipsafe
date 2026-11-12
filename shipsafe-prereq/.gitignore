@@ -9,3 +9,4 @@ dist/
 .venv/
 node_modules/
 evidence/pay-*.png
+evidence/pay-guest-*.png
