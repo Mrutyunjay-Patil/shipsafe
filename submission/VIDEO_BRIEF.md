@@ -12,7 +12,7 @@ The story to tell: **from a product photo to a protected PayPal sale, without le
 
 | What | Where |
 |---|---|
-| Live app, real PayPal sandbox | https://shipsafe.patilmrutyunjay2.workers.dev |
+| Live app, real PayPal sandbox | https://mrutyunjaypatil.dev/shipsafe |
 | Sample-data preview, no login | https://shipsafe-preview.patilmrutyunjay2.workers.dev |
 | Buyer checkout | PayPal sandbox pages opened from a link, `www.sandbox.paypal.com/ncp/payment/PLB-…` |
 
@@ -22,13 +22,13 @@ The story to tell: **from a product photo to a protected PayPal sale, without le
 
 ## Assets in this repo
 
-- Product photos: `test-products/<product>/`. The `*_all-colours_*` photo is the listing photo, and the per-colour photos are extras for the gallery.
+- Product photos: `submission/demo-assets/test-products/<product>/`. The `*_all-colours_*` photo is the listing photo, and the per-colour photos are extras for the gallery.
 - Courier slips, all addressed to the sandbox buyer in San Jose, with new tracking numbers that pass the UPU S10 check digit:
-  - `submission/demo-assets/slip-1-san-jose-EE612048571IN.png`
-  - `submission/demo-assets/slip-2-san-jose-EE733150687IN.png`
-  - `submission/demo-assets/slip-3-san-jose-EE844261797IN.png`
+  - `submission/demo-assets/test-slips/slip-1-san-jose-EE612048571IN.png`
+  - `submission/demo-assets/test-slips/slip-2-san-jose-EE733150687IN.png`
+  - `submission/demo-assets/test-slips/slip-3-san-jose-EE844261797IN.png`
   - Use one per take. A number already sent to PayPal is flagged as a duplicate on the next scan.
-- `submission/demo-assets/slip-wrong-address-berlin-EE955372805IN.png` is addressed to Berlin. Use it to show the address check catching a wrong slip.
+- `submission/demo-assets/test-slips/slip-wrong-address-berlin-EE955372805IN.png` is addressed to Berlin. Use it to show the address check catching a wrong slip.
 - `app/e2e/slip.png` holds a number that was already used. Scanning it shows the duplicate warning.
 - Regenerate slips with `python shipsafe-prereq/probes/make_demo_slips.py` after changing the serial numbers in it.
 
@@ -58,7 +58,7 @@ Times are targets for the edited cut. Captions in quotes are suggested on-screen
 ### 3. Photo to listing with AI, 0:22 to 0:55
 
 1. Tap the "+" button, which opens Sell.
-2. Choose `test-products/05-cotton-kurta/kurta_all-colours_studio.jpg`, or another product not yet listed today.
+2. Choose `submission/demo-assets/test-products/05-cotton-kurta/kurta_all-colours_studio.jpg`, or another product not yet listed today.
 3. Show "Writing your listing". Claude drafts the title, description, colours, category, price and details.
 4. Under "More photos", add two per-colour photos. Tap the star on one to show it can become the cover.
 5. Under "Product details", tap a suggested chip such as Material or Size, type a value, then tap "Rewrite description from details".

@@ -14,13 +14,13 @@ People who sell through Instagram DMs and WhatsApp chats already take PayPal. Wh
 
 | | |
 |---|---|
-| Live app, PayPal sandbox | https://shipsafe.patilmrutyunjay2.workers.dev |
+| Live app, PayPal sandbox | https://mrutyunjaypatil.dev/shipsafe |
 | Sample-data preview, no login | https://shipsafe-preview.patilmrutyunjay2.workers.dev |
 
 - **The live app** signs in with Log in with PayPal using a sandbox Business account. Its logins are in the Devpost testing instructions.
 - **To pay as a buyer,** open any payment link the app makes and pay with the sandbox Personal account from the same instructions.
 - **The preview** runs the same app on built-in sample data, with nothing sent to PayPal.
-- **Test photos:** product photos are in `test-products/`. Courier slips addressed to the sandbox buyer are in `submission/demo-assets/` and `test-slips/`.
+- **Test photos:** product photos are in `submission/demo-assets/test-products/`. Courier slips addressed to the sandbox buyer are in `submission/demo-assets/test-slips/`.
 
 ## What's in it
 
@@ -104,6 +104,13 @@ End-to-end check against the sandbox: `node app/e2e/flow.mjs <app url> login sel
 - **Payment links can't be single-use.** ShipSafe deletes them when they should close.
 - **PayPal's checkout page has no photo field,** so photos show in ShipSafe and in the chat message.
 - **Sandbox Log in with PayPal returns no verification field,** so the app says "PayPal connected", not "verified".
+
+## Team
+
+ShipSafe was built by:
+
+- Mrutyunjay Patil ([Mrutyunjay-Patil](https://github.com/Mrutyunjay-Patil))
+- Justin ([justingeorge912](https://github.com/justingeorge912))
 
 ## License
 

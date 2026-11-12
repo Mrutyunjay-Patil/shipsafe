@@ -34,7 +34,7 @@ export default function Account() {
   const acc = useQuery({ queryKey: ['account'], queryFn: api.account })
   const logout = useMutation({
     mutationFn: api.logout,
-    onSuccess: () => { qc.clear(); location.href = '/' },
+    onSuccess: () => { qc.clear(); location.href = import.meta.env.BASE_URL },
   })
   const a = acc.data
   const name = a?.seller.display_name ?? 'Your shop'

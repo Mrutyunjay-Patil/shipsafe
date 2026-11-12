@@ -1,3 +1,4 @@
+import { BASE } from '@shared/base'
 import { mockApi } from './mock'
 // Typed client for the ShipSafe Worker API.
 
@@ -83,7 +84,7 @@ export class ApiError extends Error {
 }
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(path, { credentials: 'same-origin', ...init })
+  const r = await fetch(BASE + path, { credentials: 'same-origin', ...init })
   const text = await r.text()
   const body = text ? JSON.parse(text) : null
   if (!r.ok) throw new ApiError(r.status, body)
@@ -133,7 +134,7 @@ export const MOCK = import.meta.env.VITE_MOCK === '1'
 export const api: typeof realApi = MOCK ? (mockApi as unknown as typeof realApi) : realApi
 
 export const photoUrl = (key: string | null) =>
-  !key ? null : key.startsWith('data:') || key.startsWith('/sample/') ? key : MOCK ? null : `/api/photos/${key}`
+  !key ? null : key.startsWith('data:') ? key : key.startsWith('/sample/') ? BASE + key : MOCK ? null : `${BASE}/api/photos/${key}`
 
 export const money = (v: string | number, currency = 'USD') =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(v))

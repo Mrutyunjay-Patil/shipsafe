@@ -7,6 +7,7 @@
 // paypal_verified stays NULL until PayPal actually returns verified_account.
 import type { Context, MiddlewareHandler } from 'hono'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
+import { BASE } from '../shared/base'
 import type { AppEnv, Env } from './env'
 import { exchangeCode, loginUrl, userInfo } from './paypal'
 
@@ -24,16 +25,18 @@ async function sha256(s: string) {
 }
 
 export function startLogin(c: Context<AppEnv>) {
-  const state = `app.${crypto.randomUUID()}`
-  setCookie(c, STATE_COOKIE, state, { httpOnly: true, secure: true, sameSite: 'Lax', path: '/auth', maxAge: 600 })
+  // The sign-in hop forwards PayPal's reply by this prefix: "mpd." to mrutyunjaypatil.dev, "app." to workers.dev.
+  const host = new URL(c.req.url).hostname
+  const state = `${host === 'mrutyunjaypatil.dev' ? 'mpd' : 'app'}.${crypto.randomUUID()}`
+  setCookie(c, STATE_COOKIE, state, { httpOnly: true, secure: true, sameSite: 'Lax', path: '/', maxAge: 600 })
   return c.redirect(loginUrl(c.env, callbackUrl(c), state))
 }
 
 export async function finishLogin(c: Context<AppEnv>) {
   const { code, state, error } = c.req.query()
-  if (error || !code) return c.redirect('/?login=failed')
-  if (!state || state !== getCookie(c, STATE_COOKIE)) return c.redirect('/?login=state')
-  deleteCookie(c, STATE_COOKIE, { path: '/auth' })
+  if (error || !code) return c.redirect(`${BASE}/?login=failed`)
+  if (!state || state !== getCookie(c, STATE_COOKIE)) return c.redirect(`${BASE}/?login=state`)
+  deleteCookie(c, STATE_COOKIE, { path: '/' })
 
   const tok = await exchangeCode(c.env, code)
   const info = await userInfo(c.env, tok.access_token)
@@ -50,7 +53,7 @@ export async function finishLogin(c: Context<AppEnv>) {
   await c.env.DB.prepare('INSERT INTO sessions (id, seller_id, expires_at) VALUES (?, ?, ?)')
     .bind(await sha256(raw), sellerId, expires).run()
   setCookie(c, COOKIE, raw, { httpOnly: true, secure: true, sameSite: 'Lax', path: '/', maxAge: DAYS * 86400 })
-  return c.redirect('/')
+  return c.redirect(`${BASE}/`)
 }
 
 export async function logout(c: Context<AppEnv>) {

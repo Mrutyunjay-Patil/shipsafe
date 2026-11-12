@@ -29,7 +29,11 @@ export default {
     // Log in with PayPal return URL. Stores the one-time authorization code for the probe to exchange.
     // ShipSafe app sign-in hop: states starting with "app." belong to the app, so forward
     // PayPal's redirect (code and state unchanged) to the app's own callback.
-    if (req.method === "GET" && url.pathname === "/auth/paypal/callback" && (url.searchParams.get("state") || "").startsWith("app.")) {
+    const appState = url.searchParams.get("state") || "";
+    if (req.method === "GET" && url.pathname === "/auth/paypal/callback" && appState.startsWith("mpd.")) {
+      return Response.redirect("https://mrutyunjaypatil.dev/shipsafe/auth/paypal/callback" + url.search, 302);
+    }
+    if (req.method === "GET" && url.pathname === "/auth/paypal/callback" && appState.startsWith("app.")) {
       return Response.redirect("https://shipsafe.patilmrutyunjay2.workers.dev/auth/paypal/callback" + url.search, 302);
     }
     if (req.method === "GET" && url.pathname === "/auth/paypal/callback") {

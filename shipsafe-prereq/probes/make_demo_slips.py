@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFilter
 from make_slips import barcode, font
 from validators import s10_make, s10_valid
 
-OUT = Path(__file__).resolve().parents[2] / "submission" / "demo-assets"
+OUT = Path(__file__).resolve().parents[2] / "submission" / "demo-assets" / "test-slips"
 OUT.mkdir(parents=True, exist_ok=True)
 SAN_JOSE = ["Jerry Maguire", "2211 N First St", "SAN JOSE CA 95131", "UNITED STATES"]
 BERLIN = ["M. Schneider", "Torstrasse 101", "BERLIN 10119", "GERMANY"]

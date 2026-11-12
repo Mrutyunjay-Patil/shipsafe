@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
+import { BASE } from '../shared/base'
 import { DESC_MAX, paypalDescription } from '../shared/listing'
 import { addressMatch, carrierEnum, normaliseTracking, s10Valid } from '../shared/validators'
 import { askShop } from './ask'
@@ -96,7 +97,7 @@ api.post('/listings', async (c) => {
   const price = Number(b.price).toFixed(2)
   const link = await createLink(c.env, {
     listingId: id, title: b.title, description: paypalDescription(b.description, b.attributes), price, currency: 'USD', colours: b.colours,
-    returnUrl: new URL('/thanks', c.req.url).toString(),
+    returnUrl: new URL(`${BASE}/thanks`, c.req.url).toString(),
   })
   await c.env.DB.prepare(
     `INSERT INTO listings (id, seller_id, title, description, attributes, colours, category, price, quantity, photo_key, photos, plb_id, plb_url, status, ai_confidence)
@@ -194,7 +195,7 @@ api.patch('/listings/:id', async (c) => {
 
   const link = {
     listingId: l.id, title, description: paypalDescription(description, attributes),
-    price, currency: l.currency, colours, returnUrl: new URL('/thanks', c.req.url).toString(),
+    price, currency: l.currency, colours, returnUrl: new URL(`${BASE}/thanks`, c.req.url).toString(),
   }
   let status: string = l.status
   let plbId: string | null = l.plb_id
@@ -263,7 +264,7 @@ api.post('/listings/:id/buyer-links', async (c) => {
   const link = await createLink(c.env, {
     listingId: l.id, title: l.title, price, currency: l.currency,
     description: paypalDescription(l.description, colour ? [{ name: 'Colour', value: colour }, ...attributes] : attributes),
-    colours: colour ? [colour] : colours, returnUrl: new URL('/thanks', c.req.url).toString(),
+    colours: colour ? [colour] : colours, returnUrl: new URL(`${BASE}/thanks`, c.req.url).toString(),
   })
   const expires = new Date(Date.now() + b.expires_days * 86_400_000).toISOString()
   await c.env.DB.prepare(
@@ -421,9 +422,27 @@ api.post('/ask', async (c) => {
 
 app.route('/api', api)
 app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404))
+// Everything else is the PWA's files; the asset binding falls back to index.html for app routes.
+app.all('*', (c) => c.env.ASSETS.fetch(c.req.raw))
+
+// The app is served under BASE on every host (mrutyunjaypatil.dev/shipsafe is a route on a zone
+// whose root is another site). Requests under BASE are handled with the prefix removed. Pages
+// asked for without it are redirected, so older links such as PayPal return URLs keep working;
+// API, sign-in and webhook paths answer either way, so PayPal's configured URLs never change.
+const SERVER_PATHS = /^\/(api|auth|webhooks)(\/|$)/
 
 export default {
-  fetch: app.fetch,
+  fetch(req: Request, env: AppEnv['Bindings'], ctx: ExecutionContext) {
+    const url = new URL(req.url)
+    if (url.pathname === BASE || url.pathname.startsWith(`${BASE}/`)) {
+      url.pathname = url.pathname.slice(BASE.length) || '/'
+      return app.fetch(new Request(url, req), env, ctx)
+    }
+    if ((req.method === 'GET' || req.method === 'HEAD') && !SERVER_PATHS.test(url.pathname)) {
+      return Response.redirect(`${url.origin}${BASE}${url.pathname === '/' ? '/' : url.pathname}${url.search}`, 302)
+    }
+    return app.fetch(req, env, ctx)
+  },
   // Hourly (see wrangler.jsonc): close buyer links past their expiry.
   scheduled: async (_e: ScheduledController, env: AppEnv['Bindings'], ctx: ExecutionContext) => { ctx.waitUntil(expireBuyerLinks(env)) },
 }

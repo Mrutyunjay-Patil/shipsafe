@@ -21,7 +21,7 @@ export default function App() {
   const me = useQuery({ queryKey: ['me'], queryFn: api.me })
   const loc = useLocation()
 
-  if (location.pathname === '/thanks') return <Thanks />
+  if (loc.pathname === '/thanks') return <Thanks />
   if (me.isLoading) {
     return (
       <div className="mx-auto max-w-md space-y-4 p-5 pt-12">
