@@ -22,6 +22,7 @@
       "body": "{\"error\":\"invalid_request\",\"error_description\":\"Unable to fetch details to serve the request\"}"
     }
   ],
+  "id_token_claim_keys": [],
   "fields": {
     "verified_account": null,
     "email_verified": null,

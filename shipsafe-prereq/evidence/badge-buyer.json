@@ -10,6 +10,7 @@
       "body": null
     }
   ],
+  "id_token_claim_keys": [],
   "fields": {
     "verified_account": null,
     "email_verified": null,

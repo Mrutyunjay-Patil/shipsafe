@@ -36,6 +36,14 @@ tok = httpx.post(f"{BASE}/v1/oauth2/token", auth=(os.getenv("PAYPAL_CLIENT_ID"),
                  data={"grant_type": "authorization_code", "code": rec["code"]}, timeout=30)
 tj = tok.json()
 print("code exchange:", tok.status_code, "scope:", tj.get("scope"))
+import base64, json as _json
+idt = tj.get("id_token")
+claims = {}
+if idt:
+    seg = idt.split(".")[1]; seg += "=" * (-len(seg) % 4)
+    claims = _json.loads(base64.urlsafe_b64decode(seg))
+print("token keys:", sorted(k for k in tj if k not in ("access_token", "refresh_token", "id_token")), "| id_token present:", bool(idt),
+      "| claim keys:", sorted(claims), "| verified claims:", {k: claims.get(k) for k in ("verified_account", "email_verified", "account_type")})
 if tok.status_code != 200:
     save_evidence("badge", {"exchange_status": tok.status_code, "response": tj}, name=f"badge-{who}.json")
     raise SystemExit(1)
@@ -62,4 +70,4 @@ fields["address_country"] = (u.get("address") or {}).get("country")
 fields["returned_keys"] = sorted(u.keys())
 print("userinfo:", ui.status_code, fields)
 save_evidence("badge", {"who": who, "exchange_status": tok.status_code, "granted_scope": tj.get("scope"),
-                        "userinfo_attempts": attempts, "fields": fields}, name=f"badge-{who}.json")
+                        "userinfo_attempts": attempts, "id_token_claim_keys": sorted(claims), "fields": fields}, name=f"badge-{who}.json")
