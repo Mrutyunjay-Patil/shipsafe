@@ -27,3 +27,6 @@ dist-ssr
 .dev.vars*
 !.dev.vars.example
 dist/
+e2e/.state.json
+e2e/.memo.json
+e2e/shots/
