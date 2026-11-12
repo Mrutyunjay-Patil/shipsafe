@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, Camera, ScanLine, TriangleAlert } from 'lucide-react'
+import { ArrowRight, Camera, Check, ScanLine, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import { Destination, Envelope, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { OrderRow, primeSeen } from '@/components/OrderRow'
@@ -80,18 +80,18 @@ export default function Home({ seller }: { seller: Seller }) {
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
       <header className="flex items-center justify-between gap-3 pt-3">
-        <h1 className="text-[26px] font-semibold leading-tight">
+        <h1 className="min-w-0 truncate whitespace-nowrap text-[clamp(20px,6.2vw,26px)] font-semibold leading-tight">
           {greeting()}{name ? `, ${name}` : ''}
         </h1>
         <Link
           to="/account"
-          aria-label="Your shop and PayPal account"
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card pl-1 pr-3 text-xs font-medium text-ink transition-colors hover:bg-accent"
+          aria-label={`Your shop. ${seller.paypal_verified ? 'PayPal verified' : 'PayPal connected'}`}
+          className="relative grid size-11 shrink-0 place-items-center rounded-full bg-ink text-[17px] font-semibold text-paper shadow-[var(--sheet-shadow)] transition-transform duration-150 active:scale-95"
         >
-          <span className="grid size-7 place-items-center rounded-full bg-ink text-[12px] font-semibold text-paper">
-            {(seller.display_name ?? 'S').slice(0, 1).toUpperCase()}
+          {(seller.display_name ?? 'S').slice(0, 1).toUpperCase()}
+          <span className="absolute -bottom-0.5 -right-0.5 grid size-[18px] place-items-center rounded-full bg-etiquette text-etiquette-foreground ring-2 ring-paper">
+            <Check className="size-3" strokeWidth={3.2} />
           </span>
-          {seller.paypal_verified ? 'PayPal verified' : 'PayPal connected'}
         </Link>
       </header>
 
