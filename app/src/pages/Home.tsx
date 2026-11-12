@@ -1,104 +1,137 @@
 import { useQuery } from '@tanstack/react-query'
-import { Camera, ChevronRight, MessageCircle, ScanLine, ShieldCheck, Table2 } from 'lucide-react'
+import { ArrowRight, Camera, ScanLine, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
-import { OrderRow } from '@/components/OrderRow'
+import { Destination, Envelope, Postmark, postmarkDate, Stamp } from '@/components/airmail'
+import { OrderRow, primeSeen } from '@/components/OrderRow'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, money, type Seller } from '@/lib/api'
+import { api, MOCK, money, type Order, photoUrl, type Seller } from '@/lib/api'
 
 const greeting = () => {
   const h = new Date().getHours()
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
 
-export default function Home({ seller }: { seller: Seller }) {
-  const orders = useQuery({ queryKey: ['orders'], queryFn: api.orders })
-  const list = orders.data ?? []
-  const live = list.filter((o) => o.status !== 'REFUNDED')
-  const total = live.reduce((s, o) => s + Number(o.amount), 0)
-  const toShip = list.filter((o) => o.status === 'PAID').length
-  const protectedCount = list.filter((o) => o.status === 'PROTECTED').length
-  const needsRefund = list.filter((o) => o.status === 'NEEDS_REFUND').length
+function NextParcel({ o, more }: { o: Order; more: number }) {
+  return (
+    <Envelope inTransit className="mt-4">
+      <div className="relative px-5 pb-5 pt-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 pt-1">
+            <p className="text-sm font-medium text-muted-foreground">
+              Post next{more > 0 && <span className="text-muted-foreground/80"> · {more} more after this</span>}
+            </p>
+            <Destination city={o.ship_city} country={o.ship_country} className="mt-2 block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
+          </div>
+          <Stamp src={photoUrl(o.photo_key)} value={money(o.amount, o.currency).replace('.00', '')} className="h-[86px] w-[72px] rotate-[3deg]" />
+        </div>
+        <div className="mt-4 flex items-end justify-between gap-3">
+          <address className="min-w-0 border-l-2 border-ink/15 pl-3 text-[15px] not-italic leading-snug">
+            <span className="block font-semibold">{o.ship_name}</span>
+            <span className="block text-muted-foreground">{o.ship_line1}</span>
+            <span className="block text-muted-foreground">{[o.ship_city, o.ship_state, o.ship_postcode].filter(Boolean).join(' ')}</span>
+          </address>
+          <Postmark city="Paid" date={postmarkDate(o.paid_at)} waves={false} className="pointer-events-none size-[60px] shrink-0 -rotate-[12deg]" />
+        </div>
+        <p className="mt-3 text-sm">
+          {o.title}
+          {o.variant && <span className="text-muted-foreground"> · {o.variant}</span>}
+        </p>
+        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-[14px] text-[15px]">
+          <Link to={`/orders/${o.id}`}><ScanLine /> Post it and scan the slip</Link>
+        </Button>
+      </div>
+    </Envelope>
+  )
+}
 
-  const actions = [
-    { to: '/sell', label: 'Sell', icon: Camera },
-    { to: '/orders?filter=PAID', label: 'Ship', icon: ScanLine },
-    { to: '/ask', label: 'Ask', icon: MessageCircle },
-    { to: '/board', label: 'Board', icon: Table2 },
-  ]
+function NothingToPost({ hasOrders }: { hasOrders: boolean }) {
+  return (
+    <Envelope className="mt-4">
+      <div className="px-5 pb-5 pt-5">
+        <p className="label-caps text-[32px] leading-none text-ink">{hasOrders ? 'All posted' : 'First sale'}</p>
+        <p className="mt-2 max-w-[30ch] text-[15px] text-muted-foreground">
+          {hasOrders
+            ? 'Every paid order has tracking on PayPal. List something new while you wait.'
+            : 'Photograph a product. ShipSafe writes the listing and makes a PayPal link for your chat.'}
+        </p>
+        <Button asChild size="lg" className="mt-5 h-[52px] w-full rounded-[14px] text-[15px]">
+          <Link to="/sell"><Camera /> List a product</Link>
+        </Button>
+      </div>
+    </Envelope>
+  )
+}
+
+export default function Home({ seller }: { seller: Seller }) {
+  const orders = useQuery({ queryKey: ['orders'], queryFn: api.orders, refetchInterval: MOCK ? 4_000 : 20_000 })
+  if (orders.data) primeSeen(orders.data.map((o) => o.id))
+  const list = orders.data ?? []
+  const toPost = list.filter((o) => o.status === 'PAID').sort((a, b) => a.paid_at.localeCompare(b.paid_at))
+  const refunds = list.filter((o) => o.status === 'NEEDS_REFUND')
+  const inPost = list.filter((o) => o.status === 'SHIPPED' || o.status === 'PROTECTED')
+  const live = list.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND')
+  const total = live.reduce((s, o) => s + Number(o.amount), 0)
+  const protectedN = list.filter((o) => o.status === 'PROTECTED').length
+  const name = seller.display_name?.split(' ')[0]
 
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
-      <header className="flex items-center justify-between py-3">
-        <div>
-          <p className="text-sm text-muted-foreground">{greeting()}</p>
-          <h1 className="text-xl font-semibold tracking-tight">{seller.display_name ?? 'Your shop'}</h1>
-        </div>
+      <header className="flex items-center justify-between gap-3 pt-3">
+        <h1 className="text-[26px] font-semibold leading-tight">
+          {greeting()}{name ? `, ${name}` : ''}
+        </h1>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand"
-          title={seller.paypal_verified ? 'PayPal says this account is verified' : 'Signed in with PayPal'}
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-ink"
+          title={seller.paypal_verified ? 'PayPal says this account is verified' : 'You signed in with PayPal'}
         >
           <ShieldCheck className="size-3.5" />
           {seller.paypal_verified ? 'PayPal verified' : 'PayPal connected'}
         </span>
       </header>
 
-      <section className="hero-card relative mt-2 overflow-hidden rounded-[1.75rem] p-6">
-        <div className="pointer-events-none absolute -right-10 -top-12 size-44 rounded-full bg-white/15 blur-2xl" />
-        <p className="text-sm/none opacity-80">Paid through ShipSafe</p>
-        {orders.isLoading ? (
-          <Skeleton className="mt-3 h-10 w-40 bg-white/25" />
-        ) : (
-          <p className="money mt-3 text-[2.6rem] font-semibold leading-none">{money(total)}</p>
-        )}
-        <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-          {[
-            ['To ship', toShip],
-            ['Protected', protectedCount],
-            ['Orders', live.length],
-          ].map(([label, n]) => (
-            <div key={label} className="rounded-2xl bg-white/15 px-2 py-2.5 backdrop-blur-sm">
-              <p className="money text-xl font-semibold">{n}</p>
-              <p className="text-[11px] opacity-80">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {orders.isLoading ? (
+        <Skeleton className="mt-4 h-[330px] rounded-2xl" />
+      ) : toPost[0] ? (
+        <NextParcel o={toPost[0]} more={toPost.length - 1} />
+      ) : (
+        <NothingToPost hasOrders={list.length > 0} />
+      )}
 
-      <section className="mt-5 grid grid-cols-4 gap-3">
-        {actions.map((a) => (
-          <Link key={a.label} to={a.to} className="group flex flex-col items-center gap-1.5">
-            <span className="glass grid size-14 place-items-center rounded-[1.1rem] text-brand transition-transform group-active:scale-95">
-              <a.icon className="size-6" />
-            </span>
-            <span className="text-xs font-medium">{a.label}</span>
-          </Link>
-        ))}
-      </section>
-
-      {needsRefund > 0 && (
-        <Link to="/orders?filter=NEEDS_REFUND" className="mt-5 flex items-center justify-between rounded-2xl bg-destructive/10 p-4 text-destructive">
-          <span className="text-sm font-medium">
-            {needsRefund} buyer{needsRefund > 1 ? 's' : ''} paid after the item sold out. Refund them.
+      {refunds.length > 0 && (
+        <Link
+          to="/orders?filter=NEEDS_REFUND"
+          className="mt-3 flex items-center gap-3 rounded-[14px] border border-[color-mix(in_oklch,var(--status-refund)_30%,transparent)] bg-[color-mix(in_oklch,var(--status-refund)_9%,var(--card))] px-4 py-3.5"
+        >
+          <TriangleAlert className="size-5 shrink-0 text-status-refund" />
+          <span className="flex-1 text-sm">
+            <span className="font-semibold">{refunds.length} buyer{refunds.length > 1 ? 's' : ''} paid after it sold out.</span>{' '}
+            <span className="text-muted-foreground">Refund in one tap.</span>
           </span>
-          <ChevronRight className="size-4" />
+          <ArrowRight className="size-4 text-muted-foreground" />
         </Link>
       )}
 
-      <section className="mt-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold">Recent orders</h2>
-          <Link to="/orders" className="text-sm font-medium text-brand">See all</Link>
+      <section className="mt-8">
+        <div className="mb-2.5 flex items-baseline justify-between">
+          <h2 className="text-[17px] font-semibold">In the post</h2>
+          <Link to="/orders" className="text-sm font-medium text-brand">All orders</Link>
         </div>
-        <div className="glass divide-y divide-border/60 overflow-hidden rounded-2xl">
-          {orders.isLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="m-3 h-12" />)}
-          {!orders.isLoading && list.length === 0 && (
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              No orders yet. Tap <span className="font-semibold text-brand">+</span> to list your first product.
-            </div>
+        <div className="sheet divide-y divide-border/70 overflow-hidden rounded-2xl">
+          {orders.isLoading && [0, 1].map((i) => <Skeleton key={i} className="m-3 h-12" />)}
+          {!orders.isLoading && inPost.length === 0 && (
+            <p className="px-4 py-6 text-center text-sm text-muted-foreground">Parcels you post show here until PayPal protects them.</p>
           )}
-          {list.slice(0, 5).map((o) => <OrderRow key={o.id} order={o} />)}
+          {inPost.slice(0, 4).map((o) => <OrderRow key={o.id} order={o} />)}
         </div>
       </section>
+
+      {live.length > 0 && (
+        <p className="mt-5 px-1 text-[13px] text-muted-foreground">
+          <span className="money font-semibold text-foreground">{money(total)}</span> paid through PayPal across {live.length} order
+          {live.length > 1 ? 's' : ''}, {protectedN} protected.
+        </p>
+      )}
     </main>
   )
 }

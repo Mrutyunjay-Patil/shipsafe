@@ -9,7 +9,7 @@ const items = [
   { to: '/board', label: 'Board', icon: Table2 },
 ]
 
-// Floating pill nav with a raised Sell button in the middle, as in the wallet references.
+// Standard bottom tab bar with Sell raised in the middle, within thumb reach.
 export function BottomNav() {
   const link = (i: (typeof items)[number]) => (
     <NavLink
@@ -18,23 +18,28 @@ export function BottomNav() {
       end={i.to === '/'}
       className={({ isActive }) =>
         cn(
-          'flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors',
-          isActive ? 'text-brand' : 'text-muted-foreground hover:text-foreground',
+          'relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors',
+          isActive ? 'text-ink' : 'text-muted-foreground hover:text-foreground',
         )
       }
     >
-      <i.icon className="size-5" strokeWidth={2} />
-      {i.label}
+      {({ isActive }) => (
+        <>
+          <i.icon className="size-[22px]" strokeWidth={isActive ? 2.3 : 1.9} />
+          {i.label}
+          <span className={cn('absolute top-1 h-[3px] w-5 rounded-full bg-ink transition-opacity', isActive ? 'opacity-100' : 'opacity-0')} />
+        </>
+      )}
     </NavLink>
   )
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),12px)]">
-      <div className="glass mx-auto flex max-w-md items-center rounded-full bg-card/90 px-2 dark:bg-card/85">
+    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),10px)]">
+      <div className="mx-auto flex max-w-md items-center rounded-[22px] border border-border bg-card/95 px-1.5 shadow-[0_10px_30px_-12px_oklch(0.3_0.1_265/0.35)] backdrop-blur-md">
         {items.slice(0, 2).map(link)}
         <NavLink
           to="/sell"
-          aria-label="Sell something"
-          className="-mt-8 mx-1 grid size-14 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground shadow-lg shadow-brand/40 transition-transform active:scale-95"
+          aria-label="List a product"
+          className="mx-1 -mt-7 grid size-[58px] shrink-0 place-items-center rounded-[18px] bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)] ring-4 ring-paper transition-transform duration-200 ease-out active:scale-95"
         >
           <Plus className="size-7" strokeWidth={2.4} />
         </NavLink>

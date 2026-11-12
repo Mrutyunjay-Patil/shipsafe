@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { BottomNav } from '@/components/BottomNav'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, MOCK } from '@/lib/api'
@@ -17,6 +17,7 @@ const Board = lazy(() => import('@/pages/Board'))
 
 export default function App() {
   const me = useQuery({ queryKey: ['me'], queryFn: api.me })
+  const loc = useLocation()
 
   if (location.pathname === '/thanks') return <Thanks />
   if (me.isLoading) {
@@ -37,7 +38,8 @@ export default function App() {
           Preview with sample data. Nothing is sent to PayPal.
         </div>
       )}
-      <Routes>
+      <div key={loc.pathname} className="page-in">
+      <Routes location={loc}>
         <Route path="/" element={<Home seller={me.data.seller} />} />
         <Route path="/sell" element={<Sell />} />
         <Route path="/orders" element={<Orders />} />
@@ -46,6 +48,7 @@ export default function App() {
         <Route path="/board" element={<Suspense fallback={<Skeleton className="m-5 h-96 rounded-2xl" />}><Board /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </div>
       <BottomNav />
     </div>
   )

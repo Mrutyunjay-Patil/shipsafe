@@ -1,15 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Camera, Check, Copy, ImagePlus, Loader2, Minus, Plus, Share2, Sparkles, X } from 'lucide-react'
+import { Camera, Copy, Loader2, Minus, Plus, Send, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { Envelope, Stamp } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { api, ApiError, money } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 type Form = { title: string; description: string; colours: string[]; category: string; price: string; quantity: number }
+
+const field = 'h-12 rounded-[12px] bg-card text-[16px]'
 
 export default function Sell() {
   const qc = useQueryClient()
@@ -31,16 +35,13 @@ export default function Sell() {
         category: r.draft.category, price: r.draft.suggested_price_usd.toFixed(2), quantity: 1,
       })
     },
-    onError: (e) => toast.error(`Couldn't read the photo: ${(e as Error).message}`),
+    onError: (e) => toast.error(`Couldn't read that photo. ${(e as Error).message}. Try again in better light.`),
   })
 
   const create = useMutation({
     mutationFn: () => api.createListing({ ...form!, photo_key: photoKey, ai_confidence: confidence }),
-    onSuccess: (r) => {
-      setLink({ url: r.url, plb_id: r.plb_id })
-      qc.invalidateQueries({ queryKey: ['listings'] })
-    },
-    onError: (e) => toast.error(e instanceof ApiError && e.body?.error === 'paypal' ? `PayPal said: ${e.message}` : (e as Error).message),
+    onSuccess: (r) => { setLink({ url: r.url, plb_id: r.plb_id }); qc.invalidateQueries({ queryKey: ['listings'] }) },
+    onError: (e) => toast.error(e instanceof ApiError && e.body?.error === 'paypal' ? `PayPal refused the link: ${e.message}` : (e as Error).message),
   })
 
   const pick = (f?: File) => {
@@ -50,48 +51,54 @@ export default function Sell() {
     setLink(null)
     draft.mutate(f)
   }
-
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f))
   const addColour = () => {
     const c = colour.trim()
-    if (form && c && !form.colours.includes(c)) set('colours', [...form.colours, c].slice(0, 10))
+    if (form && c && !form.colours.some((x) => x.toLowerCase() === c.toLowerCase())) set('colours', [...form.colours, c].slice(0, 10))
     setColour('')
   }
-
+  const shareText = () => `${form?.title}, ${money(form?.price ?? 0)}. Pay safely with PayPal here:`
   const share = async () => {
     if (!link) return
-    const text = `${form?.title} for ${money(form?.price ?? 0)}. Pay securely with PayPal:`
-    if (navigator.share) await navigator.share({ title: form?.title, text, url: link.url }).catch(() => {})
-    else window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${link.url}`)}`, '_blank')
+    if (navigator.share) await navigator.share({ title: form?.title, text: shareText(), url: link.url }).catch(() => {})
+    else window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText()} ${link.url}`)}`, '_blank', 'noopener')
   }
+  const reset = () => { setLink(null); setForm(null); setPreview(null) }
 
   if (link && form) {
     return (
-      <main className="mx-auto max-w-md px-5 pt-14 text-center">
-        <span className="mx-auto grid size-16 place-items-center rounded-full bg-success/15 text-success">
-          <Check className="size-8" strokeWidth={2.5} />
-        </span>
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Your PayPal link is ready</h1>
-        <p className="mt-1 text-muted-foreground">Paste it into the chat with your buyer.</p>
-        <div className="glass mt-6 rounded-2xl p-4 text-left">
-          <p className="font-medium">{form.title}</p>
-          <p className="money text-sm text-muted-foreground">{money(form.price)} · {form.colours.join(', ') || 'one style'}</p>
-          <p className="mt-3 break-all rounded-xl bg-muted px-3 py-2 font-mono text-xs">{link.url}</p>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Button variant="secondary" size="lg" className="h-12 rounded-full" onClick={() => { navigator.clipboard.writeText(link.url); toast.success('Link copied') }}>
+      <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
+        <h1 className="pt-3 text-[26px] font-semibold leading-tight">Your link is ready to send</h1>
+        <p className="mt-1 text-[15px] text-muted-foreground">Paste it into the chat. The buyer pays on PayPal and gives you their address there.</p>
+
+        <Envelope inTransit className="envelope-in mt-5">
+          <div className="relative px-5 pb-5 pt-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[19px] font-semibold leading-snug">{form.title}</p>
+                <p className="money mt-2 text-[28px] font-semibold leading-none">{money(form.price)}</p>
+                <p className="mt-1.5 text-sm text-muted-foreground">{form.colours.length ? form.colours.join(' · ') : 'One style'}</p>
+              </div>
+              <Stamp src={preview} className="h-[96px] w-[80px] rotate-[3deg]" />
+            </div>
+            <p className="tracking-code mt-5 select-all break-all rounded-[10px] bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{link.url}</p>
+          </div>
+        </Envelope>
+
+        <div className="mt-4 grid grid-cols-[auto_1fr] gap-2.5">
+          <Button variant="outline" size="lg" className="h-[52px] rounded-[14px]" onClick={() => { navigator.clipboard.writeText(link.url); toast.success('Link copied') }}>
             <Copy /> Copy
           </Button>
-          <Button size="lg" className="h-12 rounded-full" onClick={share}>
-            <Share2 /> Share
+          <Button size="lg" className="h-[52px] rounded-[14px] text-[15px]" onClick={share}>
+            <Send /> Send to a chat
           </Button>
         </div>
-        <p className="mt-4 text-xs text-muted-foreground">
-          The link closes by itself after {form.quantity === 1 ? 'the first sale' : `${form.quantity} sales`}.
+        <p className="mt-3 px-1 text-[13px] text-muted-foreground">
+          The link closes on its own after {form.quantity === 1 ? 'the first sale' : `${form.quantity} sales`}. If two buyers pay at once, ShipSafe flags the extra one for a refund.
         </p>
-        <div className="mt-8 flex justify-center gap-6 text-sm font-medium">
-          <button className="text-brand" onClick={() => { setLink(null); setForm(null); setPreview(null) }}>List another</button>
-          <Link to="/" className="text-muted-foreground">Done</Link>
+        <div className="mt-6 flex items-center justify-between px-1 text-[15px] font-medium">
+          <button className="text-brand" onClick={reset}>List another</button>
+          <Link to="/" className="text-muted-foreground">Back to home</Link>
         </div>
       </main>
     )
@@ -99,96 +106,98 @@ export default function Sell() {
 
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
-      <header className="py-3">
-        <h1 className="text-xl font-semibold tracking-tight">New listing</h1>
-        <p className="text-sm text-muted-foreground">Snap the product. AI fills in the rest, you check it.</p>
-      </header>
+      <h1 className="pt-3 text-[26px] font-semibold leading-tight">List a product</h1>
+      <p className="mt-1 text-[15px] text-muted-foreground">Take one clear photo. ShipSafe writes the listing, you check it.</p>
 
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
 
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className="glass relative mt-2 flex aspect-[4/3] w-full flex-col items-center justify-center overflow-hidden rounded-[1.75rem] text-muted-foreground"
+        aria-label={preview ? 'Retake the product photo' : 'Take a product photo'}
+        className={cn('relative mx-auto mt-5 block w-full max-w-[320px] transition-transform active:scale-[0.99]', preview ? 'aspect-[4/5]' : 'aspect-[4/5]')}
       >
         {preview ? (
-          <img src={preview} alt="Product" className="absolute inset-0 size-full object-cover" />
+          <Stamp src={preview} alt="Your product" className="size-full -rotate-1" />
         ) : (
-          <>
-            <span className="grid size-16 place-items-center rounded-2xl bg-brand text-brand-foreground shadow-lg shadow-brand/30">
-              <Camera className="size-7" />
+          <span className="stamp flex size-full -rotate-1 flex-col items-center justify-center">
+            <span className="flex size-full flex-col items-center justify-center gap-3 border border-dashed border-ink/25 bg-envelope text-center">
+              <span className="grid size-16 place-items-center rounded-[18px] bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)]">
+                <Camera className="size-7" />
+              </span>
+              <span className="text-[17px] font-semibold text-foreground">Take a photo</span>
+              <span className="max-w-[22ch] text-sm text-muted-foreground">Plain background, good light, the whole product in frame</span>
             </span>
-            <span className="mt-3 font-medium text-foreground">Take a photo</span>
-            <span className="text-sm">or pick one from your gallery</span>
-          </>
+          </span>
         )}
         {draft.isPending && (
-          <span className="absolute inset-0 grid place-items-center bg-background/55 backdrop-blur-sm">
-            <span className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-sm font-medium text-foreground">
-              <Sparkles className="size-4 animate-pulse text-brand" /> Drafting your listing
+          <span className="absolute inset-0 grid place-items-center">
+            <span className="flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-sm font-medium shadow-lg">
+              <Loader2 className="size-4 animate-spin text-brand" /> Writing your listing
             </span>
           </span>
         )}
         {preview && !draft.isPending && (
-          <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-background/85 px-3 py-1.5 text-xs font-medium text-foreground">
-            <ImagePlus className="size-3.5" /> Retake
-          </span>
+          <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-card px-3.5 py-1.5 text-[13px] font-medium shadow-md">Tap to retake</span>
         )}
       </button>
 
       {form && (
-        <form
-          className="mt-5 space-y-4"
-          onSubmit={(e) => { e.preventDefault(); create.mutate() }}
-        >
+        <form className="mt-8 space-y-5" onSubmit={(e) => { e.preventDefault(); create.mutate() }}>
           {confidence !== undefined && confidence < 0.6 && (
-            <p className="rounded-xl bg-warning/15 px-3 py-2 text-sm">The AI wasn't sure about this photo. Check every field.</p>
+            <p className="rounded-[12px] border border-[color-mix(in_oklch,var(--status-paid)_35%,transparent)] bg-[color-mix(in_oklch,var(--status-paid)_10%,var(--card))] px-3.5 py-2.5 text-sm">
+              The photo was hard to read. Check every field before you share it.
+            </p>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" value={form.title} maxLength={127} onChange={(e) => set('title', e.target.value)} className="h-12 rounded-xl" />
+            <Input id="title" value={form.title} maxLength={127} onChange={(e) => set('title', e.target.value)} className={field} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="desc">Description <span className="text-muted-foreground">{form.description.length}/140</span></Label>
-            <Textarea id="desc" value={form.description} maxLength={140} rows={3} onChange={(e) => set('description', e.target.value)} className="rounded-xl" />
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="desc">Description</Label>
+              <span className="money text-xs text-muted-foreground">{form.description.length} of 140</span>
+            </div>
+            <Textarea id="desc" value={form.description} maxLength={140} rows={3} onChange={(e) => set('description', e.target.value)} className="rounded-[12px] bg-card text-[16px]" />
           </div>
-          <div className="space-y-1.5">
-            <Label>Colours the buyer can pick</Label>
-            <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
+            <Label htmlFor="colour">Colours the buyer picks from</Label>
+            <div className="flex flex-wrap items-center gap-2">
               {form.colours.map((c) => (
-                <span key={c} className="inline-flex items-center gap-1 rounded-full bg-brand-soft py-1 pl-3 pr-1.5 text-sm font-medium text-brand">
+                <span key={c} className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card pl-3.5 pr-1.5 text-sm font-medium">
                   {c}
-                  <button type="button" aria-label={`Remove ${c}`} onClick={() => set('colours', form.colours.filter((x) => x !== c))} className="rounded-full p-0.5 hover:bg-brand/10">
+                  <button type="button" aria-label={`Remove ${c}`} onClick={() => set('colours', form.colours.filter((x) => x !== c))} className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
                     <X className="size-3.5" />
                   </button>
                 </span>
               ))}
               <Input
+                id="colour"
                 value={colour}
-                placeholder="Add colour"
+                placeholder="Add a colour"
                 onChange={(e) => setColour(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addColour() } }}
                 onBlur={addColour}
-                className="h-8 w-32 rounded-full"
+                className="h-9 w-36 rounded-full bg-card"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="price">Price, USD</Label>
-              <Input id="price" inputMode="decimal" value={form.price} onChange={(e) => set('price', e.target.value.replace(/[^\d.]/g, ''))} className="money h-12 rounded-xl text-lg font-semibold" />
+              <Label htmlFor="price">Price in USD</Label>
+              <Input id="price" inputMode="decimal" value={form.price} onChange={(e) => set('price', e.target.value.replace(/[^\d.]/g, ''))} className={cn(field, 'money text-[20px] font-semibold')} />
             </div>
             <div className="space-y-1.5">
-              <Label>In stock</Label>
-              <div className="flex h-12 items-center justify-between rounded-xl border px-2">
-                <Button type="button" variant="ghost" size="icon" onClick={() => set('quantity', Math.max(1, form.quantity - 1))}><Minus /></Button>
-                <span className="money text-lg font-semibold">{form.quantity}</span>
-                <Button type="button" variant="ghost" size="icon" onClick={() => set('quantity', Math.min(100, form.quantity + 1))}><Plus /></Button>
+              <Label>Units to sell</Label>
+              <div className="flex h-12 items-center justify-between rounded-[12px] border border-input bg-card px-1">
+                <Button type="button" variant="ghost" size="icon" aria-label="One fewer" onClick={() => set('quantity', Math.max(1, form.quantity - 1))}><Minus /></Button>
+                <span className="money text-[20px] font-semibold">{form.quantity}</span>
+                <Button type="button" variant="ghost" size="icon" aria-label="One more" onClick={() => set('quantity', Math.min(100, form.quantity + 1))}><Plus /></Button>
               </div>
             </div>
           </div>
-          <Button type="submit" size="lg" className="h-14 w-full rounded-full text-base" disabled={create.isPending || !/^\d+(\.\d{1,2})?$/.test(form.price)}>
-            {create.isPending ? <><Loader2 className="animate-spin" /> Creating PayPal link</> : 'Create PayPal link'}
+          <Button type="submit" size="lg" className="h-[52px] w-full rounded-[14px] text-[15px]" disabled={create.isPending || !/^\d+(\.\d{1,2})?$/.test(form.price) || form.title.trim().length < 3}>
+            {create.isPending ? <><Loader2 className="animate-spin" /> Making your PayPal link</> : 'Make the PayPal link'}
           </Button>
         </form>
       )}

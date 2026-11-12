@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/geist-mono";
 @import "./theme.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -12,8 +13,20 @@
     --color-brand-soft: var(--brand-soft);
     --color-success: var(--success);
     --color-warning: var(--warning);
-    --color-glass: var(--glass);
-    --color-glass-border: var(--glass-border);
+    --font-mono: var(--code-font);
+    --color-ink: var(--ink);
+    --color-paper: var(--paper);
+    --color-paper-deep: var(--paper-deep);
+    --color-airmail-red: var(--airmail-red);
+    --color-etiquette: var(--etiquette);
+    --color-etiquette-foreground: var(--etiquette-foreground);
+    --color-envelope: var(--envelope);
+    --color-status-paid: var(--status-paid);
+    --color-status-shipped: var(--status-shipped);
+    --color-status-protected: var(--status-protected);
+    --color-status-refund: var(--status-refund);
+    --color-status-closed: var(--status-closed);
+    --ease-out: var(--ease-out);
     --font-heading: var(--font-sans);
     --font-sans: var(--brand-font);
     --color-sidebar-ring: var(--sidebar-ring);
@@ -70,20 +83,83 @@
     @apply font-sans;
     }
 }
+@layer base {
+  /* Browser surfaces carry the world too. */
+  ::selection { background: var(--selection); color: var(--foreground); }
+  html { caret-color: var(--brand); -webkit-tap-highlight-color: transparent; scrollbar-color: var(--border) transparent; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+  a { text-underline-offset: 3px; }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.025em; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+}
+
 @layer components {
-  /* Frosted card used across the app. Its look comes from the tokens in theme.css. */
-  .glass {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  /* Onion-skin sheet: the translucent airmail paper lists and panels are written on. */
+  .sheet {
+    background: var(--sheet);
+    border: 1px solid var(--sheet-border);
+    box-shadow: var(--sheet-shadow);
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
   }
-  /* The big gradient card on Home, like the wallet card in the references. */
-  .hero-card {
-    background: var(--hero-gradient);
-    color: var(--hero-foreground);
-    box-shadow: var(--hero-shadow);
+  /* The envelope: an order or a payment link as a letter going abroad. */
+  .envelope {
+    position: relative;
+    background: var(--envelope);
+    box-shadow: var(--envelope-shadow);
+    border-radius: 16px;
+    overflow: hidden;
   }
+  /* The red and blue airmail chevron, used only as the edge of something in transit. */
+  .chevron-edge {
+    --stripe: 14px;
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--airmail-red) 0 var(--stripe),
+      var(--envelope) var(--stripe) calc(var(--stripe) * 1.5),
+      var(--airmail-blue) calc(var(--stripe) * 1.5) calc(var(--stripe) * 2.5),
+      var(--envelope) calc(var(--stripe) * 2.5) calc(var(--stripe) * 3)
+    );
+  }
+  /* Perforated stamp frame around product photos: a sheet of punched holes, covered in the
+     middle by the photo, so only the perforated edge shows. */
+  .stamp {
+    padding: 7px;
+    background: radial-gradient(circle at 5px 5px, transparent 2.6px, var(--envelope) 3px) -5px -5px / 10px 10px;
+    filter: drop-shadow(0 1px 1px oklch(0.3 0.08 265 / 0.22)) drop-shadow(0 6px 10px oklch(0.3 0.1 265 / 0.12));
+  }
+  .stamp > img, .stamp > div { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 1px; }
+  /* Postal label lettering: condensed capitals from the same family. */
+  .label-caps { font-stretch: var(--label-stretch); text-transform: uppercase; letter-spacing: 0.01em; font-weight: 700; }
   .money { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .tracking-code { font-family: var(--code-font); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+  /* The one authored moment: a postmark strikes the envelope when PayPal accepts tracking. */
+  @keyframes postmark-strike {
+    0% { opacity: 0; transform: scale(1.6) rotate(-18deg); filter: blur(6px); }
+    55% { opacity: 1; transform: scale(0.94) rotate(-9deg); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) rotate(-10deg); }
+  }
+  @keyframes etiquette-settle {
+    0% { opacity: 0; transform: translateY(-10px) rotate(4deg); }
+    100% { opacity: 1; transform: translateY(0) rotate(-2deg); }
+  }
+  /* Supporting motion. Content is visible by default; these only ease it in. */
+  @keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes letter-arrive {
+    0% { opacity: 0; transform: translateX(28px) rotate(1.5deg); background: color-mix(in oklch, var(--status-paid) 18%, transparent); }
+    60% { opacity: 1; transform: none; }
+    100% { background: transparent; }
+  }
+  @keyframes envelope-in {
+    0% { opacity: 0; transform: translateY(18px) rotate(-1.5deg) scale(0.98); filter: blur(4px); }
+    100% { opacity: 1; transform: none; filter: none; }
+  }
+  .page-in { animation: page-in 320ms var(--ease-out) both; }
+  .arrive { animation: letter-arrive 900ms var(--ease-out) both; }
+  .envelope-in { animation: envelope-in 560ms var(--ease-out) both; }
+  .strike { animation: postmark-strike 620ms var(--ease-out) both; }
+  .settle { animation: etiquette-settle 520ms var(--ease-out) 380ms both; }
+  @media (prefers-reduced-motion: reduce) { .strike, .settle, .page-in, .arrive, .envelope-in { animation: none; } }
 }

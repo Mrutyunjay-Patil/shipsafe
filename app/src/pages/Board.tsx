@@ -3,6 +3,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type ICellRendererParams } from 'ag-grid-community'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { sentenceCase } from '@/components/airmail'
 import { StatusBadge } from '@/components/StatusBadge'
 import { api, money, type Order } from '@/lib/api'
 
@@ -25,22 +26,22 @@ export default function Board() {
   const nav = useNavigate()
   const orders = useQuery({ queryKey: ['orders'], queryFn: api.orders, refetchInterval: 20_000 })
   const cols = useMemo<ColDef<Order>[]>(() => [
-    { field: 'status', headerName: 'Status', width: 150, cellRenderer: (p: ICellRendererParams<Order>) => p.data && <StatusBadge status={p.data.status} />, filter: true },
+    { field: 'status', headerName: 'Status', width: 170, cellRenderer: (p: ICellRendererParams<Order>) => p.data && <span className="flex h-full items-center"><StatusBadge status={p.data.status} /></span>, filter: true },
     { field: 'title', headerName: 'Item', flex: 1.4, minWidth: 180 },
     { field: 'variant', headerName: 'Colour', width: 110 },
     { field: 'amount', headerName: 'Amount', width: 110, valueFormatter: (p) => (p.data ? money(p.value, p.data.currency) : ''), cellClass: 'money' },
-    { headerName: 'Ship to', flex: 1, minWidth: 160, valueGetter: (p) => [p.data?.ship_city, p.data?.ship_postcode, p.data?.ship_country].filter(Boolean).join(' ') },
-    { field: 'tracking_number', headerName: 'Tracking', width: 160, cellClass: 'font-mono' },
-    { field: 'seller_protection', headerName: 'Seller protection', width: 150 },
-    { field: 'paid_at', headerName: 'Paid', width: 170, sort: 'desc', valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleString() : '') },
-    { field: 'id', headerName: 'PayPal order', width: 180, cellClass: 'font-mono text-xs' },
+    { headerName: 'Ship to', flex: 1, minWidth: 170, valueGetter: (p) => [p.data?.ship_city, p.data?.ship_postcode, p.data?.ship_country].filter(Boolean).join(' ') },
+    { field: 'tracking_number', headerName: 'Tracking', width: 170, cellClass: 'tracking-code' },
+    { field: 'seller_protection', headerName: 'Seller protection', width: 160, valueFormatter: (p) => sentenceCase(p.value) },
+    { field: 'paid_at', headerName: 'Paid', width: 170, sort: 'desc', valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '') },
+    { field: 'id', headerName: 'PayPal order', width: 190, cellClass: 'tracking-code text-xs' },
   ], [])
 
   return (
     <main className="mx-auto max-w-7xl px-5 pt-[max(env(safe-area-inset-top),20px)]">
       <header className="flex items-end justify-between py-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Order board</h1>
+          <h1 className="text-[26px] font-semibold leading-tight">Order board</h1>
           <p className="text-sm text-muted-foreground">Every PayPal order, its tracking and its protection status. Best on a laptop.</p>
         </div>
       </header>

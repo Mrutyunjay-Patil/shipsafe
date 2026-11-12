@@ -59,6 +59,20 @@ const update = (id: string, patch: Partial<OrderDetail>) => {
   orders = orders.map((o) => (o.id === id ? { ...o, ...patch } : o))
 }
 
+// A new buyer pays a few seconds after the preview opens, so the arrival motion can be seen.
+let arrivedAt = 0
+function maybeArrive() {
+  if (!arrivedAt) arrivedAt = Date.now() + 10_000
+  if (Date.now() < arrivedAt || orders.some((o) => o.id === '2WX19004AB8812345')) return
+  orders = [{
+    id: '2WX19004AB8812345', listing_id: 'lst_bag', capture_id: '4QP81022CD7765432', status: 'PAID',
+    amount: '38.00', currency: 'USD', variant: 'Mustard', title: 'Hand-stitched jute tote', photo_key: null,
+    buyer_country: 'AU', buyer_account_status: 'VERIFIED', ship_name: 'K. Nguyen', ship_line1: '88 Smith St',
+    ship_line2: null, ship_city: 'Melbourne', ship_state: 'VIC', ship_postcode: '3065', ship_country: 'AU',
+    seller_protection: 'ELIGIBLE', paid_at: new Date().toISOString(), shipped_at: null, trackers: [],
+  }, ...orders]
+}
+
 export const mockApi = {
   me: async (): Promise<Me> => ({ signedIn: true, seller: { id: 'demo', display_name: 'Ruchi Handblock', paypal_verified: null } }),
   logout: async () => ({ ok: true }),
@@ -79,7 +93,7 @@ export const mockApi = {
   },
   listings: async () => [],
   archiveListing: async () => ({ ok: true }),
-  orders: async () => { await wait(300); return orders.map(summary) },
+  orders: async () => { await wait(300); maybeArrive(); return orders.map(summary) },
   order: async (id: string) => { await wait(250); return find(id) },
   readSlip: async (id: string, _slip: File): Promise<SlipResult> => {
     await wait(1600)

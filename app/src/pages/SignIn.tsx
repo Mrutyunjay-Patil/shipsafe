@@ -1,56 +1,59 @@
-import { Camera, Link2, ShieldCheck } from 'lucide-react'
+import { Envelope, ParAvion, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 
-const steps = [
-  { icon: Camera, title: 'Snap the product', text: 'AI drafts the title, colours and price.' },
-  { icon: Link2, title: 'Share one PayPal link', text: 'Paste it into Instagram or WhatsApp.' },
-  { icon: ShieldCheck, title: 'Snap the courier slip', text: 'Tracking goes to PayPal, so the sale is protected.' },
-]
+const scarf =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 96"><rect width="80" height="96" fill="#2b3f8f"/>${Array.from({ length: 30 }, (_, i) => `<circle cx="${8 + (i % 5) * 16}" cy="${10 + Math.floor(i / 5) * 15}" r="4" fill="none" stroke="#e9e4d4" stroke-width="1.4"/><circle cx="${8 + (i % 5) * 16}" cy="${10 + Math.floor(i / 5) * 15}" r="1.2" fill="#c8563a"/>`).join('')}</svg>`,
+  )
 
 export default function SignIn() {
   const failed = new URLSearchParams(location.search).get('login')
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-10 pt-16">
-      <div className="flex items-center gap-2">
-        <img src="/icon.svg" alt="" className="size-9 rounded-xl" />
-        <span className="text-xl font-semibold tracking-tight">ShipSafe</span>
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),28px)]">
+      <div className="flex items-center gap-2.5">
+        <img src="/icon.svg" alt="" className="size-8 rounded-[9px]" />
+        <span className="text-[17px] font-semibold">ShipSafe</span>
       </div>
 
-      <h1 className="mt-10 text-[2.4rem] font-semibold leading-[1.05] tracking-tight">
-        Sell from a photo.
+      <h1 className="mt-10 text-[40px] font-semibold leading-[1.02]">
+        Sell in the chat.
         <br />
-        <span className="text-brand">Ship with proof.</span>
+        Post with proof.
       </h1>
-      <p className="mt-3 text-muted-foreground">
-        For small sellers taking orders in chat. Every sale gets a PayPal payment link and tracked delivery.
+      <p className="mt-3 max-w-[34ch] text-[16px] leading-relaxed text-muted-foreground">
+        A PayPal link for every sale, and a photo of the courier slip turns into tracking PayPal can see.
       </p>
 
-      <ul className="mt-8 space-y-3">
-        {steps.map((s) => (
-          <li key={s.title} className="glass flex items-center gap-4 rounded-2xl p-4">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
-              <s.icon className="size-5" />
-            </span>
-            <span>
-              <span className="block font-medium">{s.title}</span>
-              <span className="block text-sm text-muted-foreground">{s.text}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
+      <Envelope inTransit className="mt-8">
+        <div className="relative px-5 pb-5 pt-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="label-caps text-[42px] leading-[0.9] text-ink">Berlin</p>
+              <p className="money mt-3 text-[24px] font-semibold leading-none">$24.00</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">Block-printed scarf · Indigo</p>
+            </div>
+            <Stamp src={scarf} className="h-[86px] w-[72px] rotate-[3deg]" />
+          </div>
+          <div className="mt-5 flex items-center gap-2">
+            <Postmark city="Berlin" date={postmarkDate(new Date().toISOString())} waves={false} className="strike size-[64px] -rotate-[10deg]" />
+            <ParAvion className="settle -rotate-2" />
+          </div>
+          <p className="tracking-code mt-4 text-[14px] font-semibold">EE 482 913 507 IN</p>
+          <p className="text-[12px] text-muted-foreground">Example parcel</p>
+        </div>
+      </Envelope>
 
       <div className="mt-auto pt-10">
         {failed && (
-          <p className="mb-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            PayPal sign-in didn't finish. Please try again.
+          <p role="alert" className="mb-3 rounded-[12px] bg-[color-mix(in_oklch,var(--status-refund)_10%,var(--card))] px-3.5 py-2.5 text-sm">
+            PayPal sign-in didn't finish. Try again.
           </p>
         )}
-        <Button asChild size="lg" className="h-14 w-full rounded-full text-base">
+        <Button asChild size="lg" className="h-14 w-full rounded-[14px] text-[16px]">
           <a href="/auth/paypal/login">Log in with PayPal</a>
         </Button>
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          Sandbox demo. Payments use PayPal test accounts.
-        </p>
+        <p className="mt-3 text-center text-[12px] text-muted-foreground">PayPal sandbox demo. No real money moves.</p>
       </div>
     </main>
   )
