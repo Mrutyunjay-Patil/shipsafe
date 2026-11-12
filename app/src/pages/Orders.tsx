@@ -63,7 +63,7 @@ export default function Orders() {
 
   const cols = useMemo<ColDef<Order>[]>(() => [
     {
-      headerName: 'Ship to', colId: 'dest', minWidth: wide ? 230 : 120, flex: 1.2, sortable: true,
+      headerName: 'Ship to', colId: 'dest', sortable: true, ...(wide ? { minWidth: 230, flex: 1.2 } : { width: 168, pinned: 'left' as const }),
       valueGetter: (p) => p.data?.ship_city ?? '',
       cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(
         <span className="flex min-w-0 items-center gap-3">
@@ -71,7 +71,7 @@ export default function Orders() {
           <span className="min-w-0 leading-tight">
             <span className="label-caps block truncate text-[18px] text-ink">{p.data.ship_city}</span>
             <span className="block truncate text-[12px] text-muted-foreground">
-              {wide ? [p.data.ship_postcode, p.data.ship_country].filter(Boolean).join(' ') : `${money(p.data.amount, p.data.currency)} · ${p.data.title}`}
+              {[p.data.ship_postcode, p.data.ship_country].filter(Boolean).join(' ')}
             </span>
           </span>
         </span>,
@@ -82,7 +82,7 @@ export default function Orders() {
       cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(<StatusBadge status={p.data.status} short />),
     },
     {
-      headerName: 'Item', flex: 1.5, minWidth: 220, hide: !wide, valueGetter: (p) => p.data?.title ?? '',
+      headerName: 'Item', ...(wide ? { flex: 1.5, minWidth: 220 } : { width: 220 }), valueGetter: (p) => p.data?.title ?? '',
       cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(
         <span className="min-w-0 leading-tight">
           <span className="block truncate font-medium">{p.data.title}</span>
@@ -90,15 +90,15 @@ export default function Orders() {
         </span>,
       ),
     },
-    { field: 'amount', headerName: 'Amount', width: 120, hide: !wide, type: 'rightAligned', valueFormatter: (p) => (p.data ? money(p.value, p.data.currency) : ''), cellClass: 'money font-semibold' },
+    { field: 'amount', headerName: 'Amount', width: wide ? 120 : 100, type: 'rightAligned', valueFormatter: (p) => (p.data ? money(p.value, p.data.currency) : ''), cellClass: 'money font-semibold' },
     {
-      field: 'tracking_number', headerName: 'Tracking', width: 190, hide: !wide,
+      field: 'tracking_number', headerName: 'Tracking', width: 190,
       cellRenderer: (p: ICellRendererParams<Order>) =>
         cell(p.value ? <span className="tracking-code text-[13px]">{p.value}</span> : <span className="text-[13px] text-muted-foreground">Not posted yet</span>),
     },
-    { field: 'seller_protection', headerName: 'Seller protection', width: 170, hide: !wide, valueFormatter: (p) => sentenceCase(p.value) || 'Not reported' },
+    { field: 'seller_protection', headerName: 'Seller protection', width: 170, valueFormatter: (p) => sentenceCase(p.value) || 'Not reported' },
     {
-      field: 'paid_at', headerName: 'Paid', width: 110, sort: 'desc', hide: !wide,
+      field: 'paid_at', headerName: 'Paid', width: 100, sort: 'desc',
       valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : ''),
       cellClass: 'money',
     },
@@ -108,7 +108,7 @@ export default function Orders() {
     <main className={cn('mx-auto px-5 pt-[max(env(safe-area-inset-top),20px)]', wide ? 'max-w-7xl pb-10' : 'max-w-md')}>
       <header className="pb-4 pt-3">
         <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
-        <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own. Tap a row to open it.</p>
+        <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own. Tap a row to open it{wide ? '' : ', swipe the table for more columns'}.</p>
       </header>
 
       <div role="tablist" aria-label="Filter orders" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,#000_20px,#000_calc(100%-28px),transparent)]">
@@ -138,7 +138,6 @@ export default function Orders() {
           domLayout="autoHeight"
           getRowId={(p) => p.data.id}
           suppressMovableColumns
-          suppressHorizontalScroll={!wide}
           onRowClicked={(e) => e.data && nav(`/orders/${e.data.id}`)}
           overlayNoRowsTemplate={filter === 'ALL' ? 'No orders yet. Share a PayPal link in a chat and paid orders land here.' : 'Nothing in this pile right now.'}
         />
