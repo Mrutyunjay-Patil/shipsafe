@@ -10,3 +10,4 @@ dist/
 node_modules/
 evidence/pay-*.png
 evidence/pay-guest-*.png
+evidence/pay-login-*.png

@@ -1,0 +1,72 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/reporting/transactions",
+    "params": {
+      "start_date": "2026-11-11T00:00:00Z",
+      "end_date": "2026-11-12T23:59:59Z",
+      "fields": "all"
+    },
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 580,
+  "debug_id": "f46497532f6d7",
+  "response": {
+    "transaction_details": [
+      {
+        "transaction_info": {
+          "transaction_id": "41647352864853331",
+          "transaction_event_code": "T1900",
+          "transaction_initiation_date": "2026-11-11T05:19:24Z",
+          "transaction_updated_date": "2026-11-11T05:19:24Z",
+          "transaction_amount": {
+            "currency_code": "USD",
+            "value": "5000.00"
+          },
+          "transaction_status": "S",
+          "transaction_subject": "Initial balance",
+          "ending_balance": {
+            "currency_code": "USD",
+            "value": "5000.00"
+          },
+          "available_balance": {
+            "currency_code": "USD",
+            "value": "5000.00"
+          },
+          "protection_eligibility": "02",
+          "instrument_type": "PayPal",
+          "instrument_sub_type": "PayPal Wallet"
+        },
+        "payer_info": {
+          "address_status": "N",
+          "payer_name": "<redacted>"
+        },
+        "shipping_info": {},
+        "cart_info": {},
+        "store_info": {},
+        "auction_info": {},
+        "incentive_info": {}
+      }
+    ],
+    "account_number": "MZXSDB8AZ47E6",
+    "start_date": "2026-11-11T00:00:00Z",
+    "end_date": "2026-11-12T04:59:59Z",
+    "last_refreshed_datetime": "2026-11-12T04:59:59Z",
+    "page": 1,
+    "total_items": 1,
+    "total_pages": 1,
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/reporting/transactions?end_date=2026-11-12T23%3A59%3A59Z&start_date=2026-11-11T00%3A00%3A00Z&fields=all&page_size=100&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  }
+}
