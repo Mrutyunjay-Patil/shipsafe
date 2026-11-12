@@ -5,6 +5,7 @@ export type Env = {
   PAYPAL_BASE: string
   PAYPAL_WEB: string
   VISION_MODEL: string
+  LOGIN_REDIRECT_URI?: string
   // secrets
   PAYPAL_CLIENT_ID: string
   PAYPAL_CLIENT_SECRET: string

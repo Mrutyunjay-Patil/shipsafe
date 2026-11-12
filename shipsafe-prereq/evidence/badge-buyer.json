@@ -8,7 +8,7 @@
       "schema": null,
       "status": 401,
       "body": "",
-      "www_authenticate": "Bearer error_description=\"Unsupported schema\",correlation_id=\"f94207795a81d\",error=\"invalid_schema\",information_link=\"https://developer.paypal.com/docs/api/#errors,realm=\"UserInfoService\""
+      "www_authenticate": "Bearer error_description=\"Unsupported schema\",correlation_id=\"f23423626883a\",error=\"invalid_schema\",information_link=\"https://developer.paypal.com/docs/api/#errors,realm=\"UserInfoService\""
     },
     {
       "path": "/v1/identity/openidconnect/userinfo",
@@ -19,15 +19,20 @@
   ],
   "id_token_claim_keys": [],
   "fields": {
-    "verified_account": null,
-    "email_verified": null,
+    "verified_account": "true",
+    "email_verified": true,
     "account_type": null,
-    "payer_id": null,
+    "payer_id": "JLGDF7FGE9K6N",
     "user_id": "http…3Vpk",
     "address_country": null,
     "returned_keys": [
+      "email",
+      "email_verified",
+      "payer_id",
       "sub",
-      "user_id"
+      "user_id",
+      "verified",
+      "verified_account"
     ]
   }
 }
