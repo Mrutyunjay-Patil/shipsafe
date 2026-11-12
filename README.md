@@ -43,7 +43,7 @@ People who sell through Instagram DMs and WhatsApp chats already take PayPal. Wh
 **Other screens**
 - **Order board** on desktop, built with AG Grid, plus a phone list.
 - **Dashboard** with a sales chart, a protection meter, an activity feed and a setup checklist.
-- **Ask your shop:** Claude answers questions such as "which paid orders aren't protected yet?" using read-only tools over the shop's orders and PayPal's order and dispute endpoints.
+- **Ask your shop:** Claude answers questions such as "which paid orders aren't protected yet?" in Markdown with tables, using tools bound to the signed-in seller: totals over every sale, orders, products, buyer links, live PayPal order data, and the seller's own disputes. It can also propose refunds, price and stock changes, buyer links and closing links. Each proposal is validated, then shown as a card that runs only when the seller taps Confirm.
 
 ## PayPal and AI used
 

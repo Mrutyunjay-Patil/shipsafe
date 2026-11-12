@@ -29,7 +29,7 @@ The story to tell: **from a product photo to a protected PayPal sale, without le
   - `submission/demo-assets/test-slips/slip-3-san-jose-EE844261797IN.png`
   - Use one per take. A number already sent to PayPal is flagged as a duplicate on the next scan.
 - `submission/demo-assets/test-slips/slip-wrong-address-berlin-EE955372805IN.png` is addressed to Berlin. Use it to show the address check catching a wrong slip.
-- `app/e2e/slip.png` holds a number that was already used. Scanning it shows the duplicate warning.
+- `app/e2e/slip.png` (EE556677887IN) and `test-slips/slip_sanjose_4_EE953563864IN.png` hold numbers that were already used. Scanning it shows the duplicate warning.
 - Regenerate slips with `python shipsafe-prereq/probes/make_demo_slips.py` after changing the serial numbers in it.
 
 ## Recording setup
@@ -113,8 +113,11 @@ Times are targets for the edited cut. Captions in quotes are suggested on-screen
 
 ### 9. Ask your shop, 2:35 to 2:45
 
-- Open Ask and tap or type "Which paid orders aren't protected yet?". Claude answers from the shop's orders and PayPal data.
-- Caption: "Ask your shop answers from real orders and PayPal data, read-only."
+1. Open Ask and tap "Show my sales by product as a table". The answer renders as a table from all of the seller's sales.
+2. Type "Make a buyer link for Priya at $22" or "Raise the scarf to $30". A card appears under the answer, marked "Ready for you to confirm".
+3. Tap Confirm. The card shows "Done".
+
+- Caption: "Ask your shop answers from this seller's own sales and PayPal data. It can set up refunds, price changes and buyer links, and nothing runs until the seller taps Confirm."
 
 ### 10. Close, 2:45 to 2:55
 
