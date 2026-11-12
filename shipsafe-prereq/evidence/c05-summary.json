@@ -1,0 +1,16 @@
+[
+  {
+    "received_at": "2026-11-12T05:44:46.036Z",
+    "event_type": "PAYMENT.CAPTURE.COMPLETED",
+    "event_id": "WH-58D329510W468432D-8HN650336L201105X",
+    "looks_simulated": false,
+    "verification": "SUCCESS"
+  },
+  {
+    "received_at": "2026-11-12T05:44:48.635Z",
+    "event_type": "CHECKOUT.ORDER.APPROVED",
+    "event_id": "WH-COC11055RA711503B-4YM959094A144403T",
+    "looks_simulated": false,
+    "verification": "SUCCESS"
+  }
+]

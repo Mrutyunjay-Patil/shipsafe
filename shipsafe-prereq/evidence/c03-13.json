@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "DELETE",
+    "path": "/v1/checkout/payment-resources/PLB-EL9ZL5WH8YPB",
+    "params": null,
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 204,
+  "elapsed_ms": 616,
+  "debug_id": "ca59338986a0e",
+  "response": ""
+}

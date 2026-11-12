@@ -1,0 +1,37 @@
+[
+  {
+    "name": "list_transactions",
+    "args": {
+      "start_date": "2026-10-18T05:52:53Z",
+      "end_date": "2026-11-12T05:52:53Z"
+    },
+    "ms": 767,
+    "isError": false,
+    "output": "{\"ok\":false,\"status\":403,\"code\":\"PAYPAL_API_HTTP_ERROR\",\"message\":\"Authorization failed due to insufficient permissions.: Authorization failed due to insufficient permissions.\"}"
+  },
+  {
+    "name": "list_disputes",
+    "args": {},
+    "ms": 408,
+    "isError": false,
+    "output": "{\"items\":[],\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v1/customer/disputes\",\"rel\":\"self\",\"method\":\"GET\",\"encType\":\"application/json\"},{\"href\":\"https://api.sandbox.paypal.com/v1/customer/disputes\",\"rel\":\"first\",\"method\":\"GET\",\"encType\":\"application/json\"}]}"
+  },
+  {
+    "name": "get_order",
+    "args": {
+      "id": "7DD18315GK263354G"
+    },
+    "ms": 645,
+    "isError": false,
+    "output": "{\"id\":\"7DD18315GK263354G\",\"intent\":\"CAPTURE\",\"status\":\"PAYER_ACTION_REQUIRED\",\"payment_source\":{\"paypal\":{}},\"purchase_units\":[{\"reference_id\":\"listing_demo_001\",\"amount\":{\"currency_code\":\"USD\",\"value\":\"24.00\",\"breakdown\":{\"item_total\":{\"currency_code\":\"USD\",\"value\":\"24.00\"}}},\"payee\":{\"email_address\":\"<email>\",\"merchant_id\":\"MZXSDB8AZ47E6\",\"display_data\":{\"brand_name\":\"ShipSafe Probe\"}},\"description\":\"Hand block-printed cotton scarf\",\"custom_id\":\"listing_demo_001\",\"items\":[{\"name\":\"Hand block-printed cotton scarf\",\"unit_amount\":{\"currency_code\":\"USD\",\"value\":\"24.00\"},\"quantity\":\"1\",\"sku\":\"SCARF-INDIGO\",\"category\":\"PHYSICAL_GOODS\"}]}],\"create_time\":\"2026-11-12T05:45:47Z\",\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G\",\"rel\":\"self\",\"method\":\"GET\"},{\"href\":\"https://www.sandbox.paypal.com/checkoutnow?token=7DD18315GK263354G\",\"rel\":\"payer-action\",\"method\":\"GET\"}]}"
+  },
+  {
+    "name": "get_shipment_tracking",
+    "args": {
+      "order_id": "7DD18315GK263354G"
+    },
+    "ms": 357,
+    "isError": false,
+    "output": "{\"error\":{\"message\":\"Error extracting transaction_id from order details: Could not find capture id in the purchase unit details.\",\"type\":\"paypal_error\"}}"
+  }
+]

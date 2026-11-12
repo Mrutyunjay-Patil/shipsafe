@@ -1,0 +1,49 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/checkout/payment-resources/PLB-5PGXCE53JB4F",
+    "params": null,
+    "body": {
+      "integration_mode": "LINK",
+      "type": "BUY_NOW",
+      "return_url": "https://example.com/thanks",
+      "line_items": [
+        {
+          "name": "Hand block-printed cotton scarf",
+          "product_id": "listing_demo_001",
+          "description": "Cotton, hand block-printed in Jaipur",
+          "unit_amount": {
+            "currency_code": "USD",
+            "value": "26.00"
+          },
+          "collect_shipping_address": true,
+          "variants": {
+            "dimensions": [
+              {
+                "name": "Colour",
+                "primary": true,
+                "options": [
+                  {
+                    "label": "Indigo"
+                  },
+                  {
+                    "label": "Rust"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "reusable": "MULTIPLE"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 204,
+  "elapsed_ms": 686,
+  "debug_id": "ca593387fac63",
+  "response": ""
+}
