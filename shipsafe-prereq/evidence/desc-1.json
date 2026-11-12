@@ -1,0 +1,59 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/checkout/payment-resources/PLB-EEVBMBEUVYAH",
+    "params": null,
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 1012,
+  "debug_id": "f6545903aae71",
+  "response": {
+    "id": "PLB-EEVBMBEUVYAH",
+    "integration_mode": "LINK",
+    "type": "BUY_NOW",
+    "reusable": "MULTIPLE",
+    "return_url": "https://shipsafe.patilmrutyunjay2.workers.dev/thanks",
+    "line_items": [
+      {
+        "name": "Hand printed sunburst tote bag",
+        "product_id": "lst_e4199c6e5cdd4d91",
+        "description": "Black tote bag with a cream sunburst graphic and HAND PRINTED lettering across the front. Long looped handles sit at the top. A simple, ever",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "18.00"
+        },
+        "collect_shipping_address": true
+      }
+    ],
+    "status": "ACTIVE",
+    "create_time": "2026-11-12T16:00:50Z",
+    "update_time": "2026-11-12T16:00:50Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-EEVBMBEUVYAH",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-EEVBMBEUVYAH",
+        "rel": "replace",
+        "method": "PUT"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/checkout/payment-resources/PLB-EEVBMBEUVYAH",
+        "rel": "delete",
+        "method": "DELETE"
+      },
+      {
+        "href": "https://www.sandbox.paypal.com/ncp/payment/PLB-EEVBMBEUVYAH",
+        "rel": "payment_link",
+        "method": "GET"
+      }
+    ]
+  }
+}
