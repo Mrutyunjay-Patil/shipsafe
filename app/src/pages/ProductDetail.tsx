@@ -3,6 +3,7 @@ import { ArrowLeft, Copy, Send } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Stamp } from '@/components/airmail'
+import { StatStrip } from '@/components/dashboard'
 import { OrderRow } from '@/components/OrderRow'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -64,11 +65,15 @@ export default function ProductDetail() {
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{l.description}</p>
       </section>
 
-      <dl className="sheet mt-5 divide-y divide-border/70 rounded-2xl">
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <dt className="text-[15px] text-muted-foreground">Stock</dt>
-          <dd className="money text-[15px] font-medium">{s.left} of {l.quantity} left</dd>
-        </div>
+      <div className="mt-5">
+        <StatStrip items={[
+          { label: 'Sold', value: String(l.sold), note: 'Units paid for' },
+          { label: 'Revenue', value: money(l.sold * Number(l.price), l.currency), note: 'Through PayPal' },
+          { label: 'Left', value: String(s.left), note: `of ${l.quantity} listed` },
+          { label: 'Listed', value: new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), note: l.category ?? 'Product' },
+        ]} />
+      </div>
+      <dl className="sheet mt-4 divide-y divide-border/70 rounded-2xl">
         <div className="flex items-start justify-between gap-4 px-4 py-3.5">
           <dt className="text-[15px] text-muted-foreground">Colours</dt>
           <dd className="flex flex-wrap justify-end gap-1.5">
@@ -91,6 +96,29 @@ export default function ProductDetail() {
               <Copy /> Copy
             </Button>
             <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={share}><Send /> Send to a chat</Button>
+          </div>
+        </section>
+      )}
+
+      {s.live && l.plb_url && (
+        <section className="mt-7">
+          <h2 className="mb-2 px-1 text-[15px] font-semibold">How buyers see it in a chat</h2>
+          <div className="rounded-2xl bg-[color-mix(in_oklch,var(--paper-deep)_70%,var(--muted))] p-4">
+            <div className="ml-auto max-w-[300px] overflow-hidden rounded-2xl rounded-br-sm bg-card shadow-[var(--sheet-shadow)]">
+              <div className="flex gap-3 border-b border-border/70 bg-muted/60 p-2.5">
+                {photoUrl(l.photo_key) && <img src={photoUrl(l.photo_key)!} alt="" className="size-14 shrink-0 rounded-md object-cover" />}
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-[13px] font-semibold">{l.title}</span>
+                  <span className="money block text-[13px] text-ink">{money(l.price, l.currency)}</span>
+                  <span className="block text-[11px] text-muted-foreground">www.paypal.com</span>
+                </span>
+              </div>
+              <p className="px-3 py-2.5 text-[13px] leading-snug">
+                {l.title}, {money(l.price, l.currency)}. Pay safely with PayPal here:{' '}
+                <span className="break-all text-brand underline">{l.plb_url}</span>
+              </p>
+            </div>
+            <p className="mt-2 text-right text-[11px] text-muted-foreground">The message Send to a chat writes for you</p>
           </div>
         </section>
       )}
