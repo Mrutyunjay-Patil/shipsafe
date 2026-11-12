@@ -51,7 +51,7 @@ Around that loop:
 - **Links for one buyer.** A personal link with a special price or a fixed colour. It closes after one payment and the order shows who paid.
 - **Live link editing.** Price, colours, stock, details and photos can change, and the PayPal link updates in place. When the last unit sells, every link for that product closes. Raising stock makes a fresh link.
 - **Oversell protection.** If two buyers pay for the last unit, the extra order is flagged for a one-tap refund.
-- **Ask your shop.** Claude answers questions such as "which paid orders aren't protected yet?" with read-only tools over the shop's orders and PayPal's order and dispute data.
+- **Ask your shop.** Claude answers questions such as "which paid orders aren't protected yet?" in Markdown with tables, and can act: it proposes refunds, price and stock changes, buyer links or closing a link, and each runs only when the seller taps Confirm. Its tools are bound to the signed-in seller, so it only ever sees that seller's sales. It reads the shop's orders and PayPal's order and dispute data.
 - **A desktop order board** built with AG Grid, and a dashboard with sales, a protection meter and a setup checklist.
 
 ### How we built it
@@ -101,14 +101,14 @@ Claude Haiku 5.5 handles vision and text through Anthropic's SDK, with structure
 - **Webhooks:** `CHECKOUT.PAYMENT-RESOURCE.PAYMENT-COMPLETED` creates orders and `PAYMENT.CAPTURE.REFUNDED` marks refunds. Every event's signature is verified, and repeat deliveries are ignored.
 - **Orders v2:** the buyer's colour choice and shipping address. `/track` adds tracking with `notify_payer`, and a tracker PATCH cancels it.
 - **Payments v2:** capture details, including seller protection status, and refunds.
-- **Disputes API:** read-only, for Ask your shop.
+- **Disputes API:** read by Ask your shop, filtered to the seller's own captures.
 - **Log in with PayPal:** seller sign-in with OpenID Connect.
 
 **AI: Claude Haiku 5.5 (`claude-haiku-5-5`) through the Anthropic SDK**
 - **Product photo to listing draft:** title, description, colourways, category, price, visible details and suggested detail names, as strict JSON.
 - **Courier slip to carrier and tracking number,** as strict JSON. The slip is treated as untrusted text.
 - **Description rewrite** from the seller's own details, adding no claims it wasn't given.
-- **Ask your shop:** tool use over read-only functions, `list_orders`, `get_order` against PayPal Orders v2, and `list_disputes`.
+- **Ask your shop:** tool use. The read tools are `shop_summary`, `list_orders`, `list_listings`, `list_buyer_links`, `get_paypal_order` against PayPal Orders v2, and `list_disputes`. The `propose_` tools cover refunds, listing updates, buyer links and closing links. Proposals are validated against the seller's data and run only after the seller confirms in the app.
 
 **Sponsor tool:** AG Grid powers the desktop order board. That makes the project eligible for the AG Grid sponsor prize.
 
