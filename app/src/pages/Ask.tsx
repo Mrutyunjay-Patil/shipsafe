@@ -83,7 +83,11 @@ export default function Ask() {
   const end = useRef<HTMLDivElement>(null)
   const ask = useMutation({
     mutationFn: (v: { question: string; history: Msg[] }) =>
-      api.ask(v.question, v.history.map((m) => ({ role: m.role, content: m.text }))),
+      api.ask(v.question, v.history.map((m) => ({
+        role: m.role,
+        // Proposed changes go into the history too, so a follow-up like "make it 3 days" knows what "it" is.
+        content: m.actions?.length ? `${m.text}\n\n[ShipSafe record: these proposals were created and shown to the seller as Confirm cards: ${m.actions.map((a) => a.summary).join('; ')}]` : m.text,
+      }))),
     onSuccess: (r) => setMsgs((m) => [...m, { role: 'assistant', text: r.answer || 'Done.', actions: r.actions }]),
     onError: (e) => setMsgs((m) => [...m, { role: 'assistant', text: `Sorry, that failed: ${(e as Error).message}` }]),
   })
@@ -141,10 +145,15 @@ export default function Ask() {
           <div ref={end} />
         </section>
       )}
-      <form className="sticky bottom-24 flex gap-2 py-3 lg:bottom-4" onSubmit={(e) => { e.preventDefault(); send(q) }}>
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask or tell your shop what to do" className="h-12 flex-1 rounded-xl bg-card px-4 text-[16px] shadow-[var(--sheet-shadow)]" />
-        <Button type="submit" size="icon" className="size-12 rounded-xl" disabled={!q.trim() || ask.isPending} aria-label="Send"><ArrowUp /></Button>
-      </form>
+      {/* Frosted like the bottom nav: content scrolling behind it blurs instead of showing through. */}
+      <div className="sticky bottom-24 z-10 -mx-5 px-5 py-3 lg:bottom-4">
+        <div aria-hidden="true" className="nav-scrim pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[calc(100%+40px)]" />
+        <form className="nav-glass flex items-center gap-1.5 rounded-2xl p-1.5 shadow-[var(--nav-shadow)]" onSubmit={(e) => { e.preventDefault(); send(q) }}>
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask or tell your shop what to do" aria-label="Ask your shop"
+            className="h-11 flex-1 border-0 bg-transparent px-3 text-[16px] shadow-none focus-visible:ring-0 dark:bg-transparent" />
+          <Button type="submit" size="icon" className="size-11 shrink-0 rounded-xl" disabled={!q.trim() || ask.isPending} aria-label="Send"><ArrowUp /></Button>
+        </form>
+      </div>
     </main>
   )
 }
