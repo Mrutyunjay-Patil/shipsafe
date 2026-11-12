@@ -66,7 +66,7 @@ Every PayPal step was checked against the sandbox before the app was built. The 
 
 - **Frontend:** a Vite, React 19 and TypeScript PWA with Tailwind v4, shadcn/ui, TanStack Query and AG Grid.
 - **Backend:** a Cloudflare Worker with Hono, D1 for listings, orders, buyer links and sessions, and R2 for photos.
-- **Deploys:** GitHub Actions deploys to Cloudflare on every push to `master`. See `.github/workflows/deploy.yml`.
+- **Deploys:** Cloudflare Workers Builds deploys the app and the preview on every push to `master`, after applying D1 migrations. GitHub Actions runs type-checks, lint and both builds on every push and pull request, see `.github/workflows/checks.yml`.
 
 ## Run it yourself
 

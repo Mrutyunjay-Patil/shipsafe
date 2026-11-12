@@ -66,7 +66,7 @@ The app is a mobile-first PWA built with Vite, React and TypeScript, with Tailwi
 - webhook signature verification;
 - Log in with PayPal.
 
-Claude Haiku 5.5 handles vision and text through Anthropic's SDK, with structured JSON output validated by zod. GitHub Actions deploys to Cloudflare on every merge to `master`.
+Claude Haiku 5.5 handles vision and text through Anthropic's SDK, with structured JSON output validated by zod. Cloudflare Workers Builds deploys on every merge to `master`, and GitHub Actions runs the checks.
 
 ### Challenges we ran into
 
