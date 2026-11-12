@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Check, Copy, Loader2, ScanLine, TriangleAlert, X } from 'lucide-react'
+import { ArrowLeft, Check, Copy, ImageUp, Loader2, ScanLine, TriangleAlert, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
@@ -39,6 +39,7 @@ export default function OrderDetail() {
   const nav = useNavigate()
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   const [slip, setSlip] = useState<SlipResult | null>(null)
   const [number, setNumber] = useState('')
   const [justStamped, setJustStamped] = useState(false)
@@ -199,25 +200,26 @@ export default function OrderDetail() {
 
       {canShip && !slip && (
         <section className="mt-5">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }}
-          />
-          <Button
-            size="lg"
-            variant={posted ? 'outline' : 'default'}
-            className="h-[52px] w-full rounded-xl text-[15px]"
-            disabled={read.isPending}
-            onClick={() => fileRef.current?.click()}
-          >
-            {read.isPending ? <><Loader2 className="animate-spin" /> Reading the slip</> : <><ScanLine /> {posted ? 'Scan another slip' : 'Scan the courier slip'}</>}
-          </Button>
+          <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) read.mutate(f); e.target.value = '' }} />
+          <div className="grid grid-cols-[1fr_auto] gap-2.5">
+            <Button
+              size="lg"
+              variant={posted ? 'outline' : 'default'}
+              className="h-[52px] rounded-xl text-[15px]"
+              disabled={read.isPending}
+              onClick={() => cameraRef.current?.click()}
+            >
+              {read.isPending ? <><Loader2 className="animate-spin" /> Reading the slip</> : <><ScanLine /> {posted ? 'Scan another slip' : 'Scan the courier slip'}</>}
+            </Button>
+            <Button size="lg" variant="outline" className="h-[52px] rounded-xl" disabled={read.isPending} onClick={() => fileRef.current?.click()} aria-label="Upload a slip photo from the gallery">
+              <ImageUp /> Gallery
+            </Button>
+          </div>
           {!posted && (
-            <p className="mt-2 px-1 text-center text-[13px] text-muted-foreground">Take the photo at the counter. You'll check everything before PayPal sees it.</p>
+            <p className="mt-2 px-1 text-center text-[13px] text-muted-foreground">Snap it at the counter, or pick a photo you already took. You'll check everything before PayPal sees it.</p>
           )}
         </section>
       )}

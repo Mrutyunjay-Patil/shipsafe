@@ -74,6 +74,12 @@ export default function ProductDetail() {
         ]} />
       </div>
       <dl className="sheet mt-4 divide-y divide-border/70 rounded-2xl">
+        {(l.attributes ?? []).map((at) => (
+          <div key={at.name} className="flex items-start justify-between gap-4 px-4 py-3.5">
+            <dt className="text-[15px] text-muted-foreground">{at.name}</dt>
+            <dd className="text-right text-[15px] font-medium">{at.value}</dd>
+          </div>
+        ))}
         <div className="flex items-start justify-between gap-4 px-4 py-3.5">
           <dt className="text-[15px] text-muted-foreground">Colours</dt>
           <dd className="flex flex-wrap justify-end gap-1.5">

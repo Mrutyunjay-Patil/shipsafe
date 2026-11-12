@@ -15,7 +15,7 @@ export type Account = {
 export type OrderStatus = 'PAID' | 'SHIPPED' | 'PROTECTED' | 'REFUNDED' | 'NEEDS_REFUND'
 
 export type Listing = {
-  id: string; title: string; description: string; colours: string[]; category: string | null
+  id: string; title: string; description: string; colours: string[]; attributes?: Attribute[]; category: string | null
   price: string; currency: string; quantity: number; photo_key: string | null
   plb_id: string | null; plb_url: string | null; status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'ARCHIVED'
   sold: number; created_at: string
@@ -38,8 +38,11 @@ export type Tracker = {
 }
 export type OrderDetail = Order & { trackers: Tracker[] }
 
+export type Attribute = { name: string; value: string }
+
 export type ListingDraft = {
   title: string; description: string; colours: string[]; category: string; suggested_price_usd: number; confidence: number
+  attributes?: Attribute[]; suggested_attributes?: string[]
 }
 
 export type SlipChecks = {
@@ -90,9 +93,11 @@ const realApi = {
   logout: () => req('/api/logout', json('POST')),
   draftListing: (photo: File) => req<{ photo_key: string; draft: ListingDraft; ms: number }>('/api/listings/draft', upload('photo', photo)),
   createListing: (b: {
-    title: string; description: string; colours: string[]; category?: string; price: string; quantity: number
+    title: string; description: string; colours: string[]; attributes?: Attribute[]; category?: string; price: string; quantity: number
     photo_key?: string; ai_confidence?: number
   }) => req<{ id: string; plb_id: string; url: string }>('/api/listings', json('POST', b)),
+  describeListing: (b: { title: string; category?: string; colours: string[]; attributes: Attribute[]; current?: string }) =>
+    req<{ description: string }>('/api/listings/describe', json('POST', b)),
   listings: () => req<Listing[]>('/api/listings'),
   listing: (id: string) => req<ListingDetail>(`/api/listings/${id}`),
   archiveListing: (id: string) => req(`/api/listings/${id}`, json('DELETE')),

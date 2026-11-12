@@ -72,9 +72,9 @@ const history: OrderDetail[] = CITIES.map(([city, state, pc, cc], i) => {
 orders = [...orders, ...history]
 
 const listings: Omit<Listing, 'sold'>[] = [
-  { id: 'lst_scarf', title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', price: '26.00', currency: 'USD', quantity: 10, photo_key: scarf, plb_id: 'PLB-5PGXCE53JB4F', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F', status: 'ACTIVE', created_at: ago(80) },
-  { id: 'lst_diya', title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', price: '18.00', currency: 'USD', quantity: 5, photo_key: diya, plb_id: 'PLB-DIYA0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DIYA0001PREV', status: 'SOLD_OUT', created_at: ago(120) },
-  { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 8, photo_key: tote, plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
+  { id: 'lst_scarf', title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', attributes: [{ name: 'Material', value: '100% cotton' }, { name: 'Size', value: '180 × 70 cm' }, { name: 'Print technique', value: 'Hand block print' }, { name: 'Care', value: 'Hand wash cold' }], colours: ['Slate blue', 'Indigo'], category: 'Scarves', price: '26.00', currency: 'USD', quantity: 10, photo_key: scarf, plb_id: 'PLB-5PGXCE53JB4F', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F', status: 'ACTIVE', created_at: ago(80) },
+  { id: 'lst_diya', title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', attributes: [{ name: 'Material', value: 'Solid brass' }, { name: 'Height', value: '7 cm' }, { name: 'Set of', value: '2' }], colours: [], category: 'Home decor', price: '18.00', currency: 'USD', quantity: 5, photo_key: diya, plb_id: 'PLB-DIYA0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DIYA0001PREV', status: 'SOLD_OUT', created_at: ago(120) },
+  { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', attributes: [{ name: 'Material', value: 'Jute, cotton handles' }, { name: 'Size', value: '40 × 35 × 12 cm' }], colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 8, photo_key: tote, plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
 ]
 
 const summary = (o: OrderDetail): Order => {
@@ -126,11 +126,18 @@ export const mockApi = {
     // The sample draft follows what was photographed, judged from the file name.
     const n = photo.name.toLowerCase()
     const draft: ListingDraft = n.includes('tote') || n.includes('bag')
-      ? { title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', suggested_price_usd: 38, confidence: 0.82 }
+      ? { title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', suggested_price_usd: 38, confidence: 0.82, attributes: [{ name: 'Handles', value: 'Rolled cotton' }], suggested_attributes: ['Material', 'Size', 'Closure', 'Care'] }
       : n.includes('diya') || n.includes('lamp')
-        ? { title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', suggested_price_usd: 18, confidence: 0.84 }
-        : { title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86 }
+        ? { title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', suggested_price_usd: 18, confidence: 0.84, attributes: [{ name: 'Shape', value: 'Lotus' }], suggested_attributes: ['Material', 'Height', 'Weight', 'Set of'] }
+        : { title: 'Block-print paisley scarf', description: 'Scarf with a paisley print and tasselled edges.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', suggested_price_usd: 24, confidence: 0.86, attributes: [{ name: 'Pattern', value: 'Paisley' }, { name: 'Edges', value: 'Tasselled' }], suggested_attributes: ['Material', 'Size', 'Print technique', 'Care'] }
     return { photo_key: 'demo', draft, ms: 1800 }
+  },
+  describeListing: async (b: { title: string; colours: string[]; attributes: { name: string; value: string }[] }) => {
+    await wait(1200)
+    const get = (n: string) => b.attributes.find((a) => a.name.toLowerCase() === n.toLowerCase())?.value
+    const facts = b.attributes.filter((a) => a.value).map((a) => `${a.name.toLowerCase()} ${a.value.toLowerCase()}`)
+    const d = `${b.title}${facts.length ? `, ${facts.join(', ')}` : ''}${b.colours.length > 1 ? `. Comes in ${b.colours.join(' or ')}` : ''}`
+    return { description: (d.charAt(0).toUpperCase() + d.slice(1) + '.').slice(0, 240) }
   },
   createListing: async () => {
     await wait(1200)

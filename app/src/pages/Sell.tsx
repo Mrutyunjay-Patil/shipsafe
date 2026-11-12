@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Camera, Copy, Loader2, Minus, Plus, Send, X } from 'lucide-react'
+import { Camera, Copy, ImageUp, Loader2, Minus, PenLine, Plus, Send, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -8,22 +8,45 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { api, ApiError, money } from '@/lib/api'
+import { api, ApiError, type Attribute, money } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
-type Form = { title: string; description: string; colours: string[]; category: string; price: string; quantity: number }
+type Form = { title: string; description: string; colours: string[]; attributes: Attribute[]; category: string; price: string; quantity: number }
+
+// The AI suggests details for the exact product in the photo; this table is only the fallback
+// when it suggests none. Matched against the category the AI names, first match wins.
+const FALLBACK: [RegExp, string[]][] = [
+  [/pottery|ceramic|porcelain|stoneware|terracotta|mug|bowl|plate|vase|planter/i, ['Clay', 'Glaze', 'Dimensions', 'Capacity', 'Food safe', 'Microwave safe']],
+  [/furniture|chair|table|stool|shelf|cabinet|bench|desk|bed/i, ['Wood or material', 'Dimensions', 'Finish', 'Assembly', 'Weight capacity']],
+  [/art|painting|print|poster|canvas|illustration|photograph/i, ['Medium', 'Size', 'Framed', 'Signed', 'Edition']],
+  [/candle|soap|wax/i, ['Scent', 'Wax', 'Weight', 'Burn time']],
+  [/cosmetic|skincare|beauty|perfume|oil|balm|cream/i, ['Ingredients', 'Volume', 'Skin type', 'Expiry']],
+  [/food|tea|coffee|spice|snack|sweet|honey|pickle/i, ['Ingredients', 'Net weight', 'Shelf life', 'Dietary']],
+  [/electronic|gadget|device|speaker|headphone|charger|phone/i, ['Brand and model', 'Condition', 'Warranty', 'In the box']],
+  [/toy|game|puzzle|doll/i, ['Age range', 'Material', 'Dimensions', 'Safety']],
+  [/book|notebook|journal|stationery/i, ['Pages', 'Size', 'Paper', 'Binding']],
+  [/plant|succulent|seed|bonsai/i, ['Species', 'Pot size', 'Light', 'Watering']],
+  [/shoe|sandal|footwear|boot|slipper/i, ['Size', 'Upper material', 'Sole', 'Fit']],
+  [/jewel|earring|necklace|ring|bangle|bracelet|pendant/i, ['Metal', 'Stone', 'Weight', 'Size']],
+  [/bag|tote|purse|wallet|backpack/i, ['Material', 'Dimensions', 'Closure', 'Pockets']],
+  [/scarf|stole|shawl|dupatta|saree|fabric|textile|shirt|dress|kurta|apparel|clothing|top/i, ['Material', 'Size', 'Fit', 'Care']],
+  [/decor|lamp|diya|lantern|brass|metal|sculpture|figurine/i, ['Material', 'Dimensions', 'Weight', 'Set of']],
+]
+const fallbackFor = (category: string) => FALLBACK.find(([re]) => re.test(category))?.[1] ?? ['Material', 'Dimensions', 'Weight', 'Condition']
 
 const field = 'h-12 rounded-lg bg-card text-[16px]'
 
 export default function Sell() {
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [photoKey, setPhotoKey] = useState<string>()
   const [confidence, setConfidence] = useState<number>()
   const [form, setForm] = useState<Form | null>(null)
   const [colour, setColour] = useState('')
   const [link, setLink] = useState<{ url: string; plb_id: string } | null>(null)
+  const [suggested, setSuggested] = useState<string[]>([])
 
   const draft = useMutation({
     mutationFn: api.draftListing,
@@ -31,15 +54,29 @@ export default function Sell() {
       setPhotoKey(r.photo_key)
       setConfidence(r.draft.confidence)
       setForm({
-        title: r.draft.title, description: r.draft.description.slice(0, 140), colours: r.draft.colours.slice(0, 10),
+        title: r.draft.title, description: r.draft.description.slice(0, 240), colours: r.draft.colours.slice(0, 10),
+        attributes: (r.draft.attributes ?? []).filter((a) => a.name && a.value).slice(0, 12),
         category: r.draft.category, price: r.draft.suggested_price_usd.toFixed(2), quantity: 1,
       })
+      setSuggested(r.draft.suggested_attributes?.length ? r.draft.suggested_attributes : fallbackFor(r.draft.category))
     },
     onError: (e) => toast.error(`Couldn't read that photo. ${(e as Error).message}. Try again in better light.`),
   })
 
+  const describe = useMutation({
+    mutationFn: () => api.describeListing({
+      title: form!.title, category: form!.category, colours: form!.colours, current: form!.description,
+      attributes: form!.attributes.filter((a) => a.name.trim() && a.value.trim()),
+    }),
+    onSuccess: (r) => { set('description', r.description); toast.success('Description rewritten from your details') },
+    onError: (e) => toast.error(`Couldn't rewrite it: ${(e as Error).message}`),
+  })
+
   const create = useMutation({
-    mutationFn: () => api.createListing({ ...form!, photo_key: photoKey, ai_confidence: confidence }),
+    mutationFn: () => api.createListing({
+      ...form!, photo_key: photoKey, ai_confidence: confidence,
+      attributes: form!.attributes.filter((a) => a.name.trim() && a.value.trim()).map((a) => ({ name: a.name.trim(), value: a.value.trim() })),
+    }),
     onSuccess: (r) => { setLink({ url: r.url, plb_id: r.plb_id }); qc.invalidateQueries({ queryKey: ['listings'] }) },
     onError: (e) => toast.error(e instanceof ApiError && e.body?.error === 'paypal' ? `PayPal refused the link: ${e.message}` : (e as Error).message),
   })
@@ -111,24 +148,21 @@ export default function Sell() {
 
       <div className="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-12">
       <div>
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
+      {/* Two inputs: one opens the camera, one opens the photo library. */}
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
 
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        aria-label={preview ? 'Retake the product photo' : 'Take a product photo'}
-        className={cn('relative mx-auto mt-5 block w-full max-w-[320px] transition-transform active:scale-[0.99]', preview ? 'aspect-[4/5]' : 'aspect-[4/5]')}
-      >
+      <div className="relative mx-auto mt-5 block aspect-[4/5] w-full max-w-[320px]">
         {preview ? (
           <Stamp src={preview} alt="Your product" className="size-full -rotate-1" />
         ) : (
           <span className="stamp flex size-full -rotate-1 flex-col items-center justify-center">
-            <span className="flex size-full flex-col items-center justify-center gap-3 border border-dashed border-ink/25 bg-envelope text-center">
+            <span className="flex size-full flex-col items-center justify-center gap-3 border border-dashed border-ink/25 bg-envelope px-6 text-center">
               <span className="grid size-16 place-items-center rounded-3xl bg-brand text-brand-foreground shadow-[0_10px_20px_-8px_var(--brand)]">
                 <Camera className="size-7" />
               </span>
-              <span className="text-[17px] font-semibold text-foreground">Take a photo</span>
-              <span className="max-w-[22ch] text-sm text-muted-foreground">Plain background, good light, the whole product in frame</span>
+              <span className="text-[17px] font-semibold text-foreground">Add a product photo</span>
+              <span className="max-w-[24ch] text-sm text-muted-foreground">Plain background, good light, the whole product in frame</span>
             </span>
           </span>
         )}
@@ -139,10 +173,16 @@ export default function Sell() {
             </span>
           </span>
         )}
-        {preview && !draft.isPending && (
-          <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-card px-3.5 py-1.5 text-[13px] font-medium shadow-md">Tap to retake</span>
-        )}
-      </button>
+      </div>
+
+      <div className="mx-auto mt-5 grid max-w-[320px] grid-cols-2 gap-2.5">
+        <Button type="button" size="lg" className="h-12 rounded-xl" disabled={draft.isPending} onClick={() => cameraRef.current?.click()}>
+          <Camera /> {preview ? 'Retake' : 'Take photo'}
+        </Button>
+        <Button type="button" size="lg" variant="outline" className="h-12 rounded-xl" disabled={draft.isPending} onClick={() => fileRef.current?.click()}>
+          <ImageUp /> {preview ? 'Choose another' : 'From gallery'}
+        </Button>
+      </div>
 
       </div>
       <div>
@@ -160,9 +200,9 @@ export default function Sell() {
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
               <Label htmlFor="desc">Description</Label>
-              <span className="money text-xs text-muted-foreground">{form.description.length} of 140</span>
+              <span className="money text-xs text-muted-foreground">{form.description.length} of 240</span>
             </div>
-            <Textarea id="desc" value={form.description} maxLength={140} rows={3} onChange={(e) => set('description', e.target.value)} className="rounded-lg bg-card text-[16px]" />
+            <Textarea id="desc" value={form.description} maxLength={240} rows={4} onChange={(e) => set('description', e.target.value)} className="rounded-lg bg-card text-[16px]" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="colour">Colours the buyer picks from</Label>
@@ -186,6 +226,63 @@ export default function Sell() {
               />
             </div>
           </div>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Product details</legend>
+            <p className="text-[13px] text-muted-foreground">A photo can't show material or size. Add what buyers ask about.</p>
+            {form.attributes.length > 0 && (
+              <ul className="sheet divide-y divide-border/70 rounded-xl">
+                {form.attributes.map((a, i) => (
+                  <li key={i} className="flex items-center gap-2 px-2 py-1.5">
+                    <Input
+                      aria-label="Detail name"
+                      value={a.name}
+                      placeholder="Detail"
+                      onChange={(e) => set('attributes', form.attributes.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                      className="h-10 w-[38%] shrink-0 rounded-md border-transparent bg-transparent px-2 text-[14px] font-medium shadow-none focus-visible:bg-card"
+                    />
+                    <Input
+                      aria-label={`${a.name || 'Detail'} value`}
+                      value={a.value}
+                      autoFocus={!a.value && !!a.name}
+                      placeholder={a.name ? `Add ${a.name.toLowerCase()}` : 'Value'}
+                      onChange={(e) => set('attributes', form.attributes.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
+                      className="h-10 min-w-0 flex-1 rounded-md bg-card text-[15px]"
+                    />
+                    <button type="button" aria-label={`Remove ${a.name || 'detail'}`} onClick={() => set('attributes', form.attributes.filter((_, j) => j !== i))} className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                      <X className="size-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {suggested
+                .filter((n) => !form.attributes.some((a) => a.name.toLowerCase() === n.toLowerCase()))
+                .map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => form.attributes.length < 12 && set('attributes', [...form.attributes, { name: n, value: '' }])}
+                    className="inline-flex h-9 items-center gap-1 rounded-full border border-dashed border-ink/30 bg-card px-3 text-sm font-medium text-ink transition-colors hover:border-ink hover:bg-accent"
+                  >
+                    <Plus className="size-3.5" strokeWidth={2.5} /> {n}
+                  </button>
+                ))}
+              <button
+                type="button"
+                onClick={() => form.attributes.length < 12 && set('attributes', [...form.attributes, { name: '', value: '' }])}
+                className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                <Plus className="size-3.5" strokeWidth={2.5} /> Your own
+              </button>
+            </div>
+            {form.attributes.some((a) => a.name.trim() && a.value.trim()) && (
+              <Button type="button" variant="outline" className="mt-1 h-10 rounded-lg" disabled={describe.isPending} onClick={() => describe.mutate()}>
+                {describe.isPending ? <Loader2 className="animate-spin" /> : <PenLine />} Rewrite description from details
+              </Button>
+            )}
+          </fieldset>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="price">Price in USD</Label>
