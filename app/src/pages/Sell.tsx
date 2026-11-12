@@ -71,7 +71,7 @@ export default function Sell() {
         <h1 className="pt-3 text-[26px] font-semibold leading-tight">Your link is ready to send</h1>
         <p className="mt-1 text-[15px] text-muted-foreground">Paste it into the chat. The buyer pays on PayPal and gives you their address there.</p>
 
-        <Envelope inTransit className="envelope-in mt-5">
+        <Envelope className="envelope-in mt-5">
           <div className="relative px-5 pb-5 pt-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">

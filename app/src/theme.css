@@ -33,10 +33,10 @@
   /* Status hues. Each status owns one hue, used for its badge, its row mark and its icon. */
   --status-paid: oklch(0.64 0.15 76);     /* amber: money in, parcel not posted */
   --status-shipped: oklch(0.52 0.15 250); /* sky: in the post */
-  --status-protected: oklch(0.55 0.14 155);/* green: PayPal has the proof */
+  --status-protected: var(--etiquette);   /* the PAR AVION blue: PayPal has the proof */
+  --success: oklch(0.55 0.14 155);        /* a check passed */
   --status-refund: oklch(0.56 0.2 25);    /* red: act now */
   --status-closed: oklch(0.55 0.02 260);  /* grey: refunded, done */
-  --success: var(--status-protected);
   --warning: var(--status-paid);
 
   /* shadcn roles */
@@ -90,7 +90,7 @@
   --brand-soft: oklch(0.29 0.06 265);
   --status-paid: oklch(0.78 0.14 70);
   --status-shipped: oklch(0.74 0.12 245);
-  --status-protected: oklch(0.76 0.14 155);
+  --success: oklch(0.76 0.14 155);
   --status-refund: oklch(0.7 0.17 25);
   --status-closed: oklch(0.65 0.02 260);
   --foreground: oklch(0.95 0.012 255);

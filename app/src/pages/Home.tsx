@@ -19,16 +19,16 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 pt-2">
             <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
+            <address className="mt-4 text-[15px] not-italic leading-snug">
+              <span className="block font-semibold">{o.ship_name}</span>
+              <span className="block text-muted-foreground">{o.ship_line1}</span>
+              <span className="block text-muted-foreground">{[o.ship_city, o.ship_state, o.ship_postcode].filter(Boolean).join(' ')}</span>
+            </address>
           </div>
-          <Stamp src={photoUrl(o.photo_key)} className="h-[86px] w-[72px] rotate-[3deg]" />
-        </div>
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <address className="min-w-0 text-[15px] not-italic leading-snug">
-            <span className="block font-semibold">{o.ship_name}</span>
-            <span className="block text-muted-foreground">{o.ship_line1}</span>
-            <span className="block text-muted-foreground">{[o.ship_city, o.ship_state, o.ship_postcode].filter(Boolean).join(' ')}</span>
-          </address>
-          <Postmark city="Paid" date={postmarkDate(o.paid_at)} waves={false} className="pointer-events-none size-[60px] shrink-0 -rotate-[12deg]" />
+          <div className="flex shrink-0 flex-col items-center">
+            <Stamp src={photoUrl(o.photo_key)} className="h-[86px] w-[72px] rotate-[3deg]" />
+            <Postmark city="Paid" date={postmarkDate(o.paid_at)} waves={false} className="pointer-events-none -mt-3 ml-6 size-[60px] -rotate-[12deg]" />
+          </div>
         </div>
         <p className="mt-3 text-sm">
           {o.title}

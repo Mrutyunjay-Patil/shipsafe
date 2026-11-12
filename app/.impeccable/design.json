@@ -1,0 +1,625 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T08:27:25+00:00",
+  "title": "Design System: ShipSafe",
+  "extensions": {
+    "colorMeta": {
+      "airmail-ink": {
+        "role": "secondary",
+        "displayName": "Airmail Ink",
+        "canonical": "oklch(0.36 0.17 266)",
+        "tonalRamp": [
+          "oklch(0.15 0.083 266)",
+          "oklch(0.27 0.109 266)",
+          "oklch(0.39 0.135 266)",
+          "oklch(0.51 0.161 266)",
+          "oklch(0.63 0.153 266)",
+          "oklch(0.75 0.127 266)",
+          "oklch(0.86 0.103 266)",
+          "oklch(0.95 0.083 266)"
+        ]
+      },
+      "airmail-red": {
+        "role": "tertiary",
+        "displayName": "Chevron Red",
+        "canonical": "oklch(0.58 0.2 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.098 25)",
+          "oklch(0.27 0.129 25)",
+          "oklch(0.39 0.159 25)",
+          "oklch(0.51 0.190 25)",
+          "oklch(0.63 0.180 25)",
+          "oklch(0.75 0.149 25)",
+          "oklch(0.86 0.121 25)",
+          "oklch(0.95 0.098 25)"
+        ]
+      },
+      "airmail-blue": {
+        "role": "tertiary",
+        "displayName": "Chevron Blue",
+        "canonical": "oklch(0.45 0.19 264)",
+        "tonalRamp": [
+          "oklch(0.15 0.093 264)",
+          "oklch(0.27 0.122 264)",
+          "oklch(0.39 0.151 264)",
+          "oklch(0.51 0.180 264)",
+          "oklch(0.63 0.171 264)",
+          "oklch(0.75 0.142 264)",
+          "oklch(0.86 0.115 264)",
+          "oklch(0.95 0.093 264)"
+        ]
+      },
+      "onion-skin-paper": {
+        "role": "neutral",
+        "displayName": "Onion-Skin Paper",
+        "canonical": "oklch(0.975 0.012 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.006 250)",
+          "oklch(0.27 0.008 250)",
+          "oklch(0.39 0.010 250)",
+          "oklch(0.51 0.011 250)",
+          "oklch(0.63 0.011 250)",
+          "oklch(0.75 0.009 250)",
+          "oklch(0.86 0.007 250)",
+          "oklch(0.95 0.006 250)"
+        ]
+      },
+      "paper-deep": {
+        "role": "neutral",
+        "displayName": "Paper Deep",
+        "canonical": "oklch(0.94 0.024 252)",
+        "tonalRamp": [
+          "oklch(0.15 0.012 252)",
+          "oklch(0.27 0.015 252)",
+          "oklch(0.39 0.019 252)",
+          "oklch(0.51 0.023 252)",
+          "oklch(0.63 0.022 252)",
+          "oklch(0.75 0.018 252)",
+          "oklch(0.86 0.015 252)",
+          "oklch(0.95 0.012 252)"
+        ]
+      },
+      "postmark": {
+        "role": "tertiary",
+        "displayName": "Cancellation Ink",
+        "canonical": "oklch(0.42 0.06 265 / 0.55)",
+        "tonalRamp": [
+          "oklch(0.15 0.029 265)",
+          "oklch(0.27 0.039 265)",
+          "oklch(0.39 0.048 265)",
+          "oklch(0.51 0.057 265)",
+          "oklch(0.63 0.054 265)",
+          "oklch(0.75 0.045 265)",
+          "oklch(0.86 0.036 265)",
+          "oklch(0.95 0.029 265)"
+        ]
+      },
+      "etiquette": {
+        "role": "secondary",
+        "displayName": "Etiquette Blue",
+        "canonical": "oklch(0.42 0.18 265)",
+        "tonalRamp": [
+          "oklch(0.15 0.088 265)",
+          "oklch(0.27 0.116 265)",
+          "oklch(0.39 0.143 265)",
+          "oklch(0.51 0.171 265)",
+          "oklch(0.63 0.162 265)",
+          "oklch(0.75 0.134 265)",
+          "oklch(0.86 0.109 265)",
+          "oklch(0.95 0.088 265)"
+        ]
+      },
+      "etiquette-foreground": {
+        "role": "secondary",
+        "displayName": "Etiquette Lettering",
+        "canonical": "oklch(0.985 0.005 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 250)",
+          "oklch(0.27 0.004 250)",
+          "oklch(0.39 0.004 250)",
+          "oklch(0.51 0.005 250)",
+          "oklch(0.63 0.004 250)",
+          "oklch(0.75 0.004 250)",
+          "oklch(0.86 0.004 250)",
+          "oklch(0.95 0.004 250)"
+        ]
+      },
+      "brand": {
+        "role": "primary",
+        "displayName": "Pressable Ultramarine",
+        "canonical": "oklch(0.5 0.21 265)",
+        "tonalRamp": [
+          "oklch(0.15 0.103 265)",
+          "oklch(0.27 0.135 265)",
+          "oklch(0.39 0.167 265)",
+          "oklch(0.51 0.199 265)",
+          "oklch(0.63 0.189 265)",
+          "oklch(0.75 0.157 265)",
+          "oklch(0.86 0.127 265)",
+          "oklch(0.95 0.103 265)"
+        ]
+      },
+      "brand-foreground": {
+        "role": "primary",
+        "displayName": "On Brand",
+        "canonical": "oklch(0.99 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 0)",
+          "oklch(0.27 0.004 0)",
+          "oklch(0.39 0.004 0)",
+          "oklch(0.51 0.004 0)",
+          "oklch(0.63 0.004 0)",
+          "oklch(0.75 0.004 0)",
+          "oklch(0.86 0.004 0)",
+          "oklch(0.95 0.004 0)"
+        ]
+      },
+      "brand-soft": {
+        "role": "primary",
+        "displayName": "Soft Brand Wash",
+        "canonical": "oklch(0.93 0.035 260)",
+        "tonalRamp": [
+          "oklch(0.15 0.017 260)",
+          "oklch(0.27 0.023 260)",
+          "oklch(0.39 0.028 260)",
+          "oklch(0.51 0.033 260)",
+          "oklch(0.63 0.031 260)",
+          "oklch(0.75 0.026 260)",
+          "oklch(0.86 0.021 260)",
+          "oklch(0.95 0.017 260)"
+        ]
+      },
+      "status-paid": {
+        "role": "tertiary",
+        "displayName": "Amber Paid",
+        "canonical": "oklch(0.64 0.15 76)",
+        "tonalRamp": [
+          "oklch(0.15 0.074 76)",
+          "oklch(0.27 0.097 76)",
+          "oklch(0.39 0.119 76)",
+          "oklch(0.51 0.142 76)",
+          "oklch(0.63 0.135 76)",
+          "oklch(0.75 0.112 76)",
+          "oklch(0.86 0.091 76)",
+          "oklch(0.95 0.074 76)"
+        ]
+      },
+      "status-shipped": {
+        "role": "tertiary",
+        "displayName": "Sky Shipped",
+        "canonical": "oklch(0.52 0.15 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.074 250)",
+          "oklch(0.27 0.097 250)",
+          "oklch(0.39 0.119 250)",
+          "oklch(0.51 0.142 250)",
+          "oklch(0.63 0.135 250)",
+          "oklch(0.75 0.112 250)",
+          "oklch(0.86 0.091 250)",
+          "oklch(0.95 0.074 250)"
+        ]
+      },
+      "status-protected": {
+        "role": "tertiary",
+        "displayName": "Green Protected",
+        "canonical": "oklch(0.55 0.14 155)",
+        "tonalRamp": [
+          "oklch(0.15 0.069 155)",
+          "oklch(0.27 0.090 155)",
+          "oklch(0.39 0.111 155)",
+          "oklch(0.51 0.133 155)",
+          "oklch(0.63 0.126 155)",
+          "oklch(0.75 0.104 155)",
+          "oklch(0.86 0.085 155)",
+          "oklch(0.95 0.069 155)"
+        ]
+      },
+      "status-refund": {
+        "role": "tertiary",
+        "displayName": "Red Refund",
+        "canonical": "oklch(0.56 0.2 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.098 25)",
+          "oklch(0.27 0.129 25)",
+          "oklch(0.39 0.159 25)",
+          "oklch(0.51 0.190 25)",
+          "oklch(0.63 0.180 25)",
+          "oklch(0.75 0.149 25)",
+          "oklch(0.86 0.121 25)",
+          "oklch(0.95 0.098 25)"
+        ]
+      },
+      "status-closed": {
+        "role": "tertiary",
+        "displayName": "Grey Closed",
+        "canonical": "oklch(0.55 0.02 260)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 260)",
+          "oklch(0.27 0.013 260)",
+          "oklch(0.39 0.016 260)",
+          "oklch(0.51 0.019 260)",
+          "oklch(0.63 0.018 260)",
+          "oklch(0.75 0.015 260)",
+          "oklch(0.86 0.012 260)",
+          "oklch(0.95 0.010 260)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Letter Ink",
+        "canonical": "oklch(0.24 0.05 266)",
+        "tonalRamp": [
+          "oklch(0.15 0.025 266)",
+          "oklch(0.27 0.032 266)",
+          "oklch(0.39 0.040 266)",
+          "oklch(0.51 0.047 266)",
+          "oklch(0.63 0.045 266)",
+          "oklch(0.75 0.037 266)",
+          "oklch(0.86 0.030 266)",
+          "oklch(0.95 0.025 266)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Faded Ink",
+        "canonical": "oklch(0.47 0.04 262)",
+        "tonalRamp": [
+          "oklch(0.15 0.020 262)",
+          "oklch(0.27 0.026 262)",
+          "oklch(0.39 0.032 262)",
+          "oklch(0.51 0.038 262)",
+          "oklch(0.63 0.036 262)",
+          "oklch(0.75 0.030 262)",
+          "oklch(0.86 0.024 262)",
+          "oklch(0.95 0.020 262)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(0.995 0.004 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 250)",
+          "oklch(0.27 0.004 250)",
+          "oklch(0.39 0.004 250)",
+          "oklch(0.51 0.004 250)",
+          "oklch(0.63 0.004 250)",
+          "oklch(0.75 0.004 250)",
+          "oklch(0.86 0.004 250)",
+          "oklch(0.95 0.004 250)"
+        ]
+      },
+      "envelope": {
+        "role": "neutral",
+        "displayName": "Envelope White",
+        "canonical": "oklch(0.995 0.006 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 250)",
+          "oklch(0.27 0.004 250)",
+          "oklch(0.39 0.005 250)",
+          "oklch(0.51 0.006 250)",
+          "oklch(0.63 0.005 250)",
+          "oklch(0.75 0.004 250)",
+          "oklch(0.86 0.004 250)",
+          "oklch(0.95 0.004 250)"
+        ]
+      },
+      "stamp-paper": {
+        "role": "neutral",
+        "displayName": "Gummed Stamp Paper",
+        "canonical": "oklch(0.985 0.008 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 85)",
+          "oklch(0.27 0.005 85)",
+          "oklch(0.39 0.006 85)",
+          "oklch(0.51 0.008 85)",
+          "oklch(0.63 0.007 85)",
+          "oklch(0.75 0.006 85)",
+          "oklch(0.86 0.005 85)",
+          "oklch(0.95 0.004 85)"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Onion-Skin Sheet",
+        "canonical": "oklch(1 0 0 / 0.72)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 0)",
+          "oklch(0.27 0.004 0)",
+          "oklch(0.39 0.004 0)",
+          "oklch(0.51 0.004 0)",
+          "oklch(0.63 0.004 0)",
+          "oklch(0.75 0.004 0)",
+          "oklch(0.86 0.004 0)",
+          "oklch(0.95 0.004 0)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Sheet Rule",
+        "canonical": "oklch(0.89 0.022 258)",
+        "tonalRamp": [
+          "oklch(0.15 0.011 258)",
+          "oklch(0.27 0.014 258)",
+          "oklch(0.39 0.018 258)",
+          "oklch(0.51 0.021 258)",
+          "oklch(0.63 0.020 258)",
+          "oklch(0.75 0.016 258)",
+          "oklch(0.86 0.013 258)",
+          "oklch(0.95 0.011 258)"
+        ]
+      },
+      "ring": {
+        "role": "primary",
+        "displayName": "Focus Ring",
+        "canonical": "oklch(0.55 0.2 265)",
+        "tonalRamp": [
+          "oklch(0.15 0.098 265)",
+          "oklch(0.27 0.129 265)",
+          "oklch(0.39 0.159 265)",
+          "oklch(0.51 0.190 265)",
+          "oklch(0.63 0.180 265)",
+          "oklch(0.75 0.149 265)",
+          "oklch(0.86 0.121 265)",
+          "oklch(0.95 0.098 265)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Destination Capitals",
+        "purpose": "Destination city on envelopes; empty-state words. Condensed bold capitals at --label-stretch."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page greetings and page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Addresses, button labels, check lines."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Hints, metadata, the quiet earnings line."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Status badges and tab labels."
+      },
+      "money": {
+        "displayName": "Money",
+        "purpose": "Every amount, tabular figures."
+      },
+      "tracking": {
+        "displayName": "Tracking",
+        "purpose": "Tracking numbers, PayPal IDs and payment links only."
+      }
+    },
+    "sourceOfTruth": {
+      "file": "src/theme.css",
+      "themes": {
+        "blue": "default airmail (data-theme=\"blue\" on <html>)",
+        "lime": "deep green and lime (data-theme=\"lime\")"
+      },
+      "darkMode": ".dark class redefines the same variables"
+    },
+    "shadows": [
+      {
+        "name": "sheet",
+        "value": "0 1px 2px oklch(0.3 0.08 265 / 0.06), 0 12px 28px -18px oklch(0.3 0.1 265 / 0.35)",
+        "purpose": "Translucent list sheets (var(--sheet-shadow))."
+      },
+      {
+        "name": "envelope",
+        "value": "0 2px 4px oklch(0.3 0.1 265 / 0.06), 0 22px 40px -24px oklch(0.32 0.14 265 / 0.45)",
+        "purpose": "The letter in focus and the board (var(--envelope-shadow))."
+      },
+      {
+        "name": "stamp",
+        "value": "drop-shadow(0 1px 1px oklch(0.3 0.08 265 / 0.22)) drop-shadow(0 6px 10px oklch(0.3 0.1 265 / 0.12))",
+        "purpose": "Filter on perforated stamps."
+      },
+      {
+        "name": "nav",
+        "value": "0 10px 30px -12px oklch(0.3 0.1 265 / 0.35)",
+        "purpose": "Floating bottom tab bar."
+      },
+      {
+        "name": "brand-lift",
+        "value": "0 10px 20px -8px var(--brand)",
+        "purpose": "The raised Sell action only."
+      },
+      {
+        "name": "sheet-blur",
+        "value": "blur(14px) saturate(1.3)",
+        "purpose": "backdrop-filter on sheets."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All authored and supporting motion."
+      },
+      {
+        "name": "postmark-strike",
+        "value": "620ms; scale 1.6 rotate -18deg blur 6px -> scale 1 rotate -10deg",
+        "purpose": "The one authored moment, when PayPal accepts tracking."
+      },
+      {
+        "name": "etiquette-settle",
+        "value": "520ms, 380ms delay; translateY -10px rotate 4deg -> rotate -2deg",
+        "purpose": "PAR AVION settles beside the postmark."
+      },
+      {
+        "name": "page-in",
+        "value": "320ms; opacity 0.6, translateY 6px -> none",
+        "purpose": "Route change. Starts visible."
+      },
+      {
+        "name": "letter-arrive",
+        "value": "900ms; opacity 0.6, translateX 24px, amber wash -> none",
+        "purpose": "An order that lands while the app is open."
+      },
+      {
+        "name": "envelope-in",
+        "value": "560ms; opacity 0.6, translateY 14px rotate -1.2deg -> none",
+        "purpose": "A new payment-link envelope."
+      },
+      {
+        "name": "press",
+        "value": "150ms ease-out, scale 0.97",
+        "purpose": "Button press."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none",
+        "purpose": "All of the above disabled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile-column",
+        "value": "28rem"
+      },
+      {
+        "name": "board",
+        "value": "80rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one next step: full width, 52px, brand blue.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7V5a2 2 0 0 1 2-2h2\"/><path d=\"M17 3h2a2 2 0 0 1 2 2v2\"/><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\"/><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\"/><path d=\"M7 12h10\"/></svg> Scan the courier slip</button>",
+      "css": ".ds-btn-primary { font-family: var(--brand-font); display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 52px; padding: 0 10px; border: 1px solid transparent; border-radius: 14px; background: var(--brand); color: var(--brand-foreground); font-size: 15px; font-weight: 500; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--brand) 80%, transparent); } .ds-btn-primary:focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); } .ds-btn-primary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action, e.g. Rescan or Scan another slip.",
+      "html": "<button class=\"ds-btn-outline\">Rescan</button>",
+      "css": ".ds-btn-outline { font-family: var(--brand-font); height: 52px; padding: 0 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--background); color: var(--foreground); font-size: 15px; font-weight: 500; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out; } .ds-btn-outline:hover { background: var(--muted); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); } .ds-btn-outline:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "One hue per status, always with icon and words.",
+      "html": "<span class=\"ds-status\" style=\"--hue: var(--status-shipped)\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2\"/><path d=\"M15 18H9\"/><path d=\"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14\"/><circle cx=\"17\" cy=\"18\" r=\"2\"/><circle cx=\"7\" cy=\"18\" r=\"2\"/></svg> In the post</span>",
+      "css": ".ds-status { font-family: var(--brand-font); display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; white-space: nowrap; background: color-mix(in oklch, var(--hue) 14%, transparent); color: color-mix(in oklch, var(--hue) 78%, var(--foreground)); }"
+    },
+    {
+      "name": "PAR AVION Etiquette",
+      "kind": "custom",
+      "refersTo": "par-avion",
+      "description": "The Protected mark; only when PayPal has tracking and protection applies.",
+      "html": "<span class=\"ds-paravion\"><span class=\"ds-paravion-t\">Par avion</span><span class=\"ds-paravion-s\">Protected by PayPal</span></span>",
+      "css": ".ds-paravion { font-family: var(--brand-font); display: inline-flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 5px; background: var(--etiquette); color: var(--etiquette-foreground); outline: 1px solid color-mix(in oklch, var(--etiquette-foreground) 50%, transparent); outline-offset: -3px; box-shadow: 0 1px 0 oklch(0 0 0 / 0.15), 0 6px 14px -8px oklch(0.3 0.15 265 / 0.7); transform: rotate(-2deg); } .ds-paravion-t { font-stretch: var(--label-stretch); text-transform: uppercase; font-weight: 700; font-size: 13px; letter-spacing: 0.06em; line-height: 1; } .ds-paravion-s { font-size: 10px; line-height: 1.25; opacity: 0.9; }"
+    },
+    {
+      "name": "Envelope",
+      "kind": "card",
+      "refersTo": "envelope",
+      "description": "The order in focus, with the chevron edge while in transit.",
+      "html": "<section class=\"ds-envelope\"><div class=\"ds-chevron\"></div><div class=\"ds-envelope-body\"><div class=\"ds-dest\">Berlin <span>DE</span></div><p class=\"ds-money\">$24.00</p><p class=\"ds-meta\">Paisley scarf · Slate blue</p></div></section>",
+      "css": ".ds-envelope { font-family: var(--brand-font); position: relative; overflow: hidden; border-radius: 16px; background: var(--envelope); box-shadow: var(--envelope-shadow); color: var(--foreground); } .ds-chevron { height: 10px; background: repeating-linear-gradient(-45deg, var(--airmail-red) 0 14px, var(--envelope) 14px 21px, var(--airmail-blue) 21px 35px, var(--envelope) 35px 42px); } .ds-envelope-body { padding: 16px 20px 20px; } .ds-dest { font-stretch: var(--label-stretch); text-transform: uppercase; font-weight: 700; letter-spacing: 0.01em; font-size: 44px; line-height: 0.92; color: var(--ink); } .ds-dest span { font-size: 0.4em; font-weight: 500; color: var(--muted-foreground); margin-left: 6px; } .ds-money { margin: 12px 0 0; font-size: 28px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; } .ds-meta { margin: 6px 0 0; font-size: 14px; color: var(--muted-foreground); }"
+    },
+    {
+      "name": "Order Row on Sheet",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "Translucent sheet ledger; destination leads each row.",
+      "html": "<div class=\"ds-sheet\"><a class=\"ds-row\" href=\"#\"><span class=\"ds-stamp\"><span></span></span><span class=\"ds-row-main\"><span class=\"ds-row-dest\">Lisbon <em>PT</em></span><span class=\"ds-row-item\">Linen tote · Natural</span></span><span class=\"ds-row-amt\">$38.00</span></a></div>",
+      "css": ".ds-sheet { font-family: var(--brand-font); overflow: hidden; border-radius: 25.2px; background: var(--sheet); border: 1px solid var(--sheet-border); box-shadow: var(--sheet-shadow); backdrop-filter: blur(14px) saturate(1.3); color: var(--foreground); } .ds-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-decoration: none; color: inherit; transition: background-color 150ms; } .ds-row:hover { background: color-mix(in oklch, var(--accent) 40%, transparent); } .ds-row:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; } .ds-stamp { width: 48px; height: 48px; padding: 7px; box-sizing: border-box; background: radial-gradient(circle at 5px 5px, transparent 2.6px, var(--stamp-paper) 3px) -5px -5px / 10px 10px; flex-shrink: 0; } .ds-stamp span { display: block; width: 100%; height: 100%; background: var(--brand-soft); border-radius: 1px; } .ds-row-main { flex: 1; min-width: 0; } .ds-row-dest { display: block; font-stretch: var(--label-stretch); text-transform: uppercase; font-weight: 700; font-size: 19px; line-height: 1; color: var(--ink); } .ds-row-dest em { font-style: normal; font-weight: 500; font-size: 0.7em; color: var(--muted-foreground); margin-left: 6px; } .ds-row-item { display: block; margin-top: 4px; font-size: 13px; color: var(--muted-foreground); } .ds-row-amt { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }"
+    },
+    {
+      "name": "Tracking Input",
+      "kind": "input",
+      "refersTo": "input-tracking",
+      "description": "Tracking number as read from the slip, auto-uppercased mono.",
+      "html": "<input class=\"ds-input-tracking\" value=\"EE482913507IN\" aria-label=\"Tracking number\" />",
+      "css": ".ds-input-tracking { width: 100%; height: 56px; padding: 0 12px; border: 1px solid var(--input); border-radius: 12px; background: var(--card); color: var(--foreground); font-family: var(--code-font); font-size: 20px; font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; text-transform: uppercase; transition: border-color 150ms, box-shadow 150ms; } .ds-input-tracking:focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "description": "Floating tab bar with the raised Sell action.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main\"><a class=\"ds-tab ds-tab-active\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg>Home</a><a class=\"ds-tab\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"/><path d=\"M12 22V12\"/><path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\"/></svg>Orders</a><a class=\"ds-sell\" href=\"#\" aria-label=\"List a product\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></a></nav>",
+      "css": ".ds-nav { font-family: var(--brand-font); display: flex; align-items: center; max-width: 28rem; padding: 0 6px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in oklch, var(--card) 95%, transparent); backdrop-filter: blur(12px); box-shadow: 0 10px 30px -12px oklch(0.3 0.1 265 / 0.35); margin-top: 32px; } .ds-tab { position: relative; flex: 1; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted-foreground); text-decoration: none; transition: color 150ms; } .ds-tab:hover { color: var(--foreground); } .ds-tab:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; } .ds-tab-active { color: var(--ink); } .ds-tab-active::before { content: \"\"; position: absolute; top: 4px; width: 20px; height: 3px; border-radius: 9999px; background: var(--ink); } .ds-sell { margin: -28px 4px 0; width: 58px; height: 58px; flex-shrink: 0; display: grid; place-items: center; border-radius: 18px; background: var(--brand); color: var(--brand-foreground); box-shadow: 0 0 0 4px var(--paper), 0 10px 20px -8px var(--brand); transition: transform 200ms ease-out; } .ds-sell:focus-visible { outline: 2px solid var(--ring); outline-offset: 6px; } .ds-sell:active { transform: scale(0.95); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Airmail Letter",
+    "overview": "Every order is a letter going abroad. The ground is onion-skin airmail paper with a faint blue wash from the top of the page; lists sit on translucent sheets; the order that matters now is an envelope with a red and blue chevron edge, a perforated stamp holding the product photo, the destination city set as a postal label, and a circular postmark for the date. Protection is the blue PAR AVION etiquette, and it appears only once PayPal actually has the tracking.\n\nThe system is quiet and paper-like: one next step per screen, one strong action colour, no hero numbers. Depth comes from paper sheets and envelope shadows, never from neon or glow. All values live in one swappable file, `src/theme.css`; components read only its variables, and a second look (`data-theme=\"lime\"`, deep green and lime) is kept ready. Light mode leads; dark mode is the same letter read under a desk lamp.",
+    "keyCharacteristics": [
+      "Onion-skin paper ground, airmail ultramarine ink, translucent sheets.",
+      "Envelope, stamp, postmark and PAR AVION drawn as geometry from tokens, never as pictures.",
+      "Destination leads every order, in condensed Archivo capitals.",
+      "Saturated brand blue only on what can be pressed.",
+      "One authored motion moment: the postmark strike."
+    ],
+    "rules": [
+      {
+        "name": "The Pressable Blue Rule",
+        "body": "Saturated brand blue fills only things that can be pressed. Ink blue writes; etiquette blue labels protection; brand blue acts.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Hue Per Status Rule",
+        "body": "Each order status owns one hue, used for its badge, its row and its icon, and it is always paired with an icon and words so state never relies on colour alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Theme File Rule",
+        "body": "No component carries a raw colour; every colour, surface, radius and font comes from a `theme.css` variable so a theme swap changes the whole app.",
+        "section": "colors"
+      },
+      {
+        "name": "The Postal Capitals Rule",
+        "body": "Condensed bold capitals are for destinations and postal marks (cities, PAR AVION, postmark rings). Interface text stays at normal width and sentence case.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono Means Code Rule",
+        "body": "Geist Mono appears only on strings the seller reads off a slip or copies: tracking numbers, PayPal IDs, payment links.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper Stack Rule",
+        "body": "Depth says which paper is on top: page, then sheet, then envelope. Shadows are tinted with ink blue, never neutral grey glow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Strike Rule",
+        "body": "There is one authored moment: when PayPal accepts tracking, the postmark strikes the envelope (620ms, scale 1.6 to 1, settling at -10 degrees) and PAR AVION settles beside it 380ms later (520ms). Supporting motion starts from a visible state (opacity 0.6) and only eases in: page-in 320ms, letter-arrive 900ms for an order that lands while the app is open, envelope-in 560ms. All use `cubic-bezier(0.16, 1, 0.3, 1)` and are switched off under `prefers-reduced-motion`.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do read every colour, surface, radius and font from `src/theme.css` variables, so `data-theme=\"blue\"` or `\"lime\"` restyles the app.",
+      "Do lead every order with its destination in condensed capitals (`--label-stretch`, 72%).",
+      "Do pair every status hue with its icon and words.",
+      "Do put the chevron edge only on envelopes in transit, and keep airmail red to the chevron and stamps.",
+      "Do set every amount in tabular figures and every tracking number in Geist Mono.",
+      "Do keep primary actions 52px tall, full width, 14px radius.",
+      "Do start supporting motion from a visible state and honour `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "Don't fill anything that cannot be pressed with brand blue.",
+      "Don't show PAR AVION unless PayPal has the tracking and protection applies.",
+      "Don't lead a screen with a balance hero over icon tiles; earnings stay one quiet line.",
+      "Don't add another authored animation beside the postmark strike.",
+      "Don't use purple gradients, sparkles or glowing orbs, or a crypto or banking look.",
+      "Don't use mono for interface text or condensed capitals for sentences."
+    ]
+  }
+}

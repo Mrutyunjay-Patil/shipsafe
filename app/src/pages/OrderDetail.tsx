@@ -18,7 +18,7 @@ function CheckLine({ ok, label, hint }: { ok: boolean; label: string; hint?: str
       <span
         className={cn(
           'mt-px grid size-[22px] shrink-0 place-items-center rounded-full',
-          ok ? 'bg-[color-mix(in_oklch,var(--status-protected)_16%,transparent)] text-status-protected' : 'bg-[color-mix(in_oklch,var(--status-refund)_14%,transparent)] text-status-refund',
+          ok ? 'bg-[color-mix(in_oklch,var(--success)_16%,transparent)] text-success' : 'bg-[color-mix(in_oklch,var(--status-refund)_14%,transparent)] text-status-refund',
         )}
       >
         {ok ? <Check className="size-3.5" strokeWidth={3} /> : <X className="size-3.5" strokeWidth={3} />}
