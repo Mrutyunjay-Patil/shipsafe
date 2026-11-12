@@ -201,6 +201,26 @@ api.post('/orders/:id/refund', async (c) => {
   return c.json({ refund_id: r.id, status: r.status })
 })
 
+// ---- account ----
+api.get('/account', async (c) => {
+  const id = c.get('sellerId')
+  const db = c.env.DB
+  const seller = await db.prepare('SELECT id, display_name, paypal_verified, connected_at FROM sellers WHERE id = ?').bind(id).first()
+  const counts = await db.prepare(
+    `SELECT
+       (SELECT COUNT(*) FROM listings WHERE seller_id = ?1 AND status = 'ACTIVE') AS active_listings,
+       (SELECT COUNT(*) FROM orders WHERE seller_id = ?1 AND status != 'REFUNDED') AS orders,
+       (SELECT COUNT(*) FROM orders WHERE seller_id = ?1 AND status = 'PROTECTED') AS protected,
+       (SELECT COALESCE(SUM(CAST(amount AS REAL)), 0) FROM orders WHERE seller_id = ?1 AND status NOT IN ('REFUNDED','NEEDS_REFUND')) AS paid_total`,
+  ).bind(id).first()
+  const hook = await db.prepare('SELECT received_at, event_type FROM webhook_events ORDER BY received_at DESC LIMIT 1').first()
+  return c.json({
+    seller, counts, last_webhook: hook ?? null,
+    environment: c.env.PAYPAL_BASE.includes('sandbox') ? 'sandbox' : 'live',
+    webhook_url: new URL('/webhooks/paypal', c.req.url).toString(),
+  })
+})
+
 // ---- ask your shop ----
 api.post('/ask', async (c) => {
   const { question } = z.object({ question: z.string().min(2).max(2000) }).parse(await c.req.json())

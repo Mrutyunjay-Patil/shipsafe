@@ -4,6 +4,14 @@ import { mockApi } from './mock'
 export type Seller = { id: string; display_name: string | null; paypal_verified: number | null }
 export type Me = { signedIn: true; seller: Seller } | { signedIn: false }
 
+export type Account = {
+  seller: Seller & { connected_at: string }
+  counts: { active_listings: number; orders: number; protected: number; paid_total: number }
+  last_webhook: { received_at: string; event_type: string } | null
+  environment: 'sandbox' | 'live'
+  webhook_url: string
+}
+
 export type OrderStatus = 'PAID' | 'SHIPPED' | 'PROTECTED' | 'REFUNDED' | 'NEEDS_REFUND'
 
 export type Listing = {
@@ -76,6 +84,7 @@ const upload = (field: string, file: File): RequestInit => {
 
 const realApi = {
   me: () => req<Me>('/api/me'),
+  account: () => req<Account>('/api/account'),
   logout: () => req('/api/logout', json('POST')),
   draftListing: (photo: File) => req<{ photo_key: string; draft: ListingDraft; ms: number }>('/api/listings/draft', upload('photo', photo)),
   createListing: (b: {

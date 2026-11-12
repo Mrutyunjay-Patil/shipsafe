@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, Camera, ScanLine, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { ArrowRight, Camera, ScanLine, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import { Destination, Envelope, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { OrderRow, primeSeen } from '@/components/OrderRow'
@@ -83,13 +83,16 @@ export default function Home({ seller }: { seller: Seller }) {
         <h1 className="text-[26px] font-semibold leading-tight">
           {greeting()}{name ? `, ${name}` : ''}
         </h1>
-        <span
-          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-ink"
-          title={seller.paypal_verified ? 'PayPal says this account is verified' : 'You signed in with PayPal'}
+        <Link
+          to="/account"
+          aria-label="Your shop and PayPal account"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card pl-1 pr-3 text-xs font-medium text-ink transition-colors hover:bg-accent"
         >
-          <ShieldCheck className="size-3.5" />
+          <span className="grid size-7 place-items-center rounded-full bg-ink text-[12px] font-semibold text-paper">
+            {(seller.display_name ?? 'S').slice(0, 1).toUpperCase()}
+          </span>
           {seller.paypal_verified ? 'PayPal verified' : 'PayPal connected'}
-        </span>
+        </Link>
       </header>
 
       {orders.isLoading ? (

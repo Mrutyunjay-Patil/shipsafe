@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { BottomNav } from '@/components/BottomNav'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, MOCK } from '@/lib/api'
+import Account from '@/pages/Account'
 import Ask from '@/pages/Ask'
 import Home from '@/pages/Home'
 import OrderDetail from '@/pages/OrderDetail'
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/ask" element={<Ask />} />
+        <Route path="/account" element={<Account />} />
         <Route path="/board" element={<Suspense fallback={<Skeleton className="m-5 h-96 rounded-2xl" />}><Board /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,6 +1,6 @@
 // Preview mode: the real screens running on sample data, with no PayPal or AI calls.
 // Turned on at build time with VITE_MOCK=1. State lives in memory and resets on reload.
-import type { ListingDraft, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
+import type { Account, ListingDraft, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
@@ -75,6 +75,20 @@ function maybeArrive() {
 export const mockApi = {
   me: async (): Promise<Me> => ({ signedIn: true, seller: { id: 'demo', display_name: 'Ruchi Handblock', paypal_verified: null } }),
   logout: async () => ({ ok: true }),
+  account: async (): Promise<Account> => {
+    await wait(250)
+    const live = orders.filter((o) => o.status !== 'REFUNDED')
+    return {
+      seller: { id: 'demo', display_name: 'Ruchi Handblock', paypal_verified: null, connected_at: ago(72) },
+      counts: {
+        active_listings: 3, orders: live.length, protected: orders.filter((o) => o.status === 'PROTECTED').length,
+        paid_total: live.filter((o) => o.status !== 'NEEDS_REFUND').reduce((s, o) => s + Number(o.amount), 0),
+      },
+      last_webhook: { received_at: ago(0.4), event_type: 'CHECKOUT.PAYMENT-RESOURCE.PAYMENT-COMPLETED' },
+      environment: 'sandbox',
+      webhook_url: 'https://shipsafe.example/webhooks/paypal',
+    }
+  },
   draftListing: async (photo: File): Promise<{ photo_key: string; draft: ListingDraft; ms: number }> => {
     await wait(1800)
     // The sample draft follows what was photographed, judged from the file name.
