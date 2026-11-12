@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { useSearchParams } from 'react-router'
+import { Table2 } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router'
 import { OrderRow, primeSeen } from '@/components/OrderRow'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, MOCK, type OrderStatus } from '@/lib/api'
@@ -23,7 +24,12 @@ export default function Orders() {
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)]">
       <header className="pb-4 pt-3">
-        <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-[26px] font-semibold leading-tight">Orders</h1>
+          <Link to="/board" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3.5 text-sm font-medium text-ink hover:bg-accent">
+            <Table2 className="size-4" /> Board
+          </Link>
+        </div>
         <p className="mt-1 text-[15px] text-muted-foreground">New PayPal payments land here on their own.</p>
       </header>
       <div role="tablist" aria-label="Filter orders" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,#000_20px,#000_calc(100%-28px),transparent)]">

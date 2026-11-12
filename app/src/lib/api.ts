@@ -21,6 +21,8 @@ export type Listing = {
   sold: number; created_at: string
 }
 
+export type ListingDetail = Listing & { orders: Order[] }
+
 export type Order = {
   id: string; listing_id: string | null; capture_id: string; status: OrderStatus
   amount: string; currency: string; variant: string | null; title: string | null; photo_key: string | null
@@ -92,6 +94,7 @@ const realApi = {
     photo_key?: string; ai_confidence?: number
   }) => req<{ id: string; plb_id: string; url: string }>('/api/listings', json('POST', b)),
   listings: () => req<Listing[]>('/api/listings'),
+  listing: (id: string) => req<ListingDetail>(`/api/listings/${id}`),
   archiveListing: (id: string) => req(`/api/listings/${id}`, json('DELETE')),
   orders: () => req<Order[]>('/api/orders'),
   order: (id: string) => req<OrderDetail>(`/api/orders/${id}`),

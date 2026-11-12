@@ -85,10 +85,23 @@ api.post('/listings', async (c) => {
 
 api.get('/listings', async (c) => {
   const rows = await c.env.DB.prepare(
-    `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status != 'REFUNDED') AS sold
+    `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
      FROM listings l WHERE seller_id = ? AND status != 'ARCHIVED' ORDER BY created_at DESC`,
   ).bind(c.get('sellerId')).all()
   return c.json(rows.results.map((r: any) => ({ ...r, colours: JSON.parse(r.colours) })))
+})
+
+api.get('/listings/:id', async (c) => {
+  const l = await c.env.DB.prepare(
+    `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
+     FROM listings l WHERE l.id = ? AND l.seller_id = ?`,
+  ).bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  if (!l) return c.json({ error: 'not_found' }, 404)
+  const orders = await c.env.DB.prepare(
+    `SELECT o.*, l.title, l.photo_key FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
+     WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
+  ).bind(l.id).all()
+  return c.json({ ...l, colours: JSON.parse(l.colours), orders: orders.results })
 })
 
 api.delete('/listings/:id', async (c) => {

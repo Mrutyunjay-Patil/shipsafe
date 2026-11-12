@@ -1,12 +1,12 @@
-import { House, MessageCircle, Package, Plus, Table2 } from 'lucide-react'
+import { House, MessageCircle, Package, Plus, Tag } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { cn } from '@/lib/utils'
 
 const items = [
   { to: '/', label: 'Home', icon: House },
   { to: '/orders', label: 'Orders', icon: Package },
+  { to: '/products', label: 'Products', icon: Tag },
   { to: '/ask', label: 'Ask', icon: MessageCircle },
-  { to: '/board', label: 'Board', icon: Table2 },
 ]
 
 // Standard bottom tab bar with Sell raised in the middle, within thumb reach.
@@ -27,7 +27,6 @@ export function BottomNav() {
         <>
           <i.icon className="size-[22px]" strokeWidth={isActive ? 2.3 : 1.9} />
           {i.label}
-          <span className={cn('absolute top-1 h-[3px] w-5 rounded-full bg-ink transition-opacity', isActive ? 'opacity-100' : 'opacity-0')} />
         </>
       )}
     </NavLink>

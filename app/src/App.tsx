@@ -9,6 +9,8 @@ import Ask from '@/pages/Ask'
 import Home from '@/pages/Home'
 import OrderDetail from '@/pages/OrderDetail'
 import Orders from '@/pages/Orders'
+import ProductDetail from '@/pages/ProductDetail'
+import Products from '@/pages/Products'
 import Sell from '@/pages/Sell'
 import SignIn from '@/pages/SignIn'
 import Thanks from '@/pages/Thanks'
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="/sell" element={<Sell />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/ask" element={<Ask />} />
         <Route path="/account" element={<Account />} />
         <Route path="/board" element={<Suspense fallback={<Skeleton className="m-5 h-96 rounded-2xl" />}><Board /></Suspense>} />

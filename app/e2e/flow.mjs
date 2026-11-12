@@ -57,13 +57,13 @@ try {
     }
     if (step === 'sell') {
       await p.goto(`${base}/sell`)
-      await p.setInputFiles('input[type=file]', path.join(here, 'product.jpg'))
-      await p.getByRole('button', { name: /Create PayPal link/ }).waitFor({ timeout: 60000 })
+      await p.setInputFiles('input[type=file]', path.join(here, '../public/sample/paisley-scarf.jpg'))
+      await p.getByRole('button', { name: /Make the PayPal link/ }).waitFor({ timeout: 60000 })
       await shot(p, '2-draft')
       console.log('draft title:', await p.inputValue('#title'), '| price:', await p.inputValue('#price'))
-      await p.getByRole('button', { name: /Create PayPal link/ }).click()
-      await p.getByText('Your PayPal link is ready').waitFor({ timeout: 60000 })
-      M.link = (await p.locator('p.font-mono').innerText()).trim()
+      await p.getByRole('button', { name: /Make the PayPal link/ }).click()
+      await p.getByText('Your link is ready to send').waitFor({ timeout: 60000 })
+      M.link = (await p.locator('p.tracking-code').innerText()).trim()
       save()
       console.log('link:', M.link)
       await shot(p, '3-link')
@@ -99,11 +99,11 @@ try {
     }
     if (step === 'ship') {
       await p.goto(`${base}/orders/${M.order}`)
-      await p.getByRole('button', { name: /Scan courier slip/ }).waitFor({ timeout: 20000 })
+      await p.getByRole('button', { name: /Scan the courier slip/ }).waitFor({ timeout: 20000 })
       await p.setInputFiles('input[type=file]', path.join(here, 'slip.png'))
-      await p.getByText('Check before sending to PayPal').waitFor({ timeout: 60000 })
+      await p.getByText('Check before PayPal sees it').waitFor({ timeout: 60000 })
       await shot(p, '5-checks')
-      await p.getByRole('button', { name: 'Send to PayPal' }).click()
+      await p.getByRole('button', { name: /Send tracking to PayPal/ }).click()
       await p.getByText('Tracking on PayPal').waitFor({ timeout: 30000 })
       await shot(p, '6-tracked')
       const o = await (await ctx.request.get(`${base}/api/orders/${M.order}`)).json()

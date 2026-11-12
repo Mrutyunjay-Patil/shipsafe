@@ -1,6 +1,6 @@
 // Preview mode: the real screens running on sample data, with no PayPal or AI calls.
 // Turned on at build time with VITE_MOCK=1. State lives in memory and resets on reload.
-import type { Account, ListingDraft, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
+import type { Account, Listing, ListingDetail, ListingDraft, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
@@ -21,7 +21,7 @@ let orders: OrderDetail[] = [
     seller_protection: 'ELIGIBLE', paid_at: ago(2), shipped_at: null, trackers: [],
   },
   {
-    id: '7DD18315GK263354G', listing_id: 'lst_scarf2', capture_id: '5JM416817X145951N', status: 'PROTECTED',
+    id: '7DD18315GK263354G', listing_id: 'lst_scarf', capture_id: '5JM416817X145951N', status: 'PROTECTED',
     amount: '24.00', currency: 'USD', variant: 'Indigo', title: 'Block-print paisley scarf', photo_key: scarf,
     buyer_country: 'DE', buyer_account_status: 'VERIFIED', ship_name: 'M. Schneider', ship_line1: 'Torstrasse 101',
     ship_line2: null, ship_city: 'Berlin', ship_state: null, ship_postcode: '10119', ship_country: 'DE',
@@ -43,6 +43,12 @@ let orders: OrderDetail[] = [
     seller_protection: 'PARTIALLY_ELIGIBLE', paid_at: ago(50), shipped_at: ago(40), tracking_number: 'RR287043775IN',
     trackers: [{ id: '6RT77120MN0011224-RR287043775IN', tracking_number: 'RR287043775IN', carrier: 'INDIA_POST_INT', status: 'SHIPPED', created_at: ago(40), checks: {} }],
   },
+]
+
+const listings: Omit<Listing, 'sold'>[] = [
+  { id: 'lst_scarf', title: 'Block-print paisley scarf', description: 'Soft cotton scarf, hand block-printed with paisley and a tasselled edge.', colours: ['Slate blue', 'Indigo'], category: 'Scarves', price: '26.00', currency: 'USD', quantity: 5, photo_key: scarf, plb_id: 'PLB-5PGXCE53JB4F', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-5PGXCE53JB4F', status: 'ACTIVE', created_at: ago(80) },
+  { id: 'lst_diya', title: 'Brass lotus diya, pair', description: 'Pair of polished brass lotus diyas for festive light.', colours: [], category: 'Home decor', price: '18.00', currency: 'USD', quantity: 1, photo_key: diya, plb_id: 'PLB-DIYA0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DIYA0001PREV', status: 'SOLD_OUT', created_at: ago(120) },
+  { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 5, photo_key: tote, plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
 ]
 
 const summary = (o: OrderDetail): Order => {
@@ -104,7 +110,17 @@ export const mockApi = {
     await wait(1200)
     return { id: 'lst_demo', plb_id: 'PLB-DEMO1234PREV', url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-DEMO1234PREV' }
   },
-  listings: async () => [],
+  listings: async (): Promise<Listing[]> => {
+    await wait(250)
+    return listings.map((l) => ({ ...l, sold: orders.filter((o) => o.listing_id === l.id && o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length }))
+  },
+  listing: async (id: string): Promise<ListingDetail> => {
+    await wait(250)
+    const l = listings.find((x) => x.id === id)
+    if (!l) throw new Error('not_found')
+    const own = orders.filter((o) => o.listing_id === id)
+    return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary) }
+  },
   archiveListing: async () => ({ ok: true }),
   orders: async () => { await wait(300); maybeArrive(); return orders.map(summary) },
   order: async (id: string) => { await wait(250); return find(id) },
