@@ -134,7 +134,6 @@ export const mockApi = {
   },
   describeListing: async (b: { title: string; colours: string[]; attributes: { name: string; value: string }[] }) => {
     await wait(1200)
-    const get = (n: string) => b.attributes.find((a) => a.name.toLowerCase() === n.toLowerCase())?.value
     const facts = b.attributes.filter((a) => a.value).map((a) => `${a.name.toLowerCase()} ${a.value.toLowerCase()}`)
     const d = `${b.title}${facts.length ? `, ${facts.join(', ')}` : ''}${b.colours.length > 1 ? `. Comes in ${b.colours.join(' or ')}` : ''}`
     return { description: (d.charAt(0).toUpperCase() + d.slice(1) + '.').slice(0, 240) }
