@@ -1,0 +1,46 @@
+# Deploy ShipSafe to Cloudflare whenever master changes.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (Workers, D1 and R2 edit rights) and
+# CLOUDFLARE_ACCOUNT_ID. The Worker's own secrets (PayPal, Anthropic) stay in Cloudflare.
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+
+      - name: Type-check and lint
+        run: npx tsc -b && npx oxlint src worker shared
+
+      # Migrations run before the new code goes live, so the code never meets an older schema.
+      - name: Apply D1 migrations
+        run: npx wrangler d1 migrations apply shipsafe --remote
+
+      - name: Deploy the app
+        run: npm run build && npx wrangler deploy
+
+      - name: Deploy the sample-data preview
+        run: VITE_MOCK=1 npm run build && npx wrangler deploy --name shipsafe-preview
