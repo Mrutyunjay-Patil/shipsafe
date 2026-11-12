@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "shipsafe",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/webhooks/*", "/auth/*"]
+  },
+  "vars": {
+    "PAYPAL_BASE": "https://api-m.sandbox.paypal.com",
+    "PAYPAL_WEB": "https://www.sandbox.paypal.com",
+    "VISION_MODEL": "claude-haiku-5-5"
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "shipsafe", "database_id": "52074891-1aa2-49c8-8f97-f8539e1dcbd6", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [
+    { "binding": "PHOTOS", "bucket_name": "shipsafe-photos" }
+  ],
+  "observability": { "enabled": true }
+}
