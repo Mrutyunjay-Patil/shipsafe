@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Envelope, Stamp } from '@/components/airmail'
+import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,26 +14,6 @@ import { cn } from '@/lib/utils'
 
 type Form = { title: string; description: string; colours: string[]; attributes: Attribute[]; category: string; price: string; quantity: number }
 
-// The AI suggests details for the exact product in the photo; this table is only the fallback
-// when it suggests none. Matched against the category the AI names, first match wins.
-const FALLBACK: [RegExp, string[]][] = [
-  [/pottery|ceramic|porcelain|stoneware|terracotta|mug|bowl|plate|vase|planter/i, ['Clay', 'Glaze', 'Dimensions', 'Capacity', 'Food safe', 'Microwave safe']],
-  [/furniture|chair|table|stool|shelf|cabinet|bench|desk|bed/i, ['Wood or material', 'Dimensions', 'Finish', 'Assembly', 'Weight capacity']],
-  [/art|painting|print|poster|canvas|illustration|photograph/i, ['Medium', 'Size', 'Framed', 'Signed', 'Edition']],
-  [/candle|soap|wax/i, ['Scent', 'Wax', 'Weight', 'Burn time']],
-  [/cosmetic|skincare|beauty|perfume|oil|balm|cream/i, ['Ingredients', 'Volume', 'Skin type', 'Expiry']],
-  [/food|tea|coffee|spice|snack|sweet|honey|pickle/i, ['Ingredients', 'Net weight', 'Shelf life', 'Dietary']],
-  [/electronic|gadget|device|speaker|headphone|charger|phone/i, ['Brand and model', 'Condition', 'Warranty', 'In the box']],
-  [/toy|game|puzzle|doll/i, ['Age range', 'Material', 'Dimensions', 'Safety']],
-  [/book|notebook|journal|stationery/i, ['Pages', 'Size', 'Paper', 'Binding']],
-  [/plant|succulent|seed|bonsai/i, ['Species', 'Pot size', 'Light', 'Watering']],
-  [/shoe|sandal|footwear|boot|slipper/i, ['Size', 'Upper material', 'Sole', 'Fit']],
-  [/jewel|earring|necklace|ring|bangle|bracelet|pendant/i, ['Metal', 'Stone', 'Weight', 'Size']],
-  [/bag|tote|purse|wallet|backpack/i, ['Material', 'Dimensions', 'Closure', 'Pockets']],
-  [/scarf|stole|shawl|dupatta|saree|fabric|textile|shirt|dress|kurta|apparel|clothing|top/i, ['Material', 'Size', 'Fit', 'Care']],
-  [/decor|lamp|diya|lantern|brass|metal|sculpture|figurine/i, ['Material', 'Dimensions', 'Weight', 'Set of']],
-]
-const fallbackFor = (category: string) => FALLBACK.find(([re]) => re.test(category))?.[1] ?? ['Material', 'Dimensions', 'Weight', 'Condition']
 
 const field = 'h-12 rounded-lg bg-card text-[16px]'
 
@@ -229,53 +210,7 @@ export default function Sell() {
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Product details</legend>
             <p className="text-[13px] text-muted-foreground">A photo can't show material or size. Add what buyers ask about.</p>
-            {form.attributes.length > 0 && (
-              <ul className="sheet divide-y divide-border/70 rounded-xl">
-                {form.attributes.map((a, i) => (
-                  <li key={i} className="flex items-center gap-2 px-2 py-1.5">
-                    <Input
-                      aria-label="Detail name"
-                      value={a.name}
-                      placeholder="Detail"
-                      onChange={(e) => set('attributes', form.attributes.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
-                      className="h-10 w-[38%] shrink-0 rounded-md border-transparent bg-transparent px-2 text-[14px] font-medium shadow-none focus-visible:bg-card"
-                    />
-                    <Input
-                      aria-label={`${a.name || 'Detail'} value`}
-                      value={a.value}
-                      autoFocus={!a.value && !!a.name}
-                      placeholder={a.name ? `Add ${a.name.toLowerCase()}` : 'Value'}
-                      onChange={(e) => set('attributes', form.attributes.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
-                      className="h-10 min-w-0 flex-1 rounded-md bg-card text-[15px]"
-                    />
-                    <button type="button" aria-label={`Remove ${a.name || 'detail'}`} onClick={() => set('attributes', form.attributes.filter((_, j) => j !== i))} className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-                      <X className="size-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {suggested
-                .filter((n) => !form.attributes.some((a) => a.name.toLowerCase() === n.toLowerCase()))
-                .map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => form.attributes.length < 12 && set('attributes', [...form.attributes, { name: n, value: '' }])}
-                    className="inline-flex h-9 items-center gap-1 rounded-full border border-dashed border-ink/30 bg-card px-3 text-sm font-medium text-ink transition-colors hover:border-ink hover:bg-accent"
-                  >
-                    <Plus className="size-3.5" strokeWidth={2.5} /> {n}
-                  </button>
-                ))}
-              <button
-                type="button"
-                onClick={() => form.attributes.length < 12 && set('attributes', [...form.attributes, { name: '', value: '' }])}
-                className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                <Plus className="size-3.5" strokeWidth={2.5} /> Your own
-              </button>
-            </div>
+            <AttributeEditor value={form.attributes} onChange={(v) => set('attributes', v)} suggestions={suggested} />
             {form.attributes.some((a) => a.name.trim() && a.value.trim()) && (
               <Button type="button" variant="outline" className="mt-1 h-10 rounded-lg" disabled={describe.isPending} onClick={() => describe.mutate()}>
                 {describe.isPending ? <Loader2 className="animate-spin" /> : <PenLine />} Rewrite description from details

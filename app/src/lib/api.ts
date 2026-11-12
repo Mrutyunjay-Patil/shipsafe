@@ -100,6 +100,8 @@ const realApi = {
     req<{ description: string }>('/api/listings/describe', json('POST', b)),
   listings: () => req<Listing[]>('/api/listings'),
   listing: (id: string) => req<ListingDetail>(`/api/listings/${id}`),
+  updateListing: (id: string, b: { description?: string; attributes?: Attribute[] }) =>
+    req<{ ok: true; paypal_updated: boolean }>(`/api/listings/${id}`, json('PATCH', b)),
   archiveListing: (id: string) => req(`/api/listings/${id}`, json('DELETE')),
   orders: () => req<Order[]>('/api/orders'),
   order: (id: string) => req<OrderDetail>(`/api/orders/${id}`),

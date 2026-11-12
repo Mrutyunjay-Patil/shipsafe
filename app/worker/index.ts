@@ -4,7 +4,7 @@ import { addressMatch, carrierEnum, normaliseTracking, s10Valid } from '../share
 import { askShop } from './ask'
 import { currentSeller, finishLogin, logout, requireSeller, startLogin } from './auth'
 import { type AppEnv, newId } from './env'
-import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture } from './paypal'
+import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture, updateLink } from './paypal'
 import { describeListing, draftListing, mediaType, readSlip } from './vision'
 import { handleWebhook } from './webhooks'
 
@@ -113,6 +113,28 @@ api.get('/listings/:id', async (c) => {
      WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
   ).bind(l.id).all()
   return c.json({ ...l, colours: JSON.parse(l.colours), attributes: JSON.parse(l.attributes ?? '[]'), orders: orders.results })
+})
+
+// Edit a listing's details and description. A live PayPal link is updated in place, so
+// buyers see the new details on PayPal's page; a closed link only updates ShipSafe.
+api.patch('/listings/:id', async (c) => {
+  const b = z.object({
+    description: z.string().min(1).max(500).optional(),
+    attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).optional(),
+  }).parse(await c.req.json())
+  const l = await c.env.DB.prepare('SELECT * FROM listings WHERE id = ? AND seller_id = ?').bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  if (!l) return c.json({ error: 'not_found' }, 404)
+  const description = b.description ?? l.description
+  const attributes = b.attributes ?? JSON.parse(l.attributes ?? '[]')
+  if (l.plb_id && l.status === 'ACTIVE') {
+    const details = attributes.map((a: { name: string; value: string }) => `${a.name}: ${a.value}`).join(' · ')
+    await updateLink(c.env, l.plb_id, {
+      listingId: l.id, title: l.title, description: details ? `${description}\n${details}` : description,
+      price: l.price, currency: l.currency, colours: JSON.parse(l.colours), returnUrl: new URL('/thanks', c.req.url).toString(),
+    })
+  }
+  await c.env.DB.prepare('UPDATE listings SET description = ?, attributes = ? WHERE id = ?').bind(description, JSON.stringify(attributes), l.id).run()
+  return c.json({ ok: true, paypal_updated: !!(l.plb_id && l.status === 'ACTIVE') })
 })
 
 api.delete('/listings/:id', async (c) => {

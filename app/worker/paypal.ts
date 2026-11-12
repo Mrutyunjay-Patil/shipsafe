@@ -90,6 +90,10 @@ export async function createLink(env: Env, i: LinkInput) {
   return { id: res.id, url: url ?? null }
 }
 
+/** Replace a payment link's content (PUT is a full replace; probe C3 showed the URL stays the same). */
+export const updateLink = (env: Env, plbId: string, i: LinkInput) =>
+  pp(env, 'PUT', `/v1/checkout/payment-resources/${plbId}`, linkBody(i))
+
 export const deleteLink = (env: Env, plbId: string) =>
   pp(env, 'DELETE', `/v1/checkout/payment-resources/${plbId}`).catch((e) => {
     if (e instanceof PayPalError && e.status === 404) return null

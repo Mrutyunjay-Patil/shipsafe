@@ -1,13 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Copy, Send } from 'lucide-react'
+import { ArrowLeft, Copy, Loader2, PenLine, Pencil, Send } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Stamp } from '@/components/airmail'
+import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
+import { Textarea } from '@/components/ui/textarea'
 import { StatStrip } from '@/components/dashboard'
 import { OrderRow } from '@/components/OrderRow'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, MOCK, money, photoUrl } from '@/lib/api'
+import { api, type Attribute, MOCK, money, photoUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { listingState } from './Products'
 
@@ -16,6 +19,25 @@ export default function ProductDetail() {
   const nav = useNavigate()
   const qc = useQueryClient()
   const q = useQuery({ queryKey: ['listing', id], queryFn: () => api.listing(id) })
+  const [editing, setEditing] = useState(false)
+  const [attrs, setAttrs] = useState<Attribute[]>([])
+  const [desc, setDesc] = useState('')
+  const clean = () => attrs.map((a) => ({ name: a.name.trim(), value: a.value.trim() })).filter((a) => a.name && a.value)
+  const save = useMutation({
+    mutationFn: () => api.updateListing(id, { description: desc.trim(), attributes: clean() }),
+    onSuccess: (r) => {
+      toast.success(r.paypal_updated ? 'Saved. The PayPal link shows the new details.' : 'Saved.')
+      setEditing(false)
+      qc.invalidateQueries({ queryKey: ['listing', id] })
+      qc.invalidateQueries({ queryKey: ['listings'] })
+    },
+    onError: (e) => toast.error(`Couldn't save: ${(e as Error).message}`),
+  })
+  const rewrite = useMutation({
+    mutationFn: () => api.describeListing({ title: q.data!.title, category: q.data!.category ?? undefined, colours: q.data!.colours, attributes: clean(), current: desc }),
+    onSuccess: (r) => setDesc(r.description),
+    onError: (e) => toast.error(`Couldn't rewrite it: ${(e as Error).message}`),
+  })
   const close = useMutation({
     mutationFn: () => api.archiveListing(id),
     onSuccess: () => {
@@ -62,7 +84,7 @@ export default function ProductDetail() {
       <section className="mt-6 lg:mt-2">
         <h2 className="text-[24px] lg:text-[32px] font-semibold leading-tight">{l.title}</h2>
         <p className="money mt-2 text-[28px] font-semibold leading-none text-ink">{money(l.price, l.currency)}</p>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{l.description}</p>
+        {!editing && <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{l.description}</p>}
       </section>
 
       <div className="mt-5">
@@ -73,26 +95,63 @@ export default function ProductDetail() {
           { label: 'Listed', value: new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), note: l.category ?? 'Product' },
         ]} />
       </div>
-      <dl className="sheet mt-4 divide-y divide-border/70 rounded-2xl">
-        {(l.attributes ?? []).map((at) => (
-          <div key={at.name} className="flex items-start justify-between gap-4 px-4 py-3.5">
-            <dt className="text-[15px] text-muted-foreground">{at.name}</dt>
-            <dd className="text-right text-[15px] font-medium">{at.value}</dd>
+      <div className="mb-2 mt-6 flex items-center justify-between px-1">
+        <h2 className="text-[15px] font-semibold">Details</h2>
+        {!editing && (
+          <Button variant="outline" size="sm" className="h-8 rounded-full" onClick={() => { setAttrs(l.attributes ?? []); setDesc(l.description); setEditing(true) }}>
+            <Pencil /> Edit details
+          </Button>
+        )}
+      </div>
+
+      {editing ? (
+        <section className="sheet space-y-4 rounded-2xl p-4">
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <label htmlFor="pd-desc" className="text-sm font-medium">Description</label>
+              <span className="money text-xs text-muted-foreground">{desc.length} of 240</span>
+            </div>
+            <Textarea id="pd-desc" value={desc} maxLength={240} rows={4} onChange={(e) => setDesc(e.target.value)} className="rounded-lg bg-card text-[16px]" />
           </div>
-        ))}
-        <div className="flex items-start justify-between gap-4 px-4 py-3.5">
-          <dt className="text-[15px] text-muted-foreground">Colours</dt>
-          <dd className="flex flex-wrap justify-end gap-1.5">
-            {l.colours.length ? l.colours.map((c) => (
-              <span key={c} className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[13px] font-medium">{c}</span>
-            )) : <span className="text-[15px] font-medium">One style</span>}
-          </dd>
-        </div>
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <dt className="text-[15px] text-muted-foreground">PayPal link</dt>
-          <dd className={cn('text-[15px] font-medium', s.live ? 'text-success' : 'text-status-refund')}>{s.label}</dd>
-        </div>
-      </dl>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Product details</p>
+            <AttributeEditor value={attrs} onChange={setAttrs} suggestions={fallbackFor(`${l.category ?? ''} ${l.title}`)} />
+            {clean().length > 0 && (
+              <Button type="button" variant="outline" className="h-10 rounded-lg" disabled={rewrite.isPending} onClick={() => rewrite.mutate()}>
+                {rewrite.isPending ? <Loader2 className="animate-spin" /> : <PenLine />} Rewrite description from details
+              </Button>
+            )}
+          </div>
+          {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link, so buyers see these details at checkout. The link stays the same.</p>}
+          <div className="grid grid-cols-[auto_1fr] gap-2.5">
+            <Button variant="outline" size="lg" className="h-12 rounded-xl" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</Button>
+            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || desc.trim().length < 1}>
+              {save.isPending && <Loader2 className="animate-spin" />} Save details
+            </Button>
+          </div>
+        </section>
+      ) : (
+      <dl className="sheet divide-y divide-border/70 rounded-2xl">
+          {(l.attributes ?? []).map((at) => (
+            <div key={at.name} className="flex items-start justify-between gap-4 px-4 py-3.5">
+              <dt className="text-[15px] text-muted-foreground">{at.name}</dt>
+              <dd className="text-right text-[15px] font-medium">{at.value}</dd>
+            </div>
+          ))}
+          <div className="flex items-start justify-between gap-4 px-4 py-3.5">
+            <dt className="text-[15px] text-muted-foreground">Colours</dt>
+            <dd className="flex flex-wrap justify-end gap-1.5">
+              {l.colours.length ? l.colours.map((c) => (
+                <span key={c} className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[13px] font-medium">{c}</span>
+              )) : <span className="text-[15px] font-medium">One style</span>}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <dt className="text-[15px] text-muted-foreground">PayPal link</dt>
+            <dd className={cn('text-[15px] font-medium', s.live ? 'text-success' : 'text-status-refund')}>{s.label}</dd>
+          </div>
+        </dl>
+      )}
 
       {s.live && l.plb_url && (
         <section className="mt-4">
