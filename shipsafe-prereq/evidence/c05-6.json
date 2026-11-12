@@ -1,0 +1,92 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/notifications/verify-webhook-signature",
+    "params": null,
+    "body": {
+      "auth_algo": "SHA256withRSA",
+      "cert_url": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-360caa42-fca2a594-9eaebfdf",
+      "transmission_id": "2735071b-de5c-11f1-bb9c-dde61d10af7a",
+      "transmission_sig": "U7CNKBmGjwlNjIEtIHBr0x4HsK5ZpqA+8JIEHST1AbCfvqp51b/UOCrcZO/Jzk5zsDAjfnAqGkmrNgAjxY0c2IMrf7oMZ4sGn1EgdAeaRIaliX0jM27RXlkN1dOeYpWvVweweujWKiWbeTYtyRQdG9GWa3yD2I1SmZqSYuLDEO2tGb20/q65uzGdkgjOI0PMDucgLfO5j17FF9eYw3sJ39y1dYRz1SjC9siIUeLTSdOaLsrSWvjRZSThFWPA2NM3W/jSsgR0986R9/LRe38RL21IEG7QrsqwMrUnfXZrL4Tii5UyOQRCO47VwyfNOENYlx9xPvKu5jEkH5nL++XRug==",
+      "transmission_time": "2026-11-12T05:44:40Z",
+      "webhook_id": "6FC42482AA823241C",
+      "webhook_event": {
+        "id": "WH-COC11055RA711503B-4YM959094A144403T",
+        "create_time": "2018-04-16T21:21:49.000Z",
+        "event_type": "CHECKOUT.ORDER.APPROVED",
+        "resource_type": "checkout-order",
+        "resource_version": "2.0",
+        "summary": "An order has been approved by buyer",
+        "resource": {
+          "id": "5O190127TN364715T",
+          "status": "APPROVED",
+          "intent": "CAPTURE",
+          "payer": {
+            "name": "<redacted>",
+            "email_address": "<redacted>",
+            "payer_id": "QYR5Z8XDVJNXQ"
+          },
+          "purchase_units": [
+            {
+              "reference_id": "d9f80740-38f0-11e8-b467-0ed5f89f718b",
+              "amount": {
+                "currency_code": "USD",
+                "value": "100.00"
+              },
+              "payee": {
+                "email_address": "<redacted>"
+              },
+              "shipping": {
+                "method": "United States Postal Service",
+                "address": {
+                  "address_line_1": "<redacted>",
+                  "address_line_2": "<redacted>",
+                  "admin_area_2": "San Jose",
+                  "admin_area_1": "CA",
+                  "postal_code": "95131",
+                  "country_code": "US"
+                }
+              }
+            }
+          ],
+          "create_time": "2018-04-01T21:18:49Z",
+          "update_time": "2018-04-01T21:20:49Z",
+          "links": [
+            {
+              "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T",
+              "rel": "self",
+              "method": "GET"
+            },
+            {
+              "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T/capture",
+              "method": "POST"
+            }
+          ]
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-COC11055RA711503B-4YM959094A144403T",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-COC11055RA711503B-4YM959094A144403T/resend",
+            "rel": "resend",
+            "method": "POST"
+          }
+        ],
+        "event_version": "1.0"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 200,
+  "elapsed_ms": 608,
+  "debug_id": "ca59368293a57",
+  "response": {
+    "verification_status": "SUCCESS"
+  }
+}

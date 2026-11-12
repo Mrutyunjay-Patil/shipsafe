@@ -1,0 +1,121 @@
+{
+  "received_at": "2026-11-12T06:12:39.077Z",
+  "headers": {
+    "paypal-auth-algo": "SHA256withRSA",
+    "paypal-cert-url": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-360caa42-fca2a594-9eaebfdf",
+    "paypal-transmission-id": "0fb76635-de60-11f1-88dd-ffde1b0af531",
+    "paypal-transmission-sig": "5q9xqjWlIgRcJtmPmGLpXD0NZ0i7eVYx3j+9W/E/+zL+ObpHOXLJ8TptVg/8F2nsdtgcJIyM1v7kdA0dDHFuDlJnRGdv6j1ffUlnjIwdvzU/iI0Xnzn3SkWBKgsoLaVWfTqxDPK6yiraEpV0PxPnPcdbXex399tarQKW4wzUoTR2EQ3kpP08wpx5fJdM8cw7fW8g1IxsklTm/oX1J2EdB7BAyD22TCGLN4qnFIquqwCfc0sAZit3rWgrlQZdPOtvjH/tcWXGcDdmOMRZKfxbh893A3H9SpKi1d6f5g1Vcw5YKnY5Nrlv89Axk5bazOafIeeN+7sa+lCP5Ynd3GmqRQ==",
+    "paypal-transmission-time": "2026-11-12T06:12:38Z",
+    "content-type": "application/json",
+    "user-agent": "PayPal/AUHD-1.0-1"
+  },
+  "event": {
+    "id": "WH-0D826134K3253763P-1AL40511YA3782900",
+    "event_version": "1.0",
+    "create_time": "2026-11-12T06:12:38.555Z",
+    "resource_type": "checkout-order",
+    "resource_version": "2.0",
+    "event_type": "CHECKOUT.ORDER.APPROVED",
+    "summary": "An order has been approved by buyer",
+    "resource": {
+      "create_time": "2026-11-12T05:45:47Z",
+      "purchase_units": [
+        {
+          "reference_id": "listing_demo_001",
+          "amount": {
+            "currency_code": "USD",
+            "value": "24.00",
+            "breakdown": {
+              "item_total": {
+                "currency_code": "USD",
+                "value": "24.00"
+              }
+            }
+          },
+          "payee": {
+            "email_address": "<redacted>",
+            "merchant_id": "MZXSDB8AZ47E6",
+            "display_data": {
+              "brand_name": "ShipSafe Probe"
+            }
+          },
+          "description": "Hand block-printed cotton scarf",
+          "custom_id": "listing_demo_001",
+          "items": [
+            {
+              "name": "Hand block-printed cotton scarf",
+              "unit_amount": {
+                "currency_code": "USD",
+                "value": "24.00"
+              },
+              "quantity": "1",
+              "sku": "SCARF-INDIGO",
+              "category": "PHYSICAL_GOODS"
+            }
+          ],
+          "shipping": {
+            "name": "<redacted>",
+            "address": {
+              "address_line_1": "<redacted>",
+              "admin_area_2": "San Jose",
+              "admin_area_1": "CA",
+              "postal_code": "95131",
+              "country_code": "US"
+            }
+          }
+        }
+      ],
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G",
+          "rel": "self",
+          "method": "GET"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G",
+          "rel": "update",
+          "method": "PATCH"
+        },
+        {
+          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G/capture",
+          "rel": "capture",
+          "method": "POST"
+        }
+      ],
+      "id": "7DD18315GK263354G",
+      "payment_source": {
+        "paypal": {
+          "email_address": "<redacted>",
+          "account_id": "JLGDF7FGE9K6N",
+          "account_status": "VERIFIED",
+          "name": "<redacted>",
+          "address": {
+            "country_code": "US"
+          }
+        }
+      },
+      "intent": "CAPTURE",
+      "payer": {
+        "name": "<redacted>",
+        "email_address": "<redacted>",
+        "payer_id": "JLGDF7FGE9K6N",
+        "address": {
+          "country_code": "US"
+        }
+      },
+      "status": "APPROVED"
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-0D826134K3253763P-1AL40511YA3782900",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-0D826134K3253763P-1AL40511YA3782900/resend",
+        "rel": "resend",
+        "method": "POST"
+      }
+    ]
+  }
+}

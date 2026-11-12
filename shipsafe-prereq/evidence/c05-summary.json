@@ -12,5 +12,26 @@
     "event_id": "WH-COC11055RA711503B-4YM959094A144403T",
     "looks_simulated": false,
     "verification": "SUCCESS"
+  },
+  {
+    "received_at": "2026-11-12T06:12:39.077Z",
+    "event_type": "CHECKOUT.ORDER.APPROVED",
+    "event_id": "WH-0D826134K3253763P-1AL40511YA3782900",
+    "looks_simulated": false,
+    "verification": "SUCCESS"
+  },
+  {
+    "received_at": "2026-11-12T06:13:36.977Z",
+    "event_type": "CHECKOUT.PAYMENT-RESOURCE.PAYMENT-COMPLETED",
+    "event_id": "WH-9SD86477TT950001U-1PV05853K7486924X",
+    "looks_simulated": false,
+    "verification": "SUCCESS"
+  },
+  {
+    "received_at": "2026-11-12T06:14:05.787Z",
+    "event_type": "CHECKOUT.PAYMENT-RESOURCE.PAYMENT-COMPLETED",
+    "event_id": "WH-63T15482SB0278603-9DD53957TK065831X",
+    "looks_simulated": false,
+    "verification": "SUCCESS"
   }
 ]

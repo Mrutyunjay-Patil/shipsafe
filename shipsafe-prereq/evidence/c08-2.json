@@ -1,0 +1,39 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE482913507IN",
+    "params": null,
+    "body": [
+      {
+        "op": "replace",
+        "path": "/status",
+        "value": "CANCELLED"
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 422,
+  "elapsed_ms": 709,
+  "debug_id": "f601897853814",
+  "response": {
+    "name": "<redacted>",
+    "details": [
+      {
+        "issue": "CANNOT_PATCH_CANCELLED_TRACKER",
+        "description": "CANNOT_PATCH_CANCELLED_TRACKER"
+      }
+    ],
+    "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+    "debug_id": "f601897853814",
+    "links": [
+      {
+        "href": "https://developer.paypal.com/api/rest/reference/orders/v2/errors/#CANNOT_PATCH_CANCELLED_TRACKER",
+        "rel": "information_link",
+        "method": "GET"
+      }
+    ]
+  }
+}

@@ -27,12 +27,12 @@ const shot = (pg, l) => pg.screenshot({ path: path.join(root, 'evidence', `pay-$
   await p.waitForTimeout(4000);
   console.log('after login:', p.url().slice(0, 100));
   await shot(p, 'home');
-  for (const u of ['https://www.sandbox.paypal.com/myaccount/settings/', 'https://www.sandbox.paypal.com/myaccount/money', 'https://www.sandbox.paypal.com/myaccount/settings/address']) {
+  for (const u of (process.argv[3] ? process.argv.slice(3) : ['https://www.sandbox.paypal.com/myaccount/settings/', 'https://www.sandbox.paypal.com/myaccount/money'])) {
     await p.goto(u, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
     await p.waitForTimeout(3000);
     await shot(p, u.split('/').filter(Boolean).pop());
     const t = (await p.innerText('body').catch(() => '')).replace(/\n+/g, ' | ');
-    const hits = t.match(/.{0,60}(India|United States|Germany|INR|USD|currenc|country).{0,60}/gi) || [];
+    const hits = t.match(/.{0,60}(India|United States|INR|USD|currenc|country|track|EE48|EE12|RR28|India Post|shipped).{0,60}/gi) || [];
     console.log('\n==', u, '\n', [...new Set(hits)].slice(0, 12).join('\n '));
   }
   await b.close();

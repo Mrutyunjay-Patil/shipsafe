@@ -2,36 +2,36 @@
   {
     "name": "list_transactions",
     "args": {
-      "start_date": "2026-10-18T05:52:53Z",
-      "end_date": "2026-11-12T05:52:53Z"
+      "start_date": "2026-10-18T06:17:18Z",
+      "end_date": "2026-11-12T06:17:18Z"
     },
-    "ms": 767,
+    "ms": 561,
     "isError": false,
     "output": "{\"ok\":false,\"status\":403,\"code\":\"PAYPAL_API_HTTP_ERROR\",\"message\":\"Authorization failed due to insufficient permissions.: Authorization failed due to insufficient permissions.\"}"
   },
   {
     "name": "list_disputes",
     "args": {},
-    "ms": 408,
+    "ms": 564,
     "isError": false,
     "output": "{\"items\":[],\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v1/customer/disputes\",\"rel\":\"self\",\"method\":\"GET\",\"encType\":\"application/json\"},{\"href\":\"https://api.sandbox.paypal.com/v1/customer/disputes\",\"rel\":\"first\",\"method\":\"GET\",\"encType\":\"application/json\"}]}"
   },
   {
     "name": "get_order",
     "args": {
-      "id": "7DD18315GK263354G"
+      "id": "0AY2418885929025Y"
     },
-    "ms": 645,
+    "ms": 565,
     "isError": false,
-    "output": "{\"id\":\"7DD18315GK263354G\",\"intent\":\"CAPTURE\",\"status\":\"PAYER_ACTION_REQUIRED\",\"payment_source\":{\"paypal\":{}},\"purchase_units\":[{\"reference_id\":\"listing_demo_001\",\"amount\":{\"currency_code\":\"USD\",\"value\":\"24.00\",\"breakdown\":{\"item_total\":{\"currency_code\":\"USD\",\"value\":\"24.00\"}}},\"payee\":{\"email_address\":\"<email>\",\"merchant_id\":\"MZXSDB8AZ47E6\",\"display_data\":{\"brand_name\":\"ShipSafe Probe\"}},\"description\":\"Hand block-printed cotton scarf\",\"custom_id\":\"listing_demo_001\",\"items\":[{\"name\":\"Hand block-printed cotton scarf\",\"unit_amount\":{\"currency_code\":\"USD\",\"value\":\"24.00\"},\"quantity\":\"1\",\"sku\":\"SCARF-INDIGO\",\"category\":\"PHYSICAL_GOODS\"}]}],\"create_time\":\"2026-11-12T05:45:47Z\",\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/7DD18315GK263354G\",\"rel\":\"self\",\"method\":\"GET\"},{\"href\":\"https://www.sandbox.paypal.com/checkoutnow?token=7DD18315GK263354G\",\"rel\":\"payer-action\",\"method\":\"GET\"}]}"
+    "output": "{\"id\":\"0AY2418885929025Y\",\"intent\":\"CAPTURE\",\"status\":\"COMPLETED\",\"payment_source\":{\"paypal\":{\"email_address\":\"<email>\",\"account_id\":\"JLGDF7FGE9K6N\",\"account_status\":\"VERIFIED\",\"name\":{\"given_name\":\"John\",\"surname\":\"Doe\"},\"address\":{\"country_code\":\"US\"}}},\"purchase_units\":[{\"reference_id\":\"default\",\"amount\":{\"currency_code\":\"USD\",\"value\":\"26.00\",\"breakdown\":{\"item_total\":{\"currency_code\":\"USD\",\"value\":\"26.00\"}}},\"payee\":{\"merchant_id\":\"MZXSDB8AZ47E6\"},\"items\":[{\"item_id\":\"PLB-5PGXCE53JB4F\",\"name\":\"Hand block-printed cotton scarf\",\"unit_amount\":{\"currency_code\":\"USD\",\"value\":\"26.00\"},\"quantity\":\"1\",\"description\":\"Cotton, hand block-printed in Jaipur\",\"sku\":\"listing_demo_001\",\"item_option_selections\":[{\"name\":\"Colour\",\"select\":\"Rust\"}]}],\"shipping\":{\"name\":{\"full_name\":\"John Doe\"},\"address\":{\"address_line_1\":\"2211 N First St\",\"admin_area_2\":\"San Jose\",\"admin_area_1\":\"CA\",\"postal_code\":\"95131\",\"country_code\":\"US\"},\"trackers\":[{\"id\":\"0B495248659291430-EE482913507IN\",\"status\":\"CANCELLED\",\"items\":[{\"name\":\"Hand block-printed cotton scarf\",\"sku\":\"SCARF-INDIGO\",\"quantity\":\"1\",\"upc\":{}}],\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y\",\"rel\":\"up\",\"method\":\"GET\"},{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE482913507IN\",\"rel\":\"update\",\"method\":\"PATCH\"}],\"notify_payer\":true},{\"id\":\"0B495248659291430-EE123456785IN\",\"status\":\"SHIPPED\",\"items\":[{\"name\":\"Hand block-printed cotton scarf\",\"sku\":\"SCARF-INDIGO\",\"quantity\":\"1\",\"upc\":{}}],\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y\",\"rel\":\"up\",\"method\":\"GET\"},{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y/trackers/0B495248659291430-EE123456785IN\",\"rel\":\"update\",\"method\":\"PATCH\"}],\"notify_payer\":true}]},\"payments\":{\"captures\":[{\"id\":\"0B495248659291430\",\"status\":\"COMPLETED\",\"amount\":{\"currency_code\":\"USD\",\"value\":\"26.00\"},\"final_capture\":true,\"seller_protection\":{\"status\":\"ELIGIBLE\",\"dispute_categories\":[\"ITEM_NOT_RECEIVED\",\"UNAUTHORIZED_TRANSACTION\"]},\"seller_receivable_breakdown\":{\"gross_amount\":{\"currency_code\":\"USD\",\"value\":\"26.00\"},\"paypal_fee\":{\"currency_code\":\"USD\",\"value\":\"1.55\"},\"net_amount\":{\"currency_code\":\"USD\",\"value\":\"24.45\"}},\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/payments/captures/0B495248659291430\",\"rel\":\"self\",\"method\":\"GET\"},{\"href\":\"https://api.sandbox.paypal.com/v2/payments/captures/0B495248659291430/refund\",\"rel\":\"refund\",\"method\":\"POST\"},{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y\",\"rel\":\"up\",\"method\":\"GET\"}],\"create_time\":\"2026-11-12T06:13:20Z\",\"update_time\":\"2026-11-12T06:16:34Z\"}]}}],\"payer\":{\"name\":{\"given_name\":\"John\",\"surname\":\"Doe\"},\"email_address\":\"<email>\",\"payer_id\":\"JLGDF7FGE9K6N\",\"address\":{\"country_code\":\"US\"}},\"create_time\":\"2026-11-12T06:13:20Z\",\"update_time\":\"2026-11-12T06:16:34Z\",\"links\":[{\"href\":\"https://api.sandbox.paypal.com/v2/checkout/orders/0AY2418885929025Y\",\""
   },
   {
     "name": "get_shipment_tracking",
     "args": {
-      "order_id": "7DD18315GK263354G"
+      "order_id": "0AY2418885929025Y"
     },
-    "ms": 357,
+    "ms": 936,
     "isError": false,
-    "output": "{\"error\":{\"message\":\"Error extracting transaction_id from order details: Could not find capture id in the purchase unit details.\",\"type\":\"paypal_error\"}}"
+    "output": "{\"ok\":false,\"status\":403,\"code\":\"PAYPAL_API_HTTP_ERROR\",\"message\":\"Unknown error\"}"
   }
 ]

@@ -34,6 +34,9 @@ PII_KEYS = {
 KEEP_NAME_PARENTS = {"items", "item_details", "item", "product", "line_items", "variants",
                      "options", "dimensions", "carrier_name_other"}
 
+# A bare "name" key is personal data only under these parents.
+PERSON_NAME_PARENTS = {"payer", "shipping", "paypal", "card", "payment_source", "resource", "subscriber"}
+
 SECRET_KEYS = {"access_token", "client_secret", "authorization", "password",
                "refresh_token", "id_token", "nonce"}
 
@@ -67,6 +70,8 @@ def redact(obj: Any, parent: str = "") -> Any:
             lk = k.lower()
             if lk in SECRET_KEYS and isinstance(v, str):
                 out[k] = mask(v)
+            elif lk == "name" and parent not in PERSON_NAME_PARENTS:
+                out[k] = redact(v, lk)
             elif lk in PII_KEYS and isinstance(v, (str, dict)) and parent not in KEEP_NAME_PARENTS:
                 out[k] = "<redacted>"
             else:

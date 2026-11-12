@@ -1,0 +1,40 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/shipping/trackers-batch",
+    "params": null,
+    "body": {
+      "trackers": [
+        {
+          "transaction_id": "5JM416817X145951N",
+          "tracking_number": "EE482913507IN",
+          "status": "SHIPPED",
+          "carrier": "INDIA_POST_INT",
+          "notify_buyer": true
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 403,
+  "elapsed_ms": 529,
+  "debug_id": "ca593695efefc",
+  "response": {
+    "errors": [
+      {
+        "name": "NOT_AUTHORIZED",
+        "message": "Authorization failed due to insufficient permissions",
+        "debug_id": "ca593695efefc",
+        "details": [
+          {
+            "location": "body",
+            "links": []
+          }
+        ]
+      }
+    ]
+  }
+}

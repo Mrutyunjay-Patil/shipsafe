@@ -1,0 +1,85 @@
+{
+  "received_at": "2026-11-12T06:14:05.787Z",
+  "headers": {
+    "paypal-auth-algo": "SHA256withRSA",
+    "paypal-cert-url": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-360caa42-fca2a594-9eaebfdf",
+    "paypal-transmission-id": "423c49ca-de60-11f1-bb9c-ade4d2ec8448",
+    "paypal-transmission-sig": "J3xy+02sTT2ssXB9VUNVy5fSzn6nAq+/rhXZvqto2tM2fSekEU1q+ldtxTBaVKG3TMEchkNbE3uV41EkfkLpX67wRiLlu1j4aJG8lSUS3VQXv77RsTpWMJfYHwDrhm6bBbEnsVtF0A0y++eHYwaYBJ5Bom313mRWZ2OCGtHJS7moMl1eESR77TqO+vAT5SuoNzDXA4YbMk81Co6ZzeX0yePDs++6FcVeaJvXI3SW9xhnhJx9cbbR0u+YZ8BX1BIHgeVmzWcrIdMumz87eVIhXuEJybNKzGCk0iiuvdzVCkDcS00Sza8I5fy+I66ZNkepXlEvsSIVz3I0veyBxJb3iA==",
+    "paypal-transmission-time": "2026-11-12T06:14:03Z",
+    "content-type": "application/json",
+    "user-agent": "PayPal/AUHD-1.0-1"
+  },
+  "event": {
+    "id": "WH-63T15482SB0278603-9DD53957TK065831X",
+    "event_version": "1.0",
+    "create_time": "2026-11-12T06:13:53.000Z",
+    "resource_type": "payment-resource",
+    "event_type": "CHECKOUT.PAYMENT-RESOURCE.PAYMENT-COMPLETED",
+    "summary": "A payment was completed on a payment resource.",
+    "resource": {
+      "transaction_id": "3HJ288433F935922A",
+      "payee": {
+        "merchant_id": "MZXSDB8AZ47E6"
+      },
+      "amount_breakdown": {
+        "item_total": {
+          "currency_code": "USD",
+          "value": "26.00"
+        }
+      },
+      "transaction_status": "COMPLETED",
+      "shipping": {
+        "name": "<redacted>",
+        "address": {
+          "address_line_1": "<redacted>",
+          "admin_area_2": "San Jose",
+          "admin_area_1": "CA",
+          "postal_code": "95131",
+          "country_code": "US"
+        }
+      },
+      "payment_resource_id": "PLB-5PGXCE53JB4F",
+      "paypal_fee": {
+        "currency_code": "USD",
+        "value": "1.55"
+      },
+      "transaction_time": "2026-11-12T06:13:53Z",
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "26.00"
+      },
+      "net_amount": {
+        "currency_code": "USD",
+        "value": "24.45"
+      },
+      "items": [
+        {
+          "name": "Hand block-printed cotton scarf",
+          "unit_amount": {
+            "currency_code": "USD",
+            "value": "26.00"
+          },
+          "quantity": "1"
+        }
+      ],
+      "payer": {
+        "payer_id": "JLGDF7FGE9K6N",
+        "email_address": "<redacted>",
+        "name": "<redacted>",
+        "country_code": "US"
+      }
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-63T15482SB0278603-9DD53957TK065831X",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-63T15482SB0278603-9DD53957TK065831X/resend",
+        "rel": "resend",
+        "method": "POST"
+      }
+    ]
+  }
+}

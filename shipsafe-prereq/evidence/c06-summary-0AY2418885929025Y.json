@@ -1,0 +1,36 @@
+{
+  "order_status": "COMPLETED",
+  "intent": "CAPTURE",
+  "custom_id": null,
+  "invoice_id": null,
+  "reference_id": "default",
+  "items": [
+    {
+      "name": "Hand block-printed cotton scarf",
+      "sku": "listing_demo_001",
+      "quantity": "1",
+      "description": "Cotton, hand block-printed in Jaipur"
+    }
+  ],
+  "shipping_address_present": true,
+  "shipping_city_pc_cc": {
+    "admin_area_2": "San Jose",
+    "postal_code": "95131",
+    "country_code": "US"
+  },
+  "capture_ids": [
+    "0B495248659291430"
+  ],
+  "capture_status": [
+    "COMPLETED"
+  ],
+  "capture_get_status": "COMPLETED",
+  "capture_custom_id": null,
+  "seller_protection": {
+    "status": "ELIGIBLE",
+    "dispute_categories": [
+      "ITEM_NOT_RECEIVED",
+      "UNAUTHORIZED_TRANSACTION"
+    ]
+  }
+}
