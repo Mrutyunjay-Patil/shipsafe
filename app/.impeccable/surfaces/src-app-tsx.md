@@ -10,7 +10,7 @@ related_targets: ["src/pages/Home.tsx","src/pages/OrderDetail.tsx","src/pages/Se
 Scope: the whole seller PWA (Home, Sell, Orders, Order detail, Ask, Board, Sign in, buyer Thanks). Mode: Operate.
 Audience: small social sellers on a phone, often outdoors at a courier counter in daylight; judges watching a 30-second demo.
 Task: photo to PayPal link to slip scan to protected sale, one next step per screen.
-Constraints: blue glass palette and Outfit are brand-pinned; every value lives in src/theme.css; light first, dark supported; fast on a cheap phone.
+Constraints: blue palette is brand-pinned; typeface is Archivo since the user released Outfit; every value lives in src/theme.css; light first, dark supported; fast on a cheap phone.
 
 ## Direction contract
 

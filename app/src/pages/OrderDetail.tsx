@@ -183,7 +183,7 @@ export default function OrderDetail() {
                   <span className="tracking-code block truncate text-[16px] font-semibold">{t.tracking_number}</span>
                   <span className="block text-[12px] text-muted-foreground">{carrierName(t.carrier)} · buyer emailed by PayPal</span>
                 </span>
-                <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground" disabled={cancel.isPending} onClick={() => cancel.mutate(t.id)}>
+                <Button variant="outline" size="sm" className="shrink-0 rounded-full" disabled={cancel.isPending} onClick={() => cancel.mutate(t.id)}>
                   Fix number
                 </Button>
               </div>

@@ -3,7 +3,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type ICellRendererParams } from 'ag-grid-community'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronEdge, ParAvion, Postmark, postmarkDate, sentenceCase, Stamp } from '@/components/airmail'
+import { ChevronEdge, ParAvion, Postmark, sentenceCase, Stamp } from '@/components/airmail'
 import { StatusBadge } from '@/components/StatusBadge'
 import { api, MOCK, money, type Order, photoUrl } from '@/lib/api'
 
@@ -69,9 +69,12 @@ export default function Board() {
     },
     { field: 'seller_protection', headerName: 'Seller protection', width: 170, valueFormatter: (p) => sentenceCase(p.value) || 'Not reported' },
     {
-      field: 'paid_at', headerName: 'Paid', width: 120, sort: 'desc',
+      field: 'paid_at', headerName: 'Paid', width: 150, sort: 'desc',
       cellRenderer: (p: ICellRendererParams<Order>) => p.data && cell(
-        <Postmark city={p.data.ship_country ?? 'Paid'} date={postmarkDate(p.value)} waves={false} className="size-11 -rotate-[10deg]" />,
+        <span className="flex items-center gap-2">
+          <Postmark city={p.data.ship_country ?? 'Paid'} date="" waves={false} className="size-7 -rotate-[10deg]" />
+          <span className="money text-[13px] font-medium">{new Date(p.value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+        </span>,
       ),
     },
   ], [])

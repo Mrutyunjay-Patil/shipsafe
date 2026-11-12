@@ -20,7 +20,7 @@ function NextParcel({ o, more }: { o: Order; more: number }) {
           <div className="min-w-0 pt-2">
             <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92] [overflow-wrap:anywhere]" />
           </div>
-          <Stamp src={photoUrl(o.photo_key)} value={money(o.amount, o.currency).replace('.00', '')} className="h-[86px] w-[72px] rotate-[3deg]" />
+          <Stamp src={photoUrl(o.photo_key)} className="h-[86px] w-[72px] rotate-[3deg]" />
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
           <address className="min-w-0 text-[15px] not-italic leading-snug">

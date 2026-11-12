@@ -126,7 +126,7 @@
      middle by the photo, so only the perforated edge shows. */
   .stamp {
     padding: 7px;
-    background: radial-gradient(circle at 5px 5px, transparent 2.6px, var(--envelope) 3px) -5px -5px / 10px 10px;
+    background: radial-gradient(circle at 5px 5px, transparent 2.6px, var(--stamp-paper) 3px) -5px -5px / 10px 10px;
     filter: drop-shadow(0 1px 1px oklch(0.3 0.08 265 / 0.22)) drop-shadow(0 6px 10px oklch(0.3 0.1 265 / 0.12));
   }
   .stamp > img, .stamp > div { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 1px; }

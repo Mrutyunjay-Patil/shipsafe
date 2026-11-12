@@ -14,7 +14,7 @@ export function Stamp({ src, alt = '', className, value }: { src?: string | null
         <div className="grid place-items-center bg-brand-soft text-ink"><Package className="size-1/3" strokeWidth={1.6} /></div>
       )}
       {value && (
-        <span className="money absolute bottom-2 right-2 rounded-[3px] bg-envelope/90 px-1 text-[10px] font-semibold leading-4 text-ink">{value}</span>
+        <span className="money absolute bottom-2 right-2 rounded-[3px] bg-envelope/90 px-1 text-[12px] font-semibold leading-4 text-ink">{value}</span>
       )}
     </div>
   )

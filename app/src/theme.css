@@ -70,6 +70,7 @@
   --sheet-border: oklch(0.88 0.03 258 / 0.9);
   --sheet-shadow: 0 1px 2px oklch(0.3 0.08 265 / 0.06), 0 12px 28px -18px oklch(0.3 0.1 265 / 0.35);
   --envelope: oklch(0.995 0.006 250);
+  --stamp-paper: oklch(0.985 0.008 85);    /* gummed stamp paper, light in both themes */
   --envelope-shadow: 0 2px 4px oklch(0.3 0.1 265 / 0.06), 0 22px 40px -24px oklch(0.32 0.14 265 / 0.45);
   --selection: oklch(0.86 0.08 262);
 }
