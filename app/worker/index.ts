@@ -445,12 +445,23 @@ app.all('*', (c) => c.env.ASSETS.fetch(c.req.raw))
 // API, sign-in and webhook paths answer either way, so PayPal's configured URLs never change.
 const SERVER_PATHS = /^\/(api|auth|webhooks)(\/|$)/
 
+// The handlers see paths without BASE, so a redirect they make (the asset binding sends
+// /index.html to /) must get BASE back. Without this, on mrutyunjaypatil.dev the PWA's service
+// worker followed /shipsafe/index.html to the site root and cached the portfolio as its start page.
+function keepBase(res: Response) {
+  const loc = res.headers.get('location')
+  if (res.status < 300 || res.status > 399 || !loc?.startsWith('/') || loc.startsWith('//') || loc === BASE || loc.startsWith(`${BASE}/`)) return res
+  const out = new Response(res.body, res)
+  out.headers.set('location', BASE + loc)
+  return out
+}
+
 export default {
-  fetch(req: Request, env: AppEnv['Bindings'], ctx: ExecutionContext) {
+  async fetch(req: Request, env: AppEnv['Bindings'], ctx: ExecutionContext) {
     const url = new URL(req.url)
     if (url.pathname === BASE || url.pathname.startsWith(`${BASE}/`)) {
       url.pathname = url.pathname.slice(BASE.length) || '/'
-      return app.fetch(new Request(url, req), env, ctx)
+      return keepBase(await app.fetch(new Request(url, req), env, ctx))
     }
     if ((req.method === 'GET' || req.method === 'HEAD') && !SERVER_PATHS.test(url.pathname)) {
       return Response.redirect(`${url.origin}${BASE}${url.pathname === '/' ? '/' : url.pathname}${url.search}`, 302)
