@@ -1,0 +1,29 @@
+# Checks on every push and pull request. Deploys are done by Cloudflare Workers Builds, which is
+# connected to this repo in the Cloudflare dashboard (Worker "shipsafe", branch master, root "app"),
+# so GitHub holds no Cloudflare secrets.
+name: Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Type-check and lint
+        run: npx tsc -b && npx oxlint src worker shared
+      - name: Build the app and the sample-data preview
+        run: npm run build && VITE_MOCK=1 npm run build
