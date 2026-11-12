@@ -1,11 +1,13 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
+import { DESC_MAX, paypalDescription } from '../shared/listing'
 import { addressMatch, carrierEnum, normaliseTracking, s10Valid } from '../shared/validators'
 import { askShop } from './ask'
 import { currentSeller, finishLogin, logout, requireSeller, startLogin } from './auth'
 import { type AppEnv, newId } from './env'
 import { addTracker, cancelTracker, createLink, deleteLink, PayPalError, refundCapture, updateLink } from './paypal'
 import { describeListing, draftListing, mediaType, readSlip, uniqueColours } from './vision'
+import { closeBuyerLinks, expireBuyerLinks } from './links'
 import { handleWebhook } from './webhooks'
 
 const app = new Hono<AppEnv>()
@@ -74,7 +76,7 @@ const money2 = z.string().regex(/^\d{1,5}(\.\d{1,2})?$/, 'Use a price like 24 or
 
 const NewListing = z.object({
   title: z.string().min(3).max(127),
-  description: z.string().min(1).max(500),
+  description: z.string().trim().min(1).max(DESC_MAX),
   attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).default([]),
   colours: z.array(z.string().min(1).max(40)).max(10).default([]),
   category: z.string().max(60).optional(),
@@ -92,9 +94,8 @@ api.post('/listings', async (c) => {
   if (!ownPhotos(photos, c.get('sellerId'))) return c.json({ error: 'invalid', message: 'Unknown photo.' }, 400)
   const id = newId('lst')
   const price = Number(b.price).toFixed(2)
-  const details = b.attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
   const link = await createLink(c.env, {
-    listingId: id, title: b.title, description: details ? `${b.description}\n${details}` : b.description, price, currency: 'USD', colours: b.colours,
+    listingId: id, title: b.title, description: paypalDescription(b.description, b.attributes), price, currency: 'USD', colours: b.colours,
     returnUrl: new URL('/thanks', c.req.url).toString(),
   })
   await c.env.DB.prepare(
@@ -107,7 +108,7 @@ api.post('/listings', async (c) => {
 
 api.post('/listings/describe', async (c) => {
   const b = z.object({
-    title: z.string().min(1).max(127), category: z.string().max(60).optional(), current: z.string().max(500).optional(),
+    title: z.string().min(1).max(127), category: z.string().max(60).optional(), current: z.string().max(2048).optional(),
     colours: z.array(z.string().max(40)).max(10).default([]),
     attributes: z.array(z.object({ name: z.string().max(40), value: z.string().max(120) })).max(12),
   }).parse(await c.req.json())
@@ -129,10 +130,14 @@ api.get('/listings/:id', async (c) => {
   ).bind(c.req.param('id'), c.get('sellerId')).first<any>()
   if (!l) return c.json({ error: 'not_found' }, 404)
   const orders = await c.env.DB.prepare(
-    `SELECT o.*, l.title, l.photo_key FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
-     WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
+    `SELECT o.*, l.title, l.photo_key, b.label AS buyer_label FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
+     LEFT JOIN buyer_links b ON b.id = o.buyer_link_id WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
   ).bind(l.id).all()
-  return c.json({ ...listingOut(l), orders: orders.results })
+  const links = await c.env.DB.prepare(
+    `SELECT b.*, o.ship_city AS order_city, o.ship_country AS order_country FROM buyer_links b
+     LEFT JOIN orders o ON o.id = b.order_id WHERE b.listing_id = ? ORDER BY b.created_at DESC LIMIT 50`,
+  ).bind(l.id).all()
+  return c.json({ ...listingOut(l), orders: orders.results, buyer_links: links.results })
 })
 
 // Upload a replacement product photo. The listing keeps its old photo until the edit is saved,
@@ -150,7 +155,7 @@ api.post('/listings/photo', async (c) => {
 api.patch('/listings/:id', async (c) => {
   const b = z.object({
     title: z.string().trim().min(3).max(127).optional(),
-    description: z.string().trim().min(1).max(500).optional(),
+    description: z.string().trim().min(1).max(DESC_MAX, `Keep the description under ${DESC_MAX} characters.`).optional(),
     price: money2.optional(),
     colours: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
     quantity: z.number().int().min(1, 'Stock must be at least 1.').max(100, 'Stock can be at most 100.').optional(),
@@ -187,9 +192,8 @@ api.patch('/listings/:id', async (c) => {
   const quantity = b.quantity ?? l.quantity
   const photoKey = photos[0] ?? null
 
-  const details = attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
   const link = {
-    listingId: l.id, title, description: details ? `${description}\n${details}` : description,
+    listingId: l.id, title, description: paypalDescription(description, attributes),
     price, currency: l.currency, colours, returnUrl: new URL('/thanks', c.req.url).toString(),
   }
   let status: string = l.status
@@ -225,9 +229,56 @@ api.patch('/listings/:id', async (c) => {
   await c.env.DB.prepare(
     'UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ?, photo_key = ?, photos = ?, status = ?, plb_id = ?, plb_url = ? WHERE id = ?',
   ).bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), photoKey, JSON.stringify(photos), status, plbId, plbUrl, l.id).run()
+  if (paypal === 'closed') await closeBuyerLinks(c.env, l.id)
   const dropped = oldPhotos.filter((k) => !photos.includes(k))
   if (dropped.length) await c.env.PHOTOS.delete(dropped).catch(() => {})
   return c.json({ ok: true, paypal, paypal_updated: paypal === 'updated', status, url: plbUrl })
+})
+
+// ---- buyer links ----
+// A PayPal link for one buyer, made from a listing: an optional special price and an optional
+// fixed colour. It closes after one payment; stock stays shared with the listing.
+api.post('/listings/:id/buyer-links', async (c) => {
+  const b = z.object({
+    label: z.string().trim().min(1, 'Say who the link is for.').max(60, 'Keep the name under 60 characters.'),
+    price: money2.optional(),
+    colour: z.string().trim().max(40).optional(),
+    expires_days: z.number().int().min(1).max(30).default(7),
+  }).parse(await c.req.json())
+  const l = await c.env.DB.prepare(
+    `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
+     FROM listings l WHERE l.id = ? AND l.seller_id = ?`,
+  ).bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  if (!l) return c.json({ error: 'not_found' }, 404)
+  if (l.status !== 'ACTIVE' || l.quantity <= l.sold) return c.json({ error: 'invalid', message: 'This product is not on sale. Add stock first.' }, 409)
+  const colours: string[] = JSON.parse(l.colours)
+  const colour = b.colour ? colours.find((x) => x.toLowerCase() === b.colour!.toLowerCase()) : undefined
+  if (b.colour && !colour) return c.json({ error: 'invalid', message: `${b.colour} isn't one of this product's colours.` }, 400)
+  const open = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM buyer_links WHERE listing_id = ? AND status = 'OPEN'").bind(l.id).first<{ n: number }>()
+  if ((open?.n ?? 0) >= 50) return c.json({ error: 'invalid', message: 'This product already has 50 open buyer links. Close some first.' }, 409)
+
+  const price = b.price !== undefined ? Number(b.price).toFixed(2) : l.price
+  const attributes = JSON.parse(l.attributes ?? '[]') as { name: string; value: string }[]
+  const id = newId('bl')
+  const link = await createLink(c.env, {
+    listingId: l.id, title: l.title, price, currency: l.currency,
+    description: paypalDescription(l.description, colour ? [{ name: 'Colour', value: colour }, ...attributes] : attributes),
+    colours: colour ? [colour] : colours, returnUrl: new URL('/thanks', c.req.url).toString(),
+  })
+  const expires = new Date(Date.now() + b.expires_days * 86_400_000).toISOString()
+  await c.env.DB.prepare(
+    'INSERT INTO buyer_links (id, listing_id, seller_id, plb_id, plb_url, label, price, colour, expires_at) VALUES (?,?,?,?,?,?,?,?,?)',
+  ).bind(id, l.id, c.get('sellerId'), link.id, link.url, b.label, price, colour ?? null, expires).run()
+  return c.json({ id, url: link.url, price, colour: colour ?? null, expires_at: expires }, 201)
+})
+
+api.post('/buyer-links/:id/close', async (c) => {
+  const b = await c.env.DB.prepare('SELECT * FROM buyer_links WHERE id = ? AND seller_id = ?').bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  if (!b) return c.json({ error: 'not_found' }, 404)
+  if (b.status !== 'OPEN') return c.json({ ok: true, status: b.status })
+  if (b.plb_id) await deleteLink(c.env, b.plb_id)
+  await c.env.DB.prepare("UPDATE buyer_links SET status = 'CLOSED' WHERE id = ? AND status = 'OPEN'").bind(b.id).run()
+  return c.json({ ok: true, status: 'CLOSED' })
 })
 
 api.delete('/listings/:id', async (c) => {
@@ -235,6 +286,7 @@ api.delete('/listings/:id', async (c) => {
     .bind(c.req.param('id'), c.get('sellerId')).first<any>()
   if (!l) return c.json({ error: 'not_found' }, 404)
   if (l.plb_id) await deleteLink(c.env, l.plb_id)
+  await closeBuyerLinks(c.env, l.id)
   await c.env.DB.prepare("UPDATE listings SET status = 'ARCHIVED' WHERE id = ?").bind(l.id).run()
   return c.json({ ok: true })
 })
@@ -250,12 +302,13 @@ api.get('/photos/*', async (c) => {
 // ---- orders ----
 const ownOrder = (c: any) =>
   c.env.DB.prepare(
-    `SELECT o.*, l.title, l.photo_key FROM orders o LEFT JOIN listings l ON l.id = o.listing_id WHERE o.id = ? AND o.seller_id = ?`,
+    `SELECT o.*, l.title, l.photo_key, b.label AS buyer_label FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
+     LEFT JOIN buyer_links b ON b.id = o.buyer_link_id WHERE o.id = ? AND o.seller_id = ?`,
   ).bind(c.req.param('id'), c.get('sellerId')).first()
 
 api.get('/orders', async (c) => {
   const rows = await c.env.DB.prepare(
-    `SELECT o.*, l.title, l.photo_key,
+    `SELECT o.*, l.title, l.photo_key, (SELECT label FROM buyer_links b WHERE b.id = o.buyer_link_id) AS buyer_label,
        (SELECT tracking_number FROM trackers t WHERE t.order_id = o.id AND t.status = 'SHIPPED' ORDER BY created_at DESC LIMIT 1) AS tracking_number
      FROM orders o LEFT JOIN listings l ON l.id = o.listing_id WHERE o.seller_id = ? ORDER BY o.paid_at DESC`,
   ).bind(c.get('sellerId')).all()
@@ -369,4 +422,8 @@ api.post('/ask', async (c) => {
 app.route('/api', api)
 app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404))
 
-export default app
+export default {
+  fetch: app.fetch,
+  // Hourly (see wrangler.jsonc): close buyer links past their expiry.
+  scheduled: async (_e: ScheduledController, env: AppEnv['Bindings'], ctx: ExecutionContext) => { ctx.waitUntil(expireBuyerLinks(env)) },
+}

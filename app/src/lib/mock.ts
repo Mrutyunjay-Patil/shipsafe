@@ -1,6 +1,6 @@
 // Preview mode: the real screens running on sample data, with no PayPal or AI calls.
 // Turned on at build time with VITE_MOCK=1. State lives in memory and resets on reload.
-import type { Account, Listing, ListingDetail, ListingDraft, ListingPatch, ListingPatchResult, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
+import type { Account, BuyerLink, Listing, ListingDetail, ListingDraft, ListingPatch, ListingPatchResult, Me, Order, OrderDetail, OrderStatus, SlipResult, Tracker } from './api'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = Date.now()
@@ -77,9 +77,17 @@ let listings: Omit<Listing, 'sold'>[] = [
   { id: 'lst_bag', title: 'Jute tote bag', description: 'Sturdy hand-stitched jute tote with soft cotton handles.', attributes: [{ name: 'Material', value: 'Jute, cotton handles' }, { name: 'Size', value: '40 × 35 × 12 cm' }], colours: ['Natural'], category: 'Bags', price: '38.00', currency: 'USD', quantity: 8, photo_key: tote, photos: [tote], plb_id: 'PLB-TOTE0001PREV', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-TOTE0001PREV', status: 'ACTIVE', created_at: ago(30) },
 ]
 
+// Buyer links on the scarf: one paid by the San Jose order, one still open with a special price, one expired.
+const later = (h: number) => new Date(now + h * 3600_000).toISOString()
+let buyerLinks: BuyerLink[] = [
+  { id: 'bl_priya', listing_id: 'lst_scarf', label: 'Priya, WhatsApp', price: '22.00', colour: 'Indigo', plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-PRIYA0001PRV', status: 'OPEN', order_id: null, expires_at: later(110), created_at: ago(10) },
+  { id: 'bl_jerry', listing_id: 'lst_scarf', label: 'Jerry, Instagram DM', price: '26.00', colour: null, plb_url: 'https://www.sandbox.paypal.com/ncp/payment/PLB-JERRY001PRV', status: 'PAID', order_id: '0AY2418885929025Y', order_city: 'San Jose', order_country: 'US', expires_at: later(100), created_at: ago(6) },
+  { id: 'bl_sam', listing_id: 'lst_scarf', label: 'Sam, craft fair', price: '24.00', colour: null, plb_url: null, status: 'EXPIRED', order_id: null, expires_at: ago(20), created_at: ago(190) },
+]
 const summary = (o: OrderDetail): Order => {
   const { trackers, ...rest } = o
-  return { ...rest, tracking_number: trackers.find((t) => t.status === 'SHIPPED')?.tracking_number ?? null }
+  const bl = buyerLinks.find((b) => b.order_id === o.id)
+  return { ...rest, buyer_link_id: bl?.id ?? null, buyer_label: bl?.label ?? null, tracking_number: trackers.find((t) => t.status === 'SHIPPED')?.tracking_number ?? null }
 }
 const find = (id: string) => {
   const o = orders.find((x) => x.id === id)
@@ -136,7 +144,7 @@ export const mockApi = {
     await wait(1200)
     const facts = b.attributes.filter((a) => a.value).map((a) => `${a.name.toLowerCase()} ${a.value.toLowerCase()}`)
     const d = `${b.title}${facts.length ? `, ${facts.join(', ')}` : ''}${b.colours.length > 1 ? `. Comes in ${b.colours.join(' or ')}` : ''}`
-    return { description: (d.charAt(0).toUpperCase() + d.slice(1) + '.').slice(0, 240) }
+    return { description: (d.charAt(0).toUpperCase() + d.slice(1) + '.').slice(0, 600) }
   },
   createListing: async () => {
     await wait(1200)
@@ -151,7 +159,7 @@ export const mockApi = {
     const l = listings.find((x) => x.id === id)
     if (!l) throw new Error('not_found')
     const own = orders.filter((o) => o.listing_id === id)
-    return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary) }
+    return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary), buyer_links: buyerLinks.filter((b) => b.listing_id === id) }
   },
   uploadListingPhoto: async (photo: File) => {
     await wait(900)
@@ -179,9 +187,25 @@ export const mockApi = {
     listings = listings.map((x) => (x.id === id ? { ...x, ...clean, status, plb_url } : x))
     return { ok: true, paypal, paypal_updated: paypal === 'updated', status, url: plb_url }
   },
+  createBuyerLink: async (id: string, b: { label: string; price?: string; colour?: string; expires_days?: number }) => {
+    await wait(900)
+    const l = listings.find((x) => x.id === id)!
+    const link: BuyerLink = {
+      id: `bl_${Math.random().toString(36).slice(2, 8)}`, listing_id: id, label: b.label.trim(), price: Number(b.price ?? l.price).toFixed(2),
+      colour: b.colour ?? null, plb_url: `https://www.sandbox.paypal.com/ncp/payment/PLB-BUY${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+      status: 'OPEN', order_id: null, expires_at: later(24 * (b.expires_days ?? 7)), created_at: new Date().toISOString(),
+    }
+    buyerLinks = [link, ...buyerLinks]
+    return { id: link.id, url: link.plb_url!, price: link.price, colour: link.colour, expires_at: link.expires_at }
+  },
+  closeBuyerLink: async (id: string) => {
+    await wait(500)
+    buyerLinks = buyerLinks.map((b) => (b.id === id && b.status === 'OPEN' ? { ...b, status: 'CLOSED' as const, plb_url: null } : b))
+    return { ok: true as const, status: 'CLOSED' as const }
+  },
   archiveListing: async (id: string) => { await wait(600); listings = listings.map((x) => (x.id === id ? { ...x, status: 'ARCHIVED' as const } : x)); return { ok: true } },
   orders: async () => { await wait(300); maybeArrive(); return orders.map(summary) },
-  order: async (id: string) => { await wait(250); return find(id) },
+  order: async (id: string) => { await wait(250); const o = find(id); const bl = buyerLinks.find((b) => b.order_id === id); return { ...o, buyer_link_id: bl?.id ?? null, buyer_label: bl?.label ?? null } },
   readSlip: async (id: string, _slip: File): Promise<SlipResult> => {
     await wait(1600)
     const o = find(id)

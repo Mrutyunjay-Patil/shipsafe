@@ -15,6 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, type Attribute, type Listing, type ListingDetail, type ListingPatchResult, money, photoUrl } from '@/lib/api'
 import { backOr, cn } from '@/lib/utils'
+import { clipText, DESC_MAX, fitDetails } from '@shared/listing'
+import { BuyerLinks } from '@/components/BuyerLinks'
+import { copyLinkOnly, copyMessage, sendMessage, shopMessage } from '@/lib/share'
 import { listingState } from './Products'
 
 type Draft = { title: string; price: string; qty: number; colours: string[]; desc: string; attrs: Attribute[] }
@@ -113,7 +116,7 @@ export default function ProductDetail() {
   })
   const rewrite = useMutation({
     mutationFn: () => api.describeListing({ title: draft!.title, category: l?.category ?? undefined, colours: draft!.colours, attributes: cleanAttrs(draft!.attrs), current: draft!.desc }),
-    onSuccess: (r) => set('desc', r.description.slice(0, 240)),
+    onSuccess: (r) => set('desc', clipText(r.description)),
     onError: (e) => toast.error(`Couldn't rewrite it. ${(e as Error).message}`),
   })
   const close = useMutation({
@@ -163,12 +166,7 @@ export default function ProductDetail() {
   }
   if (!l) return <p className="px-6 py-20 text-center text-muted-foreground">This product isn't in your shop.</p>
   const s = listingState(l)
-  const share = async () => {
-    if (!l.plb_url) return
-    const text = `${l.title}, ${money(l.price, l.currency)}. Pay safely with PayPal here:`
-    if (navigator.share) await navigator.share({ title: l.title, text, url: l.plb_url }).catch(() => {})
-    else window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${l.plb_url}`)}`, '_blank', 'noopener')
-  }
+  const message = l.plb_url ? shopMessage(l, l.plb_url) : ''
 
   return (
     <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),12px)] lg:max-w-6xl lg:px-10 lg:pt-8">
@@ -309,11 +307,12 @@ export default function ProductDetail() {
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
               <label htmlFor="pd-desc" className="text-sm font-medium">Description</label>
-              <span className="money text-xs text-muted-foreground">{draft.desc.length} of 240</span>
+              <span className="money text-xs text-muted-foreground">{draft.desc.length} of {DESC_MAX}</span>
             </div>
-            <Textarea id="pd-desc" value={draft.desc} maxLength={240} rows={4} aria-invalid={!!checks.desc}
+            <Textarea id="pd-desc" value={draft.desc} maxLength={DESC_MAX} rows={6} aria-invalid={!!checks.desc}
               onChange={(e) => set('desc', e.target.value)} className="rounded-lg bg-card text-[16px]" />
             {checks.desc && <p className="text-[12px] text-destructive">{checks.desc}</p>}
+            {(() => { const n = fitDetails(draft.desc, cleanAttrs(draft.attrs)).left; return n > 0 && <p className="text-[12px] text-ink">The description is long enough that {n === 1 ? '1 detail' : `${n} details`} won't fit on PayPal's page. Shorten it to show them all.</p> })()}
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium">Product details</p>
@@ -362,13 +361,16 @@ export default function ProductDetail() {
         <section className="mt-4">
           <p className="tracking-code break-all rounded-md bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{l.plb_url}</p>
           <div className="mt-3 grid grid-cols-[auto_1fr] gap-2.5">
-            <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => { navigator.clipboard.writeText(l.plb_url!); toast.success('Link copied') }}>
+            <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => copyMessage(message)}>
               <Copy /> Copy
             </Button>
-            <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={share}><Send /> Send to a chat</Button>
+            <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={() => sendMessage(message)}><Send /> Send to a chat</Button>
           </div>
+          <button type="button" className="mt-2 px-1 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline" onClick={() => copyLinkOnly(l.plb_url!)}>Copy the link only</button>
         </section>
       )}
+
+      {!editing && <BuyerLinks listing={l} live={s.live} />}
 
       {s.live && l.plb_url && !editing && (
         <section className="mt-7">
@@ -383,12 +385,12 @@ export default function ProductDetail() {
                   <span className="block text-[11px] text-muted-foreground">www.paypal.com</span>
                 </span>
               </div>
-              <p className="px-3 py-2.5 text-[13px] leading-snug">
-                {l.title}, {money(l.price, l.currency)}. Pay safely with PayPal here:{' '}
+              <p className="whitespace-pre-line px-3 py-2.5 text-[13px] leading-snug">
+                {message.slice(0, message.lastIndexOf('\n'))}{'\n'}
                 <span className="break-all text-brand underline">{l.plb_url}</span>
               </p>
             </div>
-            <p className="mt-2 text-right text-[11px] text-muted-foreground">The message Send to a chat writes for you</p>
+            <p className="mt-2 text-right text-[11px] text-muted-foreground">What Copy and Send to a chat give you</p>
           </div>
         </section>
       )}

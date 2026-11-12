@@ -127,6 +127,7 @@ export default function OrderDetail() {
               <Destination city={o.ship_city} country={o.ship_country} className="block text-[clamp(34px,11vw,44px)] leading-[0.92]" />
               <p className="money mt-3 text-[28px] font-semibold leading-none">{money(o.amount, o.currency)}</p>
               <p className="mt-1.5 text-sm text-muted-foreground">{o.title}{o.variant && <span className="whitespace-nowrap"> · {o.variant}</span>}</p>
+              {o.buyer_label && <p className="mt-1 text-sm text-muted-foreground">Paid through the buyer link for <span className="font-medium text-foreground">{o.buyer_label}</span></p>}
             </div>
             <Stamp src={photoUrl(o.photo_key)} className="h-[86px] w-[72px] rotate-[3deg]" />
           </div>

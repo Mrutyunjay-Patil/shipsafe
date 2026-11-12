@@ -21,7 +21,12 @@ export type Listing = {
   sold: number; created_at: string
 }
 
-export type ListingDetail = Listing & { orders: Order[] }
+export type BuyerLink = {
+  id: string; listing_id: string; label: string; price: string; colour: string | null
+  plb_url: string | null; status: 'OPEN' | 'PAID' | 'CLOSED' | 'EXPIRED'; order_id: string | null
+  order_city?: string | null; order_country?: string | null; expires_at: string; created_at: string
+}
+export type ListingDetail = Listing & { orders: Order[]; buyer_links: BuyerLink[] }
 
 export type Order = {
   id: string; listing_id: string | null; capture_id: string; status: OrderStatus
@@ -30,6 +35,7 @@ export type Order = {
   ship_name: string | null; ship_line1: string | null; ship_line2: string | null; ship_city: string | null
   ship_state: string | null; ship_postcode: string | null; ship_country: string | null
   seller_protection: string | null; paid_at: string; shipped_at: string | null; tracking_number?: string | null
+  buyer_link_id?: string | null; buyer_label?: string | null
 }
 
 export type Tracker = {
@@ -109,6 +115,9 @@ const realApi = {
   listing: (id: string) => req<ListingDetail>(`/api/listings/${id}`),
   uploadListingPhoto: (photo: File) => req<{ photo_key: string }>('/api/listings/photo', upload('photo', photo)),
   updateListing: (id: string, b: ListingPatch) => req<ListingPatchResult>(`/api/listings/${id}`, json('PATCH', b)),
+  createBuyerLink: (id: string, b: { label: string; price?: string; colour?: string; expires_days?: number }) =>
+    req<{ id: string; url: string; price: string; colour: string | null; expires_at: string }>(`/api/listings/${id}/buyer-links`, json('POST', b)),
+  closeBuyerLink: (id: string) => req<{ ok: true; status: BuyerLink['status'] }>(`/api/buyer-links/${id}/close`, json('POST')),
   archiveListing: (id: string) => req(`/api/listings/${id}`, json('DELETE')),
   orders: () => req<Order[]>('/api/orders'),
   order: (id: string) => req<OrderDetail>(`/api/orders/${id}`),

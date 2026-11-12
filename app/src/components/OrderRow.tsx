@@ -33,7 +33,7 @@ export function OrderRow({ order: o }: { order: Order }) {
           <span className="money shrink-0 text-[15px] font-semibold">{money(o.amount, o.currency)}</span>
         </span>
         <span className="mt-1 block truncate text-[13px] text-muted-foreground">
-          {o.title}{o.variant && ` · ${o.variant}`}
+          {o.title}{o.variant && ` · ${o.variant}`}{o.buyer_label && ` · ${o.buyer_label}'s link`}
         </span>
         <StatusBadge status={o.status} short className="mt-2" />
       </span>

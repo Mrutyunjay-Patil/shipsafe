@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { preparePhoto } from '@/lib/image'
+import { copyLinkOnly, copyMessage, sendMessage, shopMessage } from '@/lib/share'
+import { clipText, DESC_MAX, fitDetails } from '@shared/listing'
 import { api, ApiError, type Attribute, money } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -44,7 +46,7 @@ export default function Sell() {
       draftKey.current = r.photo_key
       setConfidence(r.draft.confidence)
       setForm({
-        title: r.draft.title, description: r.draft.description.slice(0, 240), colours: r.draft.colours.slice(0, 10),
+        title: r.draft.title, description: clipText(r.draft.description), colours: r.draft.colours.slice(0, 10),
         attributes: (r.draft.attributes ?? []).filter((a) => a.name && a.value).slice(0, 12),
         category: r.draft.category, price: r.draft.suggested_price_usd.toFixed(2), quantity: 1,
       })
@@ -85,19 +87,14 @@ export default function Sell() {
     if (form && c && !form.colours.some((x) => x.toLowerCase() === c.toLowerCase())) set('colours', [...form.colours, c].slice(0, 10))
     setColour('')
   }
-  const shareText = () => `${form?.title}, ${money(form?.price ?? 0)}. Pay safely with PayPal here:`
-  const share = async () => {
-    if (!link) return
-    if (navigator.share) await navigator.share({ title: form?.title, text: shareText(), url: link.url }).catch(() => {})
-    else window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText()} ${link.url}`)}`, '_blank', 'noopener')
-  }
+  const message = () => (form && link ? shopMessage(form, link.url) : '')
   const reset = () => { setLink(null); setForm(null); setPreview(null); setPhotos([]); draftKey.current = null; uploads.current.clear() }
 
   if (link && form) {
     return (
       <main className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)] lg:max-w-xl lg:pt-10">
         <h1 className="pt-3 text-[26px] font-semibold leading-tight">Your link is ready to send</h1>
-        <p className="mt-1 text-[15px] text-muted-foreground">Paste it into the chat. The buyer pays on PayPal and gives you their address there.</p>
+        <p className="mt-1 text-[15px] text-muted-foreground">Paste it into the chat with the buyer. They pay on PayPal and give you their address there.</p>
 
         <Envelope className="envelope-in mt-5">
           <div className="relative px-5 pb-5 pt-4">
@@ -114,13 +111,18 @@ export default function Sell() {
         </Envelope>
 
         <div className="mt-4 grid grid-cols-[auto_1fr] gap-2.5">
-          <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => { navigator.clipboard.writeText(link.url); toast.success('Link copied') }}>
+          <Button variant="outline" size="lg" className="h-[52px] rounded-xl" onClick={() => copyMessage(message())}>
             <Copy /> Copy
           </Button>
-          <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={share}>
+          <Button size="lg" className="h-[52px] rounded-xl text-[15px]" onClick={() => sendMessage(message())}>
             <Send /> Send to a chat
           </Button>
         </div>
+        <div className="mt-3 rounded-xl bg-muted/70 px-3.5 py-3">
+          <p className="text-[12px] font-medium text-muted-foreground">Copy and Send give the buyer this message</p>
+          <p className="mt-1 whitespace-pre-line break-words text-[13px] leading-snug">{message()}</p>
+        </div>
+        <button type="button" className="mt-2 px-1 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline" onClick={() => copyLinkOnly(link.url)}>Copy the link only</button>
         <p className="mt-3 px-1 text-[13px] text-muted-foreground">
           The link closes on its own after {form.quantity === 1 ? 'the first sale' : `${form.quantity} sales`}. If two buyers pay at once, ShipSafe flags the extra one for a refund.
         </p>
@@ -197,9 +199,10 @@ export default function Sell() {
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
               <Label htmlFor="desc">Description</Label>
-              <span className="money text-xs text-muted-foreground">{form.description.length} of 240</span>
+              <span className="money text-xs text-muted-foreground">{form.description.length} of {DESC_MAX}</span>
             </div>
-            <Textarea id="desc" value={form.description} maxLength={240} rows={4} onChange={(e) => set('description', e.target.value)} className="rounded-lg bg-card text-[16px]" />
+            <Textarea id="desc" value={form.description} maxLength={DESC_MAX} rows={6} onChange={(e) => set('description', e.target.value)} className="rounded-lg bg-card text-[16px]" />
+            {(() => { const n = fitDetails(form.description, form.attributes.map((a) => ({ name: a.name.trim(), value: a.value.trim() }))).left; return n > 0 && <p className="text-[12px] text-ink">The description is long enough that {n === 1 ? '1 detail' : `${n} details`} won't fit on PayPal's page. Shorten it to show them all.</p> })()}
           </div>
           <div className="space-y-2">
             <Label htmlFor="colour">Colours the buyer picks from</Label>
