@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/reporting/transactions",
+    "params": {
+      "start_date": "2026-11-11T00:00:00Z",
+      "end_date": "2026-11-12T23:59:59Z",
+      "fields": "all"
+    },
+    "body": null,
+    "headers": {
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    }
+  },
+  "status": 403,
+  "elapsed_ms": 630,
+  "debug_id": "f59648574ee57",
+  "response": {
+    "name": "NOT_AUTHORIZED",
+    "debug_id": "f59648574ee57",
+    "message": "Authorization failed due to insufficient permissions.",
+    "details": [
+      {
+        "issue": "NOT_AUTHORIZED",
+        "description": "Authorization failed due to insufficient permissions."
+      }
+    ]
+  }
+}

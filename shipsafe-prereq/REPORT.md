@@ -16,12 +16,12 @@ GO with the Payment Links architecture. Keep Orders v2 per buyer as a tested fal
 | C4 | Webhook listener | PASS | 8 min | Cloudflare quick tunnels can't connect from the cloud container because port 7844 is closed. A Cloudflare Worker relay got simulated events in under 3 s. | `evidence/c04-*.json` |
 | C5 | Signature verification | PASS | 4 min | Simulated and real events both return `SUCCESS`. A tampered amount or a wrong webhook ID returns `FAILURE`. | `evidence/c05-summary.json`, `evidence/c05-negative.json` |
 | C6 | Payment Link paid, mapped to order and capture | PASS | 30 min | Webhook carries `payment_resource_id`, `transaction_id`, which is the capture ID, the shipping address and the payer. The capture links to order `0AY2418885929025Y`. The order holds the variant Rust. | `evidence/webhook-*PAYMENT-RESOURCE*.json`, `evidence/c06-*.json` |
-| C7 | Add tracking, notify buyer | PARTIAL | 5 min | Tracker created with 201 and read back as `SHIPPED`. The buyer tracking email and buyer view are unconfirmed, because the sandbox Activity page renders blank in headless Chromium. | `evidence/c07-*.json` |
+| C7 | Add tracking, notify buyer | PASS | 5 min | Tracker created with 201 and read back as `SHIPPED`. The buyer got "More details on your shipment" and "Shipment Tracking and Order Status provided for Transaction ID ..." emails, confirmed from the sandbox Notifications page. | `evidence/c07-*.json` |
 | C8 | Fix a wrong tracking number | PASS | 3 min | Cancel 204. Second patch 422 `CANNOT_PATCH_CANCELLED_TRACKER`. New number 201. Same number again 200 and no new tracker. | `evidence/c08-summary.json` |
 | C9 | Orders v2 fallback | PASS | 4 min | Create, approve, capture 201 and track 201 all work. `custom_id` reaches the capture. The legacy `trackers-batch` returns 403. | `evidence/c09-*.json` |
 | C10 | Refund | PASS | 1 min | Refunded the duplicate Payment Link sale. Status `COMPLETED` at once. | `evidence/c10-1.json` |
 | C11 | Disputes read | PASS | 1 min | 200 with an empty list. | `evidence/c11-1.json` |
-| C12 | PayPal MCP server | PARTIAL | 8 min | `@paypal/mcp` 1.8.1 starts in sandbox with 28 tools. `get_order` and `list_disputes` work. `list_transactions` and `get_shipment_tracking` return 403. | `evidence/mcp-tools.json`, `evidence/c12-calls.json` |
+| C12 | PayPal MCP server | PARTIAL | 15 min | `@paypal/mcp` 1.8.1 starts in sandbox with 28 tools. `get_order` and `list_disputes` work. `list_transactions` and `get_shipment_tracking` return 403, even after Transaction Search was ticked and a fresh token was issued. | `evidence/mcp-tools.json`, `evidence/c12-calls.json` |
 | C13 | Vision extraction | PASS, slips only | 6 min | `claude-haiku-5-5`, 4 of 4 tracking numbers exact. The injection slip returned only schema fields. The product photo step was not run, because no photo was supplied. | `evidence/c13-slips.json` |
 | C14 | Validators | PASS | 3 min | 10 of 10 cases, including the three given and seven more. | `evidence/c14-validators.json` |
 | C15 | Render hosting | SKIPPED | 0 min | No Render key. The Cloudflare Worker covers webhook delivery for development. | none |
@@ -54,12 +54,14 @@ Tracking:
 - The tracker ID is `{capture_id}-{tracking_number}`, for example `0B495248659291430-EE482913507IN`.
 - Cancelling is a PATCH that sets `/status` to `CANCELLED`. A cancelled tracker can't be patched again, and stays on the order with status `CANCELLED`.
 - Adding the same number again returns 200 and creates nothing.
-- Whether the buyer got a tracking email is unknown. The sandbox sends no real emails. Check it on the buyer account's Notifications page in the developer dashboard.
+- The buyer gets PayPal's own emails once `notify_payer` is true: "More details on your shipment" for each tracker, plus "Shipment Tracking and Order Status provided for Transaction ID ...". The ID in that email is the buyer's transaction ID, which differs from the seller's capture ID.
+- The buyer's Activity page shows the refund as +$26.00 alongside the two payments.
 
 MCP server:
 - The package is `@paypal/mcp@1.8.1`. The library behind it is `@paypal/agent-toolkit`, version 1.11.0.
 - The useful tools are `get_order`, `list_disputes`, `get_dispute`, `create_shipment_tracking`, `get_shipment_tracking`, `list_transactions` and `create_refund`. It has no payment link tools.
-- `list_transactions` and `get_shipment_tracking` return 403 with this app.
+- `list_transactions` and `get_shipment_tracking` return 403 with this app. A direct `GET /v1/reporting/transactions` is also 403, and the token has no `reporting` scope even after Transaction Search was ticked.
+- PayPal reissues the same cached token until it expires after 9 hours. After changing app permissions, call `POST /v1/oauth2/token/terminate` and request a new token, or wait for expiry.
 
 Vision:
 - The model is `claude-haiku-5-5`, with low effort and structured JSON output.
@@ -75,7 +77,7 @@ Market:
 |---|---|---|
 | C4 | Cloudflare quick tunnels need outbound port 7844, which the cloud container blocks. | The Worker `shipsafe-webhook-probe` on Cloudflare stores deliveries in KV. On a laptop, the quick tunnel or ngrok would work. |
 | C7 | Buyer email and buyer view unconfirmed. | A manual check, listed in section 7. The tracker itself is confirmed by the API. |
-| C12 | `list_transactions` and `get_shipment_tracking` return 403. | Turn on Transaction Search in the app's settings and re-test. Otherwise, back "Ask your shop" with a small set of read-only tools that call `GET /v2/checkout/orders/{id}` and read the trackers, which work. |
+| C12 | `list_transactions` and `get_shipment_tracking` return 403, and the Transaction Search scope hasn't reached the token yet. | Re-test later with `python probes/c02_token.py`. If the token lists a `reporting/search` scope, C12 should pass. Either way, back "Ask your shop" with read-only tools that call `GET /v2/checkout/orders/{id}` and read the trackers, which work today. |
 | C13 | Product photo step not run. | Run `python probes/vision_probe.py product <photo>` once a photo is available. |
 | C15 | No Render key. | Deploy later. The Worker relay covers the hackathon demo. |
 | Links | No single-use or inventory limit. | Delete the link via API on the first `PAYMENT-RESOURCE.PAYMENT-COMPLETED`. If a second buyer pays in the gap, refund them, as tested in C10. |
@@ -98,11 +100,10 @@ Market:
 
 ## 7. Open questions
 
-- Does the buyer get a tracking email? Check the US buyer under Testing Tools > Sandbox Accounts > Notifications.
-- Does tracking show on the buyer's transaction page? Log in to sandbox.paypal.com as the US buyer and open the $26.00 scarf payment.
+- Does tracking show on the buyer's transaction details page itself, beyond the emails?
 - Does a `PAYMENT.CAPTURE.REFUNDED` event arrive for refunds of Payment Link sales? None had arrived when this report was written.
 - Do any later events fire for a link sale, such as `PAYMENT.CAPTURE.COMPLETED` delivered late? Re-run `python probes/pull_webhooks.py`.
-- Does turning on Transaction Search fix the MCP `list_transactions` 403?
+- When does the Transaction Search permission reach the token? It hadn't shortly after it was ticked.
 - How does vision do on a real product photo and a real slip photo?
 
 ## How to re-run
