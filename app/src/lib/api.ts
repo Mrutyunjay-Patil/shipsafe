@@ -16,7 +16,7 @@ export type OrderStatus = 'PAID' | 'SHIPPED' | 'PROTECTED' | 'REFUNDED' | 'NEEDS
 
 export type Listing = {
   id: string; title: string; description: string; colours: string[]; attributes?: Attribute[]; category: string | null
-  price: string; currency: string; quantity: number; photo_key: string | null
+  price: string; currency: string; quantity: number; photo_key: string | null; photos: string[]
   plb_id: string | null; plb_url: string | null; status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'ARCHIVED'
   sold: number; created_at: string
 }
@@ -41,7 +41,7 @@ export type OrderDetail = Order & { trackers: Tracker[] }
 export type Attribute = { name: string; value: string }
 
 export type ListingPatch = {
-  title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: Attribute[]; photo_key?: string
+  title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: Attribute[]; photo_key?: string; photos?: string[]
 }
 export type ListingPatchResult = {
   ok: true; paypal: 'updated' | 'relisted' | 'closed' | 'none'; paypal_updated: boolean; status: Listing['status']; url: string | null
@@ -101,7 +101,7 @@ const realApi = {
   draftListing: (photo: File) => req<{ photo_key: string; draft: ListingDraft; ms: number }>('/api/listings/draft', upload('photo', photo)),
   createListing: (b: {
     title: string; description: string; colours: string[]; attributes?: Attribute[]; category?: string; price: string; quantity: number
-    photo_key?: string; ai_confidence?: number
+    photo_key?: string; photo_keys?: string[]; ai_confidence?: number
   }) => req<{ id: string; plb_id: string; url: string }>('/api/listings', json('POST', b)),
   describeListing: (b: { title: string; category?: string; colours: string[]; attributes: Attribute[]; current?: string }) =>
     req<{ description: string }>('/api/listings/describe', json('POST', b)),

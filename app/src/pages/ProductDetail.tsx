@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Camera, Copy, ImageUp, Loader2, Minus, PenLine, Pencil, Plus, RotateCcw, Send, X } from 'lucide-react'
+import { ArrowLeft, Copy, Loader2, Minus, PenLine, Pencil, Plus, Send, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Stamp } from '@/components/airmail'
 import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { type PhotoItem, PhotoStrip, storedPhoto, uploadPhotos } from '@/components/PhotoStrip'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { StatStrip } from '@/components/dashboard'
@@ -13,7 +14,6 @@ import { OrderRow } from '@/components/OrderRow'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, type Attribute, type Listing, type ListingDetail, type ListingPatchResult, money, photoUrl } from '@/lib/api'
-import { PhotoError, preparePhoto } from '@/lib/image'
 import { backOr, cn } from '@/lib/utils'
 import { listingState } from './Products'
 
@@ -46,18 +46,17 @@ export default function ProductDetail() {
   const q = useQuery({ queryKey: ['listing', id], queryFn: () => api.listing(id) })
   const [draft, setDraft] = useState<Draft | null>(null)
   const [colour, setColour] = useState('')
-  const [photo, setPhoto] = useState<{ file: File; url: string } | null>(null)
-  const [preparing, setPreparing] = useState(false)
+  const [photos, setPhotos] = useState<PhotoItem[]>([])
+  const [shown, setShown] = useState(0)
   const [stage, setStage] = useState<'photo' | 'save' | null>(null)
   const [ask, setAsk] = useState<'discard' | 'close' | null>(null)
-  const uploaded = useRef<{ file: File; key: string } | null>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const uploads = useRef(new Map<File, string>())
   const editing = draft !== null
   const l = q.data
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d))
-  const dirty = !!(l && draft && (photo || canon(draft) !== canon(draftOf(l))))
+  const photosChanged = !!l && editing && photos.map((p) => p.key ?? p.id).join() !== l.photos.join()
+  const dirty = !!(l && draft && (photosChanged || canon(draft) !== canon(draftOf(l))))
 
   // Guard unsaved edits: in-app navigation asks first, a reload or tab close gets the browser prompt.
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && stage === null && currentLocation.pathname !== nextLocation.pathname)
@@ -67,10 +66,13 @@ export default function ProductDetail() {
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
-  useEffect(() => () => { if (photo) URL.revokeObjectURL(photo.url) }, [photo])
 
-  const startEdit = () => { if (l) { setDraft(draftOf(l)); setColour(''); setPhoto(null) } }
-  const stopEdit = () => { setDraft(null); setPhoto(null); setColour('') }
+  const startEdit = () => {
+    if (!l) return
+    setDraft(draftOf(l)); setColour('')
+    setPhotos(l.photos.map((k) => storedPhoto(k, photoUrl(k) ?? '')))
+  }
+  const stopEdit = () => { setDraft(null); setPhotos([]); setColour(''); setShown(0) }
   const cancel = () => (dirty ? setAsk('discard') : stopEdit())
 
   const addColour = () => {
@@ -82,39 +84,22 @@ export default function ProductDetail() {
     set('colours', [...draft.colours, c.slice(0, 40)])
   }
 
-  const pickPhoto = async (f?: File) => {
-    if (!f) return
-    setPreparing(true)
-    try {
-      const file = await preparePhoto(f)
-      setPhoto({ file, url: URL.createObjectURL(file) })
-    } catch (e) {
-      toast.error(e instanceof PhotoError ? e.message : "Couldn't open that photo. Try another one.")
-    } finally {
-      setPreparing(false)
-    }
-  }
-
   const save = useMutation({
     mutationFn: async () => {
       const d = draft!
-      let photo_key: string | undefined
-      if (photo) {
-        // Reuse an upload that already worked if only the listing update failed last time.
-        if (uploaded.current?.file !== photo.file) {
-          setStage('photo')
-          uploaded.current = { file: photo.file, key: (await api.uploadListingPhoto(photo.file)).photo_key }
-        }
-        photo_key = uploaded.current.key
+      let keys: string[] | undefined
+      if (photosChanged) {
+        if (photos.some((p) => !p.key)) setStage('photo')
+        keys = await uploadPhotos(photos, uploads.current)
       }
       setStage('save')
       return api.updateListing(id, {
-        title: d.title.trim(), description: d.desc.trim(), price: d.price, colours: d.colours, quantity: d.qty, attributes: cleanAttrs(d.attrs), photo_key,
+        title: d.title.trim(), description: d.desc.trim(), price: d.price, colours: d.colours, quantity: d.qty, attributes: cleanAttrs(d.attrs), photos: keys,
       })
     },
     onSuccess: (r) => {
       toast.success(SAVED[r.paypal], { duration: r.paypal === 'relisted' ? 8000 : 4000 })
-      uploaded.current = null
+      uploads.current.clear()
       stopEdit()
       qc.invalidateQueries({ queryKey: ['listing', id] })
       qc.invalidateQueries({ queryKey: ['listings'] })
@@ -196,40 +181,41 @@ export default function ProductDetail() {
 
       <div className="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14">
       <div className="lg:sticky lg:top-8">
-      <div className="relative mx-auto mt-2 w-[72%] lg:w-full">
-        <Stamp src={photo?.url ?? photoUrl(l.photo_key)} alt={l.title} className={cn('aspect-[4/5] w-full -rotate-1 transition-opacity', (preparing || stage === 'photo') && 'opacity-60')} />
-        {(preparing || stage === 'photo') && (
-          <span className="absolute inset-0 grid place-items-center" role="status">
-            <span className="inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-[13px] font-medium shadow-[var(--sheet-shadow)]">
-              <Loader2 className="size-4 animate-spin" /> {preparing ? 'Preparing photo' : 'Uploading photo'}
-            </span>
-          </span>
-        )}
-        {photo && !preparing && stage === null && (
-          <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-0.5 text-[12px] font-semibold text-brand-foreground">New photo</span>
-        )}
-      </div>
+      {(() => {
+        const urls = editing ? photos.map((p) => p.url) : l.photos.map((k) => photoUrl(k))
+        const i = editing ? 0 : Math.min(shown, Math.max(0, urls.length - 1))
+        return (
+          <>
+            <div className="relative mx-auto mt-2 w-[72%] lg:w-full">
+              <Stamp src={urls[i] ?? photoUrl(l.photo_key)} alt={l.title} className={cn('aspect-[4/5] w-full -rotate-1 transition-opacity', stage === 'photo' && 'opacity-60')} />
+              {stage === 'photo' && (
+                <span className="absolute inset-0 grid place-items-center" role="status">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-[13px] font-medium shadow-[var(--sheet-shadow)]">
+                    <Loader2 className="size-4 animate-spin" /> Uploading photos
+                  </span>
+                </span>
+              )}
+              {!editing && urls.length > 1 && (
+                <span className="money absolute bottom-3 right-3 rounded-full bg-card/90 px-2 py-0.5 text-[12px] font-semibold">{i + 1} / {urls.length}</span>
+              )}
+            </div>
+            {!editing && urls.length > 1 && (
+              <div className="mx-auto mt-4 grid w-[72%] grid-cols-6 gap-1.5 p-0.5 lg:w-full" role="tablist" aria-label="Product photos">
+                {urls.map((u, j) => (
+                  <button key={j} type="button" role="tab" aria-selected={j === i} aria-label={`Photo ${j + 1}`} onClick={() => setShown(j)}
+                    className={cn('aspect-square overflow-hidden rounded-md ring-offset-1 ring-offset-background transition', j === i ? 'ring-2 ring-brand' : 'opacity-60 hover:opacity-100')}>
+                    {u && <img src={u} alt="" className="size-full object-cover" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )
+      })()}
       {editing && (
-        <div className="mx-auto mt-4 w-[72%] space-y-2 lg:w-full">
-          {/* Two inputs: one opens the camera, one opens the photo library. */}
-          <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { pickPhoto(e.target.files?.[0]); e.target.value = '' }} />
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { pickPhoto(e.target.files?.[0]); e.target.value = '' }} />
-          <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" className="h-11 rounded-lg" disabled={preparing || save.isPending} onClick={() => cameraRef.current?.click()}>
-              <Camera /> Take photo
-            </Button>
-            <Button type="button" variant="outline" className="h-11 rounded-lg" disabled={preparing || save.isPending} onClick={() => fileRef.current?.click()}>
-              <ImageUp /> From gallery
-            </Button>
-          </div>
-          {photo && (
-            <button type="button" className="mx-auto flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground" disabled={save.isPending} onClick={() => setPhoto(null)}>
-              <RotateCcw className="size-3.5" /> Keep the current photo
-            </button>
-          )}
-          <p className="text-center text-[12px] leading-snug text-muted-foreground">
-            The photo shows in ShipSafe and in chat previews. PayPal's checkout page has no photo, so buyers there see the title and details.
-          </p>
+        <div className="mx-auto mt-4 w-[72%] lg:w-full">
+          <PhotoStrip items={photos} onChange={setPhotos} disabled={save.isPending} />
+          <p className="mt-1 text-[12px] leading-snug text-muted-foreground">PayPal's checkout page has no photos, so buyers there see the title and details.</p>
         </div>
       )}
       </div>
@@ -343,9 +329,9 @@ export default function ProductDetail() {
           {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link. The link stays the same, and orders already paid don't change.</p>}
           <div className="grid grid-cols-[auto_1fr] gap-2.5">
             <Button variant="outline" size="lg" className="h-12 rounded-xl" onClick={cancel} disabled={save.isPending}>Cancel</Button>
-            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || preparing || !dirty || invalid}>
+            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || !dirty || invalid}>
               {save.isPending && <Loader2 className="animate-spin" />}
-              {stage === 'photo' ? 'Uploading photo' : stage === 'save' ? 'Saving' : dirty ? 'Save changes' : 'No changes yet'}
+              {stage === 'photo' ? 'Uploading photos' : stage === 'save' ? 'Saving' : dirty ? 'Save changes' : 'No changes yet'}
             </Button>
           </div>
         </section>

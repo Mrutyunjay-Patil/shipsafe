@@ -52,6 +52,14 @@ async function photoFrom(c: any, field: string) {
 }
 
 // ---- listings ----
+const MAX_PHOTOS = 6
+const photosOf = (r: any): string[] => {
+  const ps = JSON.parse(r.photos ?? '[]') as string[]
+  return ps.length ? ps : r.photo_key ? [r.photo_key] : []
+}
+const listingOut = (r: any) => ({ ...r, colours: JSON.parse(r.colours), attributes: JSON.parse(r.attributes ?? '[]'), photos: photosOf(r) })
+const ownPhotos = (keys: string[], sellerId: string) => keys.every((k) => k.startsWith(`${sellerId}/products/`))
+
 api.post('/listings/draft', async (c) => {
   const f = await photoFrom(c, 'photo')
   const bytes = await f.arrayBuffer()
@@ -73,12 +81,15 @@ const NewListing = z.object({
   price: money2,
   quantity: z.number().int().min(1).max(100).default(1),
   photo_key: z.string().optional(),
+  photo_keys: z.array(z.string().max(200)).max(MAX_PHOTOS).optional(),
   ai_confidence: z.number().min(0).max(1).optional(),
 })
 
 api.post('/listings', async (c) => {
   const b = NewListing.parse(await c.req.json())
   b.colours = uniqueColours(b.colours)
+  const photos = [...new Set(b.photo_keys ?? (b.photo_key ? [b.photo_key] : []))]
+  if (!ownPhotos(photos, c.get('sellerId'))) return c.json({ error: 'invalid', message: 'Unknown photo.' }, 400)
   const id = newId('lst')
   const price = Number(b.price).toFixed(2)
   const details = b.attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
@@ -87,10 +98,10 @@ api.post('/listings', async (c) => {
     returnUrl: new URL('/thanks', c.req.url).toString(),
   })
   await c.env.DB.prepare(
-    `INSERT INTO listings (id, seller_id, title, description, attributes, colours, category, price, quantity, photo_key, plb_id, plb_url, status, ai_confidence)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?, 'ACTIVE', ?)`,
+    `INSERT INTO listings (id, seller_id, title, description, attributes, colours, category, price, quantity, photo_key, photos, plb_id, plb_url, status, ai_confidence)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?, 'ACTIVE', ?)`,
   ).bind(id, c.get('sellerId'), b.title, b.description, JSON.stringify(b.attributes), JSON.stringify(b.colours), b.category ?? null, price, b.quantity,
-    b.photo_key ?? null, link.id, link.url, b.ai_confidence ?? null).run()
+    photos[0] ?? null, JSON.stringify(photos), link.id, link.url, b.ai_confidence ?? null).run()
   return c.json({ id, plb_id: link.id, url: link.url }, 201)
 })
 
@@ -108,7 +119,7 @@ api.get('/listings', async (c) => {
     `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
      FROM listings l WHERE seller_id = ? AND status != 'ARCHIVED' ORDER BY created_at DESC`,
   ).bind(c.get('sellerId')).all()
-  return c.json(rows.results.map((r: any) => ({ ...r, colours: JSON.parse(r.colours), attributes: JSON.parse(r.attributes ?? '[]') })))
+  return c.json(rows.results.map(listingOut))
 })
 
 api.get('/listings/:id', async (c) => {
@@ -121,7 +132,7 @@ api.get('/listings/:id', async (c) => {
     `SELECT o.*, l.title, l.photo_key FROM orders o LEFT JOIN listings l ON l.id = o.listing_id
      WHERE o.listing_id = ? ORDER BY o.paid_at DESC`,
   ).bind(l.id).all()
-  return c.json({ ...l, colours: JSON.parse(l.colours), attributes: JSON.parse(l.attributes ?? '[]'), orders: orders.results })
+  return c.json({ ...listingOut(l), orders: orders.results })
 })
 
 // Upload a replacement product photo. The listing keeps its old photo until the edit is saved,
@@ -142,9 +153,10 @@ api.patch('/listings/:id', async (c) => {
     description: z.string().trim().min(1).max(500).optional(),
     price: money2.optional(),
     colours: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
-    quantity: z.number().int().min(1).max(100).optional(),
+    quantity: z.number().int().min(1, 'Stock must be at least 1.').max(100, 'Stock can be at most 100.').optional(),
     attributes: z.array(z.object({ name: z.string().trim().max(40), value: z.string().trim().max(120) })).max(24).optional(),
     photo_key: z.string().max(200).optional(),
+    photos: z.array(z.string().max(200)).min(1, 'Keep at least one photo.').max(MAX_PHOTOS, `A listing holds up to ${MAX_PHOTOS} photos.`).optional(),
   }).parse(await c.req.json())
   const sellerId = c.get('sellerId')
   const l = await c.env.DB.prepare(
@@ -154,7 +166,10 @@ api.patch('/listings/:id', async (c) => {
   if (!l) return c.json({ error: 'not_found' }, 404)
   if (l.status === 'ARCHIVED') return c.json({ error: 'invalid', message: 'This link is closed. Make a new listing to sell it again.' }, 409)
   if (b.quantity !== undefined && b.quantity < l.sold) return c.json({ error: 'invalid', message: `Already sold ${l.sold}, so stock can't go below that.` }, 400)
-  if (b.photo_key !== undefined && !b.photo_key.startsWith(`${sellerId}/products/`)) return c.json({ error: 'invalid', message: 'Unknown photo.' }, 400)
+  const oldPhotos = photosOf(l)
+  // photos replaces the whole set, cover first; photo_key alone swaps just the cover.
+  const photos = [...new Set(b.photos ?? (b.photo_key ? [b.photo_key, ...oldPhotos.slice(1)] : oldPhotos))]
+  if (!ownPhotos(photos, sellerId)) return c.json({ error: 'invalid', message: 'Unknown photo.' }, 400)
 
   // Normalise what the client sent: drop blank detail rows, merge repeated names, dedupe colours.
   const seen = new Map<string, { name: string; value: string }>()
@@ -170,7 +185,7 @@ api.patch('/listings/:id', async (c) => {
   const description = b.description ?? l.description
   const price = b.price !== undefined ? Number(b.price).toFixed(2) : l.price
   const quantity = b.quantity ?? l.quantity
-  const photoKey = b.photo_key ?? l.photo_key
+  const photoKey = photos[0] ?? null
 
   const details = attributes.map((a) => `${a.name}: ${a.value}`).join(' · ')
   const link = {
@@ -208,9 +223,10 @@ api.patch('/listings/:id', async (c) => {
   }
 
   await c.env.DB.prepare(
-    'UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ?, photo_key = ?, status = ?, plb_id = ?, plb_url = ? WHERE id = ?',
-  ).bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), photoKey, status, plbId, plbUrl, l.id).run()
-  if (b.photo_key && l.photo_key && b.photo_key !== l.photo_key) await c.env.PHOTOS.delete(l.photo_key).catch(() => {})
+    'UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ?, photo_key = ?, photos = ?, status = ?, plb_id = ?, plb_url = ? WHERE id = ?',
+  ).bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), photoKey, JSON.stringify(photos), status, plbId, plbUrl, l.id).run()
+  const dropped = oldPhotos.filter((k) => !photos.includes(k))
+  if (dropped.length) await c.env.PHOTOS.delete(dropped).catch(() => {})
   return c.json({ ok: true, paypal, paypal_updated: paypal === 'updated', status, url: plbUrl })
 })
 

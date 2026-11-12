@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Envelope, Stamp } from '@/components/airmail'
 import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
+import { type PhotoItem, PhotoStrip, storedPhoto, uploadPhotos } from '@/components/PhotoStrip'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,7 +24,10 @@ export default function Sell() {
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [photoKey, setPhotoKey] = useState<string>()
+  const [photos, setPhotos] = useState<PhotoItem[]>([])
+  const previewRef = useRef<string | null>(null)
+  const draftKey = useRef<string | null>(null)
+  const uploads = useRef(new Map<File, string>())
   const [confidence, setConfidence] = useState<number>()
   const [form, setForm] = useState<Form | null>(null)
   const [colour, setColour] = useState('')
@@ -33,7 +37,11 @@ export default function Sell() {
   const draft = useMutation({
     mutationFn: async (f: File) => api.draftListing(await preparePhoto(f)),
     onSuccess: (r) => {
-      setPhotoKey(r.photo_key)
+      // The drafted photo is already stored; it becomes the cover, and more can be added below.
+      // A retake swaps only the drafted photo and keeps any extras the seller added.
+      const old = draftKey.current
+      setPhotos((prev) => [storedPhoto(r.photo_key, previewRef.current!), ...prev.filter((p) => p.key !== old)])
+      draftKey.current = r.photo_key
       setConfidence(r.draft.confidence)
       setForm({
         title: r.draft.title, description: r.draft.description.slice(0, 240), colours: r.draft.colours.slice(0, 10),
@@ -55,8 +63,8 @@ export default function Sell() {
   })
 
   const create = useMutation({
-    mutationFn: () => api.createListing({
-      ...form!, photo_key: photoKey, ai_confidence: confidence,
+    mutationFn: async () => api.createListing({
+      ...form!, photo_keys: await uploadPhotos(photos, uploads.current), ai_confidence: confidence,
       attributes: form!.attributes.filter((a) => a.name.trim() && a.value.trim()).map((a) => ({ name: a.name.trim(), value: a.value.trim() })),
     }),
     onSuccess: (r) => { setLink({ url: r.url, plb_id: r.plb_id }); qc.invalidateQueries({ queryKey: ['listings'] }) },
@@ -65,7 +73,8 @@ export default function Sell() {
 
   const pick = (f?: File) => {
     if (!f) return
-    setPreview(URL.createObjectURL(f))
+    previewRef.current = URL.createObjectURL(f)
+    setPreview(previewRef.current)
     setForm(null)
     setLink(null)
     draft.mutate(f)
@@ -82,7 +91,7 @@ export default function Sell() {
     if (navigator.share) await navigator.share({ title: form?.title, text: shareText(), url: link.url }).catch(() => {})
     else window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText()} ${link.url}`)}`, '_blank', 'noopener')
   }
-  const reset = () => { setLink(null); setForm(null); setPreview(null) }
+  const reset = () => { setLink(null); setForm(null); setPreview(null); setPhotos([]); draftKey.current = null; uploads.current.clear() }
 
   if (link && form) {
     return (
@@ -98,7 +107,7 @@ export default function Sell() {
                 <p className="money mt-2 text-[28px] font-semibold leading-none">{money(form.price)}</p>
                 <p className="mt-1.5 text-sm text-muted-foreground">{form.colours.length ? form.colours.join(' · ') : 'One style'}</p>
               </div>
-              <Stamp src={preview} className="h-[96px] w-[80px] rotate-[3deg]" />
+              <Stamp src={photos[0]?.url ?? preview} className="h-[96px] w-[80px] rotate-[3deg]" />
             </div>
             <p className="tracking-code mt-5 select-all break-all rounded-md bg-muted px-3 py-2.5 text-[12px] leading-relaxed">{link.url}</p>
           </div>
@@ -136,7 +145,7 @@ export default function Sell() {
 
       <div className="relative mx-auto mt-5 block aspect-[4/5] w-full max-w-[320px]">
         {preview ? (
-          <Stamp src={preview} alt="Your product" className="size-full -rotate-1" />
+          <Stamp src={photos[0]?.url ?? preview} alt="Your product" className="size-full -rotate-1" />
         ) : (
           <span className="stamp flex size-full -rotate-1 flex-col items-center justify-center">
             <span className="flex size-full flex-col items-center justify-center gap-3 border border-dashed border-ink/25 bg-envelope px-6 text-center">
@@ -165,6 +174,12 @@ export default function Sell() {
           <ImageUp /> {preview ? 'Choose another' : 'From gallery'}
         </Button>
       </div>
+      {form && (
+        <div className="mx-auto mt-6 max-w-[320px]">
+          <p className="mb-2 text-sm font-medium">More photos</p>
+          <PhotoStrip items={photos} onChange={setPhotos} disabled={create.isPending} />
+        </div>
+      )}
 
       </div>
       <div>
