@@ -13,7 +13,7 @@ Hackathon: PayPal AI Hackathon, https://paypalaihackathon.devpost.com/. The dead
 | Name the AI tools and explain how they're used | Done. Section 4. |
 | Public repo with source, assets and run instructions | **To do: make the repo public.** The README has the run instructions. |
 | Open source license visible in the repo's About box | `LICENSE` (MIT) is added. GitHub shows it once the repo is public and `master` is the default branch. |
-| Demo video under 3 minutes, public on YouTube, no unlicensed music | **To do.** The recording brief is `submission/VIDEO_BRIEF.md`. |
+| Demo video under 3 minutes, public on YouTube, no unlicensed music | Done: https://youtu.be/gIJYRgauNBs. Check that it's under 3:00 and has no unlicensed music. |
 | Login details for judges, if the site is private | **To do.** Put the sandbox seller and buyer logins in the Devpost testing instructions field, using the template in section 5. |
 | Available free to judges until judging ends on Dec 15, 2026 | Keep both Workers running, and don't rotate the sandbox app's keys until after Dec 15. |
 | A new project, or one significantly updated during the submission period | New. All of it was built during the submission period. |
@@ -23,7 +23,7 @@ Hackathon: PayPal AI Hackathon, https://paypalaihackathon.devpost.com/. The dead
 - **Live app, PayPal sandbox:** https://mrutyunjaypatil.dev/shipsafe
 - **Preview with sample data:** https://shipsafe-preview.patilmrutyunjay2.workers.dev
 - **Repository:** https://github.com/Mrutyunjay-Patil/shipsafe
-- **Video:** the YouTube link, once uploaded.
+- **Video:** https://youtu.be/gIJYRgauNBs
 - **Built with:** paypal-payment-links, paypal-orders-v2, paypal-webhooks, log-in-with-paypal, claude, anthropic, cloudflare-workers, hono, cloudflare-d1, cloudflare-r2, react, typescript, vite, tailwindcss, shadcn-ui, ag-grid, tanstack-query
 
 ## 3. Text for the Devpost description

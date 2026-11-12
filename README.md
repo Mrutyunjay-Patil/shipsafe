@@ -16,6 +16,7 @@ People who sell through Instagram DMs and WhatsApp chats already take PayPal. Wh
 |---|---|
 | Live app, PayPal sandbox | https://mrutyunjaypatil.dev/shipsafe |
 | Sample-data preview, no login | https://shipsafe-preview.patilmrutyunjay2.workers.dev |
+| Demo video, under 3 minutes | https://youtu.be/gIJYRgauNBs |
 
 - **The live app** signs in with Log in with PayPal using a sandbox Business account. Its logins are in the Devpost testing instructions.
 - **To pay as a buyer,** open any payment link the app makes and pay with the sandbox Personal account from the same instructions.
