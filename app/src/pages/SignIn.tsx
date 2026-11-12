@@ -1,8 +1,8 @@
 import { Envelope, ParAvion, Postmark, postmarkDate, Stamp } from '@/components/airmail'
 import { Button } from '@/components/ui/button'
 
-// Example parcel uses a credited Unsplash sample photo (public/sample/CREDITS.md).
-const scarf = '/sample/indigo-fabric.jpg'
+// Example parcel uses the shop owner's sample photo (public/sample).
+const scarf = '/sample/paisley-scarf.jpg'
 
 export default function SignIn() {
   const failed = new URLSearchParams(location.search).get('login')
@@ -28,7 +28,7 @@ export default function SignIn() {
             <div className="min-w-0">
               <p className="label-caps text-[42px] leading-[0.9] text-ink">Berlin</p>
               <p className="money mt-3 text-[24px] font-semibold leading-none">$24.00</p>
-              <p className="mt-1.5 text-sm text-muted-foreground">Shibori scarf · Deep indigo</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">Paisley scarf · Slate blue</p>
             </div>
             <Stamp src={scarf} className="h-[86px] w-[72px] rotate-[3deg]" />
           </div>
