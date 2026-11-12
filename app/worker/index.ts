@@ -119,21 +119,34 @@ api.get('/listings/:id', async (c) => {
 // buyers see the new details on PayPal's page; a closed link only updates ShipSafe.
 api.patch('/listings/:id', async (c) => {
   const b = z.object({
+    title: z.string().min(3).max(127).optional(),
     description: z.string().min(1).max(500).optional(),
+    price: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+    colours: z.array(z.string().min(1).max(40)).max(10).optional(),
+    quantity: z.number().int().min(1).max(100).optional(),
     attributes: z.array(z.object({ name: z.string().min(1).max(40), value: z.string().min(1).max(120) })).max(12).optional(),
   }).parse(await c.req.json())
-  const l = await c.env.DB.prepare('SELECT * FROM listings WHERE id = ? AND seller_id = ?').bind(c.req.param('id'), c.get('sellerId')).first<any>()
+  const l = await c.env.DB.prepare(
+    `SELECT l.*, (SELECT COUNT(*) FROM orders o WHERE o.listing_id = l.id AND o.status NOT IN ('REFUNDED', 'NEEDS_REFUND')) AS sold
+     FROM listings l WHERE l.id = ? AND l.seller_id = ?`,
+  ).bind(c.req.param('id'), c.get('sellerId')).first<any>()
   if (!l) return c.json({ error: 'not_found' }, 404)
+  if (b.quantity !== undefined && b.quantity < l.sold) return c.json({ error: 'invalid', message: `Already sold ${l.sold}, so stock can't go below that.` }, 400)
+  const title = b.title ?? l.title
   const description = b.description ?? l.description
+  const price = b.price !== undefined ? Number(b.price).toFixed(2) : l.price
+  const colours: string[] = b.colours ?? JSON.parse(l.colours)
+  const quantity = b.quantity ?? l.quantity
   const attributes = b.attributes ?? JSON.parse(l.attributes ?? '[]')
   if (l.plb_id && l.status === 'ACTIVE') {
     const details = attributes.map((a: { name: string; value: string }) => `${a.name}: ${a.value}`).join(' · ')
     await updateLink(c.env, l.plb_id, {
-      listingId: l.id, title: l.title, description: details ? `${description}\n${details}` : description,
-      price: l.price, currency: l.currency, colours: JSON.parse(l.colours), returnUrl: new URL('/thanks', c.req.url).toString(),
+      listingId: l.id, title, description: details ? `${description}\n${details}` : description,
+      price, currency: l.currency, colours, returnUrl: new URL('/thanks', c.req.url).toString(),
     })
   }
-  await c.env.DB.prepare('UPDATE listings SET description = ?, attributes = ? WHERE id = ?').bind(description, JSON.stringify(attributes), l.id).run()
+  await c.env.DB.prepare('UPDATE listings SET title = ?, description = ?, price = ?, colours = ?, quantity = ?, attributes = ? WHERE id = ?')
+    .bind(title, description, price, JSON.stringify(colours), quantity, JSON.stringify(attributes), l.id).run()
   return c.json({ ok: true, paypal_updated: !!(l.plb_id && l.status === 'ACTIVE') })
 })
 

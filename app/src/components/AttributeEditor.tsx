@@ -7,7 +7,8 @@ import type { Attribute } from '@/lib/api'
 export const FALLBACK: [RegExp, string[]][] = [
   [/pottery|ceramic|porcelain|stoneware|terracotta|mug|bowl|plate|vase|planter/i, ['Clay', 'Glaze', 'Dimensions', 'Capacity', 'Food safe', 'Microwave safe']],
   [/furniture|chair|table|stool|shelf|cabinet|bench|desk|bed/i, ['Wood or material', 'Dimensions', 'Finish', 'Assembly', 'Weight capacity']],
-  [/art|painting|print|poster|canvas|illustration|photograph/i, ['Medium', 'Size', 'Framed', 'Signed', 'Edition']],
+  [/scarf|scarves|stole|shawl|dupatta|saree|fabric|textile|shirt|dress|kurta|apparel|clothing|\btops?\b/i, ['Material', 'Size', 'Fit', 'Care']],
+  [/\bart\b|artwork|painting|\bprints?\b(?!ed)|poster|canvas|illustration|photograph/i, ['Medium', 'Size', 'Framed', 'Signed', 'Edition']],
   [/candle|soap|wax/i, ['Scent', 'Wax', 'Weight', 'Burn time']],
   [/cosmetic|skincare|beauty|perfume|oil|balm|cream/i, ['Ingredients', 'Volume', 'Skin type', 'Expiry']],
   [/food|tea|coffee|spice|snack|sweet|honey|pickle/i, ['Ingredients', 'Net weight', 'Shelf life', 'Dietary']],
@@ -18,10 +19,16 @@ export const FALLBACK: [RegExp, string[]][] = [
   [/shoe|sandal|footwear|boot|slipper/i, ['Size', 'Upper material', 'Sole', 'Fit']],
   [/jewel|earring|necklace|ring|bangle|bracelet|pendant/i, ['Metal', 'Stone', 'Weight', 'Size']],
   [/bag|tote|purse|wallet|backpack/i, ['Material', 'Dimensions', 'Closure', 'Pockets']],
-  [/scarf|stole|shawl|dupatta|saree|fabric|textile|shirt|dress|kurta|apparel|clothing|top/i, ['Material', 'Size', 'Fit', 'Care']],
   [/decor|lamp|diya|lantern|brass|metal|sculpture|figurine/i, ['Material', 'Dimensions', 'Weight', 'Set of']],
 ]
-export const fallbackFor = (category: string) => FALLBACK.find(([re]) => re.test(category))?.[1] ?? ['Material', 'Dimensions', 'Weight', 'Condition']
+/** Category first (the AI names it precisely), then the title; general details otherwise. */
+export const fallbackFor = (...hints: (string | null | undefined)[]) => {
+  for (const h of hints) {
+    const hit = h && FALLBACK.find(([re]) => re.test(h))
+    if (hit) return hit[1]
+  }
+  return ['Material', 'Dimensions', 'Weight', 'Condition']
+}
 
 /** Detail rows (name and value) with suggestion pills and a "Your own" pill. Shared by Sell and the product page. */
 export function AttributeEditor({ value, onChange, suggestions }: { value: Attribute[]; onChange: (v: Attribute[]) => void; suggestions: string[] }) {
@@ -38,7 +45,7 @@ export function AttributeEditor({ value, onChange, suggestions }: { value: Attri
                 value={a.name}
                 placeholder="Detail"
                 onChange={(e) => update(i, { name: e.target.value })}
-                className="h-10 w-[38%] shrink-0 rounded-md border-transparent bg-transparent px-2 text-[14px] font-medium shadow-none focus-visible:bg-card"
+                className="h-10 w-[42%] shrink-0 rounded-md border-transparent bg-transparent px-2 text-[14px] font-medium shadow-none focus-visible:bg-card"
               />
               <Input
                 aria-label={`${a.name || 'Detail'} value`}

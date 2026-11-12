@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Copy, Loader2, PenLine, Pencil, Send } from 'lucide-react'
+import { ArrowLeft, Copy, Loader2, Minus, PenLine, Pencil, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Stamp } from '@/components/airmail'
 import { AttributeEditor, fallbackFor } from '@/components/AttributeEditor'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { StatStrip } from '@/components/dashboard'
 import { OrderRow } from '@/components/OrderRow'
@@ -22,11 +23,21 @@ export default function ProductDetail() {
   const [editing, setEditing] = useState(false)
   const [attrs, setAttrs] = useState<Attribute[]>([])
   const [desc, setDesc] = useState('')
+  const [title, setTitle] = useState('')
+  const [price, setPrice] = useState('')
+  const [qty, setQty] = useState(1)
+  const [colours, setColours] = useState<string[]>([])
+  const [colour, setColour] = useState('')
+  const addColour = () => {
+    const c = colour.trim()
+    if (c && !colours.some((x) => x.toLowerCase() === c.toLowerCase())) setColours([...colours, c].slice(0, 10))
+    setColour('')
+  }
   const clean = () => attrs.map((a) => ({ name: a.name.trim(), value: a.value.trim() })).filter((a) => a.name && a.value)
   const save = useMutation({
-    mutationFn: () => api.updateListing(id, { description: desc.trim(), attributes: clean() }),
+    mutationFn: () => api.updateListing(id, { title: title.trim(), description: desc.trim(), price, colours, quantity: qty, attributes: clean() }),
     onSuccess: (r) => {
-      toast.success(r.paypal_updated ? 'Saved. The PayPal link shows the new details.' : 'Saved.')
+      toast.success(r.paypal_updated ? 'Saved. The PayPal link is updated too.' : 'Saved.')
       setEditing(false)
       qc.invalidateQueries({ queryKey: ['listing', id] })
       qc.invalidateQueries({ queryKey: ['listings'] })
@@ -96,16 +107,65 @@ export default function ProductDetail() {
         ]} />
       </div>
       <div className="mb-2 mt-6 flex items-center justify-between px-1">
-        <h2 className="text-[15px] font-semibold">Details</h2>
+        <h2 className="text-[15px] font-semibold">{editing ? 'Edit product' : 'Details'}</h2>
         {!editing && (
-          <Button variant="outline" size="sm" className="h-8 rounded-full" onClick={() => { setAttrs(l.attributes ?? []); setDesc(l.description); setEditing(true) }}>
-            <Pencil /> Edit details
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 rounded-full"
+            onClick={() => {
+              setAttrs(l.attributes ?? []); setDesc(l.description); setTitle(l.title); setPrice(l.price)
+              setQty(l.quantity); setColours(l.colours); setColour(''); setEditing(true)
+            }}
+          >
+            <Pencil /> Edit product
           </Button>
         )}
       </div>
 
       {editing ? (
         <section className="sheet space-y-4 rounded-2xl p-4">
+          <div className="space-y-1.5">
+            <label htmlFor="pd-title" className="text-sm font-medium">Title</label>
+            <Input id="pd-title" value={title} maxLength={127} onChange={(e) => setTitle(e.target.value)} className="h-12 rounded-lg bg-card text-[16px]" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label htmlFor="pd-price" className="text-sm font-medium">Price in {l.currency}</label>
+              <Input id="pd-price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ''))} className="money h-12 rounded-lg bg-card text-[20px] font-semibold" />
+            </div>
+            <div className="space-y-1.5">
+              <span className="text-sm font-medium">Units in stock</span>
+              <div className="flex h-12 items-center justify-between rounded-lg border border-input bg-card px-1">
+                <Button type="button" variant="ghost" size="icon" aria-label="One fewer" disabled={qty <= Math.max(1, l.sold)} onClick={() => setQty(Math.max(Math.max(1, l.sold), qty - 1))}><Minus /></Button>
+                <span className="money text-[20px] font-semibold">{qty}</span>
+                <Button type="button" variant="ghost" size="icon" aria-label="One more" onClick={() => setQty(Math.min(100, qty + 1))}><Plus /></Button>
+              </div>
+              {l.sold > 0 && <p className="text-[12px] text-muted-foreground">{l.sold} already sold, so at least {l.sold}.</p>}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="pd-colour" className="text-sm font-medium">Colours the buyer picks from</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {colours.map((c) => (
+                <span key={c} className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card pl-3.5 pr-1.5 text-sm font-medium">
+                  {c}
+                  <button type="button" aria-label={`Remove ${c}`} onClick={() => setColours(colours.filter((x) => x !== c))} className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                    <X className="size-3.5" />
+                  </button>
+                </span>
+              ))}
+              <Input
+                id="pd-colour"
+                value={colour}
+                placeholder="Add a colour"
+                onChange={(e) => setColour(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addColour() } }}
+                onBlur={addColour}
+                className="h-9 w-36 rounded-full bg-card"
+              />
+            </div>
+          </div>
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
               <label htmlFor="pd-desc" className="text-sm font-medium">Description</label>
@@ -115,18 +175,18 @@ export default function ProductDetail() {
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium">Product details</p>
-            <AttributeEditor value={attrs} onChange={setAttrs} suggestions={fallbackFor(`${l.category ?? ''} ${l.title}`)} />
+            <AttributeEditor value={attrs} onChange={setAttrs} suggestions={fallbackFor(l.category, l.title)} />
             {clean().length > 0 && (
               <Button type="button" variant="outline" className="h-10 rounded-lg" disabled={rewrite.isPending} onClick={() => rewrite.mutate()}>
                 {rewrite.isPending ? <Loader2 className="animate-spin" /> : <PenLine />} Rewrite description from details
               </Button>
             )}
           </div>
-          {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link, so buyers see these details at checkout. The link stays the same.</p>}
+          {s.live && <p className="text-[13px] text-muted-foreground">Saving also updates the live PayPal link: buyers who open it see the new price, colours and details. The link stays the same, and orders already paid don't change.</p>}
           <div className="grid grid-cols-[auto_1fr] gap-2.5">
             <Button variant="outline" size="lg" className="h-12 rounded-xl" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</Button>
-            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || desc.trim().length < 1}>
-              {save.isPending && <Loader2 className="animate-spin" />} Save details
+            <Button size="lg" className="h-12 rounded-xl" onClick={() => save.mutate()} disabled={save.isPending || desc.trim().length < 1 || title.trim().length < 3 || !/^\d+(\.\d{1,2})?$/.test(price)}>
+              {save.isPending && <Loader2 className="animate-spin" />} Save changes
             </Button>
           </div>
         </section>

@@ -153,9 +153,11 @@ export const mockApi = {
     const own = orders.filter((o) => o.listing_id === id)
     return { ...l, sold: own.filter((o) => o.status !== 'REFUNDED' && o.status !== 'NEEDS_REFUND').length, orders: own.map(summary) }
   },
-  updateListing: async (id: string, b: { description?: string; attributes?: { name: string; value: string }[] }) => {
+  updateListing: async (id: string, b: { title?: string; description?: string; price?: string; colours?: string[]; quantity?: number; attributes?: { name: string; value: string }[] }) => {
     await wait(700)
-    listings = listings.map((l) => (l.id === id ? { ...l, ...(b.description ? { description: b.description } : {}), ...(b.attributes ? { attributes: b.attributes } : {}) } : l))
+    const clean = Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined))
+    if (clean.price) clean.price = Number(clean.price).toFixed(2)
+    listings = listings.map((l) => (l.id === id ? { ...l, ...clean } : l))
     return { ok: true as const, paypal_updated: listings.find((l) => l.id === id)?.status === 'ACTIVE' }
   },
   archiveListing: async () => ({ ok: true }),
